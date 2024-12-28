@@ -1,0 +1,58 @@
+---
+title: "ENSAB"
+author: "Maria Camila Restrepo"
+date: "2024-11-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+ENSAB databases
+
+```{r}
+library(here)
+library(readr)
+library(tidyverse)
+
+ninos <- read_delim(
+  here("ensab", "M3_NINOS.txt"), 
+  delim = "|", 
+  locale = locale(encoding = "Latin1")
+)
+
+examen13 <- read_delim(
+  here("ensab", "M4_EXAMEN_1.txt"), 
+  delim = "|", 
+  locale = locale(encoding = "Latin1")
+)
+
+examen5 <- read_delim(
+  here("ensab", "M4_EXAMEN_2.txt"), 
+  delim = "|", 
+  locale = locale(encoding = "Latin1")
+)
+
+hogar <- read_delim(
+  here("ensab", "M1_HOGAR.txt"), 
+  delim = "|", 
+  locale = locale(encoding = "Latin1")
+)
+
+```
+
+We have a total of 6446 children for the sample size
+
+```{r}
+glimpse(ninos)
+names(ninos)
+```
+
+Keep variables:
+
+- MPIO
+- DPTO
+- M3_100C: age
+- M3_103A: remove
+- M3_104: 
