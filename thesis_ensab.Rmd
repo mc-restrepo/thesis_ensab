@@ -16,25 +16,25 @@ library(here)
 library(readr)
 library(tidyverse)
 
-ninos <- read_delim(
+ninoscompleta <- read_delim(
   here("ensab", "M3_NINOS.txt"), 
   delim = "|", 
   locale = locale(encoding = "Latin1")
 )
 
-examen13 <- read_delim(
+examen13completa <- read_delim(
   here("ensab", "M4_EXAMEN_1.txt"), 
   delim = "|", 
   locale = locale(encoding = "Latin1")
 )
 
-examen5 <- read_delim(
+examen5completa <- read_delim(
   here("ensab", "M4_EXAMEN_2.txt"), 
   delim = "|", 
   locale = locale(encoding = "Latin1")
 )
 
-hogar <- read_delim(
+hogarcompleta <- read_delim(
   here("ensab", "M1_HOGAR.txt"), 
   delim = "|", 
   locale = locale(encoding = "Latin1")
@@ -45,8 +45,8 @@ hogar <- read_delim(
 We have a total of 6446 children for the sample size
 
 ```{r}
-glimpse(ninos)
-names(ninos)
+glimpse(ninoscompleta)
+names(ninoscompleta)
 ```
 
 Keep variables:
@@ -54,5 +54,64 @@ Keep variables:
 - MPIO
 - DPTO
 - M3_100C: age
-- M3_103A: remove
-- M3_104: 
+- M3_113E: regimen del ppal responsable economico
+- M3_113F: maximo nivel educativo alcanzado por el ppal responsable economico
+- M3_119: ingresos mensuales ppal responsable economico
+- M3_205: ha tenido cita con odontologo
+- M3_206A: Edad de primera cita
+- M3_208: Lugar de consulta
+- M3_209: Motivo de connsulta
+- M3_210: No atencion
+- M3_213: Edad de comenzar higiene
+- M3_214: Quien hace higiene
+- M3_224: Lactancia materna edad
+- M3_225: Biberon
+- M3_226: Biberon edad
+- M3_227: Que le dan en el biberon. 227A-227CU
+- Clase: cabecera, cp, rural
+- Region: a donde pertenece el municipio
+- Subreg:
+- Municipio:
+- Estrato: Estrato muestral dentro de subregion
+- Fex_fin: factor de expansion final
+- Sexo
+- Zona: urbana, rural
+- EST_SE_2: Nivel socioeconomico
+- FRACCION: fraccion social
+- REGIMEN: contributivo, subsidiado, especial, no asegurado
+- ID_HOGAR
+- ID_PERSONA
+
+Grupo etareo was excluded because it is the same as age.
+
+Hogar has the same basic variables
+
+```{r}
+ninos <- ninoscompleta %>% 
+  select(MPIO, DPTO, M3_100C, M3_113E, M3_113F, M3_119, M3_205, M3_206A, M3_208, M3_209, M3_210, M3_213, M3_214, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, Clase, Region, Subreg, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA)
+
+glimpse(ninos)
+```
+
+Caries:
+
+DMFT: decayed, missing and filled teeth
+
+Questions 305 and 307
+
+0: A Sano, F sellante, 
+1: B Cavitaded, C: filling with caries, D: filled without caries, E: missing due to caries.
+Unsure: G ? Prótesis, corona, retenedor, carilla, and H no registra
+H: missing data. 
+
+MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J
+MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J
+
+```{r}
+examen13 <- examen13completa %>% 
+  select(MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J, MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J, ID_HOGAR, ID_PERSONA)
+
+glimpse(examen13)
+```
+
+
