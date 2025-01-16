@@ -59,6 +59,7 @@ Keep variables:
 - M3_119: ingresos mensuales ppal responsable economico
 - M3_205: ha tenido cita con odontologo
 - M3_206A: Edad de primera cita
+- M3_206B: Meses o años. 1: meses, 2 años.
 - M3_208: Lugar de consulta
 - M3_209: Motivo de connsulta
 - M3_210: No atencion
@@ -88,7 +89,7 @@ Hogar has the same basic variables, so we wont join it for now.
 
 ```{r}
 ninos <- ninoscompleta %>% 
-  select(MPIO, DPTO, M3_100C, M3_113E, M3_113F, M3_119, M3_205, M3_206A, M3_208, M3_209, M3_210, M3_213, M3_214, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, Clase, Region, Subreg, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA)
+  select(MPIO, DPTO, M3_100C, M3_113E, M3_113F, M3_119, M3_205, M3_206A, M3_206B, M3_207, M3_208, M3_209, M3_210, M3_213, M3_214, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, Clase, Region, Subreg, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA)
 
 glimpse(ninos)
 ```
@@ -188,6 +189,8 @@ ensab <- ninos %>%
   mutate(dmft = coalesce(dmft.x, dmft.y)) %>%
   select(-ID_HOGAR.x, -ID_HOGAR.y, -dmft.x, -dmft.y)
 
+#Missing data
+
 ensab %>%
   filter(MA_208 == 2 | MB_208 == 2) %>%
   count()
@@ -197,5 +200,108 @@ ensab <- ensab %>%
   select(-MB_208, -MA_208)
 
 #only  3 children did not have the clinical examination portion. We'll exclude them. Now the sample size is 6443 children.
+```
+
+# Posible exposures
+
+Age of first dental visit (agefdv). It is composed of:
+- M3_206A: numeric
+- M3_206B: 1: months, 2: years
+
+Take into account M3_205: have they ever had an appointment with a dentist?  
+1: yes, 2: no, 3: doesn't know
+
+Could possibly categorize
+
+```{r}
+
+#Turn M3_206A into a numeric variable
+ensab$M3_206A <- as.numeric(ensab$M3_206A)
+
+summary(ensab$M3_206A)
+
+ensab %>%
+  filter(M3_205 == 2 | M3_205 == 3) %>%
+  count()
+#2648: coincides with the number of NAs
+
+ensab %>%
+  filter(M3_205 == 3) %>%
+  count()
+#only 46 participants have missing values for M3_205
+
+#multiply values in the filtered rows by 12 and categorize
+ensab <- ensab %>%
+  mutate(agefdv = if_else(M3_206B == 2, M3_206A * 12, M3_206A))
+
+ggplot(ensab, aes(x = agefdv)) +
+  geom_histogram(fill = "skyblue", color = "black") +
+  scale_x_continuous(breaks = seq(min(ensab$agefdv, na.rm = TRUE), max(ensab$agefdv, na.rm = TRUE), by = 6)) +
+  labs(x = "Age of first dental visit", y = "Participants", title = "Distribution of age of first dental visit")
+
+# can do bins 0-6, 7-12, 13-24, 25-36, 37-48, 49-72, or just divide into 3.
+
+ensab <- ensab %>%
+  mutate(agefdv = case_when(
+    M3_205 == 3 ~ NA_real_,
+    M3_205 == 2 ~ 0,
+    agefdv <= 12 ~ 1,
+    agefdv > 12 ~ 2,
+    TRUE ~ agefdv)) %>%
+  mutate(agefdv = factor(agefdv, 
+                         levels = c(0, 1, 2), 
+                         labels = c("Never", "0-12", "13+")))
+
+summary(ensab$agefdv)
+
+ensab <- ensab %>%
+  select(-M3_206B, -M3_206A)
+```
+
+Reason for last consultation (reason)
+
+M3_209: 
+1: por una urgencia
+2: para un tratamiento
+3: por revision/prevencion
+4: certificado odontologico
+
+M207 Is important: when was appointment of the child with the dentist?
+1: less than a year ago
+2: between 1-2 years
+3: more than 3 years
+4: does not remember (NA)
+
+```{r}
+ensab %>%
+  filter(M3_207 == 4) %>%
+  count()
+
+#45 NAs to be expected in M3_209
+
+
+```
+
+# has not been able to get appointment
+
+# age of start of dental hygiene
+
+# who does the dental hygiene
+
+# breastfeeding age
+
+# bottle
+
+# Possible confounders or EMM
+
+```{r}
+# age
+# socioeconomic level
+# income
+# health regimen
+# region
+# gender
+# rural area (clase)
+# health regimen
 ```
 
