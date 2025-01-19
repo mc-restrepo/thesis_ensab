@@ -279,29 +279,168 @@ ensab %>%
 
 #45 NAs to be expected in M3_209
 
+ensab <- ensab %>%
+  mutate(reason = factor(M3_209, 
+    levels = c(1, 2, 3, 4), 
+    labels = c("Emergency", "Treatment", "Prevention", "Certification")))
 
+summary(ensab$reason)
+#2648 NAs
 ```
 
-# has not been able to get appointment
+Age of start of dental hygiene
 
-# age of start of dental hygiene
+M3_213: units are months, continuous
+91: doesn't know
+92: has never gotten dental hygiene done
 
+```{r}
+ensab %>%
+  filter(M3_213 == 91 | M3_213 == 92) %>%
+  count()
+#385
+
+glimpse(ensab$M3_213)
+
+#create distribution
+ensab %>%
+  filter(!(M3_213 %in% c(91, 92))) %>%
+  ggplot(aes(x = M3_213)) +
+  geom_histogram(fill = "skyblue", color = "black") +
+  scale_x_continuous(breaks = seq(min(ensab$M3_213, na.rm = TRUE), max(ensab$M3_213, na.rm = TRUE), by = 6)) +
+  labs(x = "Age of start of dental hygiene", y = "Participants", title = "Distribution of age of start of dental hygiene")
+```
+
+```{r}
 # who does the dental hygiene
 
 # breastfeeding age
 
 # bottle
+```
 
 # Possible confounders or EMM
 
+Age: M3_100C
+
 ```{r}
-# age
-# socioeconomic level
-# income
-# health regimen
-# region
-# gender
-# rural area (clase)
-# health regimen
+glimpse(ensab$M3_100C)
+summary(ensab$M3_100C)
+
+#rename M2_100C to age
+ensab <- ensab %>%
+  rename(age = M3_100C)
+
+#Is this considered continuous or categorical?
 ```
 
+Sex: Sexo
+
+Couldn't find the codification in the codebook so I had to guess
+
+```{r}
+glimpse(ensab$Sexo)
+
+ensab <- ensab %>%
+  mutate(sex = factor(Sexo,
+                         levels = c(1, 2),
+                         labels = c("Masculine", "Feminine")))
+
+summary(ensab$sex)
+```
+
+Socioeconomic status: EST_SE_2
+```{r}
+glimpse(ensab$EST_SE_2)
+
+ensab <- ensab %>%
+  mutate(ses = factor(EST_SE_2, 
+                           levels = c(1, 2, 3, 4), 
+                           labels = c("Low low", "Low", "Middle low", "Middle to high")))
+
+summary(ensab$ses)
+```
+
+Income: M3_119
+
+NMW: national minimum wage (salario minimo legal vigente)
+
+```{r}
+glimpse(ensab$M3_119)
+
+#8 are NAs
+ensab %>%
+  filter(M3_119 == 8) %>%
+  count()
+
+#transform 7 unemployed into 0
+
+ensab <- ensab %>%
+  mutate(income = case_when(
+    M3_119 == 8 ~ NA,
+    M3_119 == 7 ~ 0,
+    TRUE ~ M3_119)) %>%
+  mutate(income = factor(income,
+                         levels = c(0, 1, 2, 3, 4, 5, 6),
+                         labels = c("Unemployed", "Less than half NMW", "Half - 1 NMW", "1-2 NMW", "2-3 NMW", "3-4 NMW", "More than 4 NMW")))
+
+summary(ensab$income)
+
+```
+
+Health insurance coverage/scheme:
+
+Chose REGIMEN over M3_113E because it has less categories plus no missing values, and it reflects the insurance status of the child and not the main provider.
+
+```{r}
+glimpse(ensab$REGIMEN)
+
+#counting NAs in M3_113E
+
+ensab %>%
+  filter(M3_113E == 6) %>%
+  count()
+
+ensab <- ensab %>%
+  mutate(insurance = case_when(
+    REGIMEN == 4 ~ 0,
+    TRUE ~ REGIMEN)) %>%
+  mutate(insurance = factor(insurance, 
+                           levels = c(0, 1, 2, 3), 
+                           labels = c("Uninsured", "Contributory", "Subsidized", "Other")))
+
+summary(ensab$insurance)
+```
+
+Region
+
+```{r}
+glimpse(ensab$Region)
+
+ensab <- ensab %>%
+  mutate(region = factor(Region,
+                         levels = c(1, 2, 3, 4, 5, 6),
+                         labels = c("Atlantic", "Eastern", "Central", "Pacific", "Bogota", "Orinoquia - Amazonia")))
+
+summary(ensab$region)
+```
+
+Urban vs rural: Zona
+
+Will be named location
+Chose Zona over Clase because it has more universal categories (rural and urban), while Clase has categories according to the national census. However, it has more granularity and could be useful.
+
+```{r}
+glimpse(ensab$Zona)
+
+ensab %>%
+  group_by(Zona, .drop = FALSE) %>%
+  count()
+
+ensab <- ensab %>%
+  mutate(location = factor(Zona,
+                           levels = c(1, 2),
+                           labels = c("Urban", "Rural")))
+
+summary(ensab$location)
+```
