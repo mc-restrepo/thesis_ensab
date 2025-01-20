@@ -14,6 +14,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(here)
 library(readr)
+#install package MASS if not installed previously
+if(!require(MASS)) install.packages("MASS")
+library(MASS)
 library(tidyverse)
 
 ninoscompleta <- read_delim(
@@ -66,6 +69,7 @@ Keep variables:
 - M3_213: Edad de comenzar higiene
 - M3_214: Quien hace higiene
 - M3_224: Lactancia materna edad
+- M3_218: Informacion sobre tipo de crema dental
 - M3_225: Biberon
 - M3_226: Biberon edad
 - M3_227: Que le dan en el biberon. 227A-227CU
@@ -89,7 +93,7 @@ Hogar has the same basic variables, so we wont join it for now.
 
 ```{r}
 ninos <- ninoscompleta %>% 
-  select(MPIO, DPTO, M3_100C, M3_113E, M3_113F, M3_119, M3_205, M3_206A, M3_206B, M3_207, M3_208, M3_209, M3_210, M3_213, M3_214, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, Clase, Region, Subreg, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA)
+  dplyr::select(MPIO, DPTO, M3_100C, M3_113E, M3_113F, M3_119, M3_205, M3_206A, M3_206B, M3_207, M3_208, M3_209, M3_210, M3_213, M3_214, M3_218, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, Clase, Region, Subreg, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA)
 
 glimpse(ninos)
 ```
@@ -121,7 +125,7 @@ antecedentes médicos). 1: se aplica el examen. 2: no se aplica el examen.
 
 ```{r}
 examen13 <- examen13completa %>% 
-  select(MA_208, MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J, MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J, ID_HOGAR, ID_PERSONA)
+  dplyr::select(MA_208, MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J, MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J, ID_HOGAR, ID_PERSONA)
 
 #Assign a value to 1 to the following letters: B, C, D, E, G
 examen13 <- examen13 %>%
@@ -136,7 +140,7 @@ examen13 <- examen13 %>%
 #create variable dmft
 examen13 <- examen13 %>%
   mutate(dmft = rowSums(across(starts_with("MA_3"), ~. > 0))) %>%
-  select(-starts_with("MA_3"))
+  dplyr::select(-starts_with("MA_3"))
 
 glimpse(examen13)
 summary(examen13$dmft)
@@ -153,7 +157,7 @@ dmft can take into account the first permanent molar. So the maximum value can b
 
 ```{r}
 examen5 <- examen5completa %>% 
-  select(MB_208, MB_305A, MB_305B, MB_305C, MB_305D, MB_305E, MB_305F, MB_305G, MB_305H, MB_305I, MB_305J, MB_305K, MB_305L, MB_307A, MB_307B, MB_307C, MB_307D, MB_307E, MB_307F, MB_307G, MB_307H, MB_307I, MB_307J, MB_307K, MB_307L, ID_HOGAR, ID_PERSONA)
+  dplyr::select(MB_208, MB_305A, MB_305B, MB_305C, MB_305D, MB_305E, MB_305F, MB_305G, MB_305H, MB_305I, MB_305J, MB_305K, MB_305L, MB_307A, MB_307B, MB_307C, MB_307D, MB_307E, MB_307F, MB_307G, MB_307H, MB_307I, MB_307J, MB_307K, MB_307L, ID_HOGAR, ID_PERSONA)
 
 glimpse(examen5)
 
@@ -170,7 +174,7 @@ examen5 <- examen5 %>%
 #create variable dmft
 examen5 <- examen5 %>%
   mutate(dmft = rowSums(across(starts_with("MB_3"), ~. > 0))) %>%
-  select(-starts_with("MB_3"))
+  dplyr::select(-starts_with("MB_3"))
 
 summary(examen5$dmft)
 
@@ -186,8 +190,9 @@ Merge datasets:
 ensab <- ninos %>%
   left_join(examen13, by = "ID_PERSONA") %>%
   left_join(examen5, by = "ID_PERSONA") %>%
-  mutate(dmft = coalesce(dmft.x, dmft.y)) %>%
-  select(-ID_HOGAR.x, -ID_HOGAR.y, -dmft.x, -dmft.y)
+  mutate(dmft = coalesce(dmft.x, dmft.y), 
+         ID_HOGAR = coalesce(ID_HOGAR.x, ID_HOGAR.y)) %>%
+  dplyr::select(-ID_HOGAR.x, -ID_HOGAR.y, -dmft.x, -dmft.y)
 
 #Missing data
 
@@ -197,7 +202,7 @@ ensab %>%
 
 ensab <- ensab %>%
   filter(MA_208 == 1 | MB_208 == 1) %>%
-  select(-MB_208, -MA_208)
+  dplyr::select(-MB_208, -MA_208)
 
 #only  3 children did not have the clinical examination portion. We'll exclude them. Now the sample size is 6443 children.
 ```
@@ -211,7 +216,7 @@ Age of first dental visit (agefdv). It is composed of:
 Take into account M3_205: have they ever had an appointment with a dentist?  
 1: yes, 2: no, 3: doesn't know
 
-Could possibly categorize
+Combine 206A and 205 to categorize.
 
 ```{r}
 
@@ -255,7 +260,7 @@ ensab <- ensab %>%
 summary(ensab$agefdv)
 
 ensab <- ensab %>%
-  select(-M3_206B, -M3_206A)
+  dplyr::select(-M3_206B, -M3_206A)
 ```
 
 Reason for last consultation (reason)
@@ -311,6 +316,24 @@ ensab %>%
   labs(x = "Age of start of dental hygiene", y = "Participants", title = "Distribution of age of start of dental hygiene")
 ```
 
+Information on toothpaste for the child:
+
+M3_219
+
+```{r}
+glimpse(ensab$M3_218)
+
+ensab <- ensab %>%
+  mutate(tp_info = case_when(
+    M3_218 == 3 ~ NA,
+    TRUE ~ M3_218)) %>%
+  mutate(tp_info = factor(tp_info,
+                          levels = c(1, 2),
+                          labels = c("Yes", "No")))
+
+summary(ensab$tp_info)
+```
+
 ```{r}
 # who does the dental hygiene
 
@@ -323,15 +346,20 @@ ensab %>%
 
 Age: M3_100C
 
+It really is categorical and not continuous
+
 ```{r}
 glimpse(ensab$M3_100C)
 summary(ensab$M3_100C)
 
 #rename M2_100C to age
 ensab <- ensab %>%
-  rename(age = M3_100C)
+  rename(age = M3_100C) %>%
+  mutate(age = factor(age, 
+                      levels = c(1, 3, 5),
+                      labels = c("1", "3", "5")))
 
-#Is this considered continuous or categorical?
+summary(ensab$age)
 ```
 
 Sex: Sexo
@@ -444,3 +472,143 @@ ensab <- ensab %>%
 
 summary(ensab$location)
 ```
+
+# Exploring the relationship between age of first appointment and caries (dmft)
+
+The hypothesis is that the older the child was at it's first appointment, the higher the dmft index.
+
+```{r}
+ensab %>%
+  filter(!is.na(agefdv)) %>%
+ggplot(aes(x=agefdv, y=dmft)) +
+  geom_boxplot() +
+  facet_wrap(~age) +
+  labs(x = "Age of first dental visit", y = "dmft Index score", title = "dmft Index score by age of first dental visit")
+```
+
+The expected results are seen in children 1 years old. However, in children 5 years old the children with the lowest median dmft are those in the "never" category. This can probably be confounded by the reason for the last dental appointment. 
+
+It is probably better to explore the relationship by age category.
+
+## Negative binomial regression
+
+Subsetting the data stratified by age group: 
+
+```{r}
+
+#Subset the data for first dental visit
+
+fdv <- ensab %>%
+  dplyr::select(dmft, agefdv, age, sex, income, ses, insurance, region, location, ID_PERSONA, ID_HOGAR)
+
+#by age group
+
+fdv1 <- fdv %>%
+  filter(age == 1)
+
+fdv3 <- fdv %>%
+  filter(age == 3)
+
+fdv5 <- fdv %>%
+  filter(age == 5)
+```
+
+Negative binomial models: crude and adjusted
+
+MASS package used
+
+```{r}
+# Crude negative binomial regression age 1
+model1 <- glm.nb(dmft ~ agefdv, data = fdv1)
+
+summary(model1)
+exp(model1$coefficients)
+exp(confint(model1))
+#theta is 0.03 so there is a lot of overdispersion
+
+#Multiple negative binomial regression (adjusted model)
+model1m <- glm.nb(data = fdv1, dmft ~ agefdv + sex + income + ses + insurance + region + location)
+
+summary(model1m)
+exp(model1m$coefficients)
+#exp(confint(model1m)) is failing to converge
+
+# Negative binomial regression age 3
+
+model3 <- glm.nb(dmft ~ agefdv, data = fdv3)
+
+summary(model3)
+exp(model3$coefficients)
+exp(confint(model3))
+
+model3m <- glm.nb(data = fdv3, dmft ~ agefdv + sex + income + ses + insurance + region + location)
+
+summary(model3m)
+exp(model3m$coefficients)
+exp(confint(model3m))
+
+#Negative binomial regression age 5
+
+model5 <- glm.nb(dmft ~ agefdv, data = fdv5)
+
+summary(model5)
+exp(model5$coefficients)
+exp(confint(model5))
+
+model5m <- glm.nb(data = fdv5, dmft ~ agefdv + sex + income + ses + insurance + region + location)
+
+summary(model5m)
+exp(model5m$coefficients)
+exp(confint(model5m))
+
+```
+
+## Relationship between education on type of toothpaste and caries
+
+```{r}
+ensab %>%
+  filter(!is.na(tp_info)) %>%
+  ggplot(aes(x = tp_info, y = dmft)) +
+  facet_wrap(~age) +
+  geom_boxplot() +
+  labs(x = "Information on toothpaste", y = "dmft Index score", title = "dmft Index score by information on toothpaste")
+
+glimpse(ensab)
+```
+
+Negative binomial regression
+
+```{r}
+#Subset the data for toothpaste information
+
+tp <- ensab %>%
+  dplyr::select(dmft, tp_info, age, sex, income, ses, insurance, region, location, ID_PERSONA, ID_HOGAR)
+
+modeltp1 <- glm.nb(data = tp, dmft ~ tp_info)
+summary(modeltp1)
+
+#ages 5
+
+tp5 <- tp %>%
+  filter(age == 5)
+
+modeltp5 <- glm.nb(data = tp5, dmft ~ tp_info)
+summary(modeltp5)
+exp(modeltp5$coefficients)
+exp(confint(modeltp5))
+#not statistically significant
+
+modeltp5m <- glm.nb(data = tp5, dmft ~ tp_info + sex + income + ses + insurance + region + location)
+summary(modeltp5m)
+
+#the relationship is attenuated after adjusting for confounders
+
+#ages 3 and 5 
+
+tp35 <- tp %>%
+  filter(age == 5 | age == 3)
+
+modeltp35 <- glm.nb(data = tp35, dmft ~ tp_info)
+summary(modeltp35)
+```
+
