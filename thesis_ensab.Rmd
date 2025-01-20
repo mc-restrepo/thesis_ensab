@@ -206,8 +206,28 @@ ensab <- ensab %>%
 
 #only  3 children did not have the clinical examination portion. We'll exclude them. Now the sample size is 6443 children.
 ```
+#Key variables
 
-# Posible exposures
+Age: M3_100C
+
+It really is categorical and not continuous.
+
+```{r}
+glimpse(ensab$M3_100C)
+summary(ensab$M3_100C)
+
+#rename M2_100C to age
+ensab <- ensab %>%
+  rename(age = M3_100C) %>%
+  mutate(age = factor(age, 
+                      levels = c(1, 3, 5),
+                      labels = c("1", "3", "5")))
+
+summary(ensab$age)
+```
+
+
+## Posible exposures
 
 Age of first dental visit (agefdv). It is composed of:
 - M3_206A: numeric
@@ -334,37 +354,100 @@ ensab <- ensab %>%
 summary(ensab$tp_info)
 ```
 
-```{r}
-# who does the dental hygiene
+Breastfeeding age in months: M3_224
 
-# breastfeeding age
-
-# bottle
-```
-
-# Possible confounders or EMM
-
-Age: M3_100C
-
-It really is categorical and not continuous
+91: Never
+92: Doesn't know (NA)
 
 ```{r}
-glimpse(ensab$M3_100C)
-summary(ensab$M3_100C)
+glimpse(ensab$M3_224)
 
-#rename M2_100C to age
+ensab %>%
+  filter(M3_224 == 92) %>%
+  count()
+#98 NAs
+
 ensab <- ensab %>%
-  rename(age = M3_100C) %>%
-  mutate(age = factor(age, 
-                      levels = c(1, 3, 5),
-                      labels = c("1", "3", "5")))
+  mutate(bf = case_when(
+    M3_224 == 92 ~ NA,
+    TRUE ~ M3_224))
 
-summary(ensab$age)
+#distribution of bf
+
+ensab %>%
+  filter(!(bf == 91)) %>%
+  ggplot(aes(x = bf)) +
+  geom_histogram(fill = "skyblue", color = "black") +
+  scale_x_continuous(breaks = seq(min(ensab$bf, na.rm = TRUE), max(ensab$bf, na.rm = TRUE), by = 6)) +
+  labs(x = "Breastfeeding age", y = "Participants", title = "Distribution of breastfeeding age")
+
+ensab %>%
+  filter(!(bf == 91)) %>%
+  summary()
+
+#12 seems like the maximum value
+
+#Categorize into: never, 0-6 months, more than 6 months
+
+ensab <- ensab %>%
+  mutate(bf = case_when(
+    bf == 91 ~ 1,
+    bf <= 6 ~ 2,
+    bf > 6 ~ 3,
+  )) %>%
+  mutate(bf = factor(bf, 
+                     levels = c(1, 2, 3),
+                     labels = c("Never", "0-6 months", "More than 6 months")))
+
+summary(ensab$bf)
+         
 ```
+
+Bottle use: M3_225, M3_226, M3_227, M3_227A-M3_227CU, and M3_228
+
+For M3_227, we want to include:
+- D: sugared drinks
+- F: sodas
+- G: others, explore which ones and if they are cariogenic or not
+Exclude A (mothers milk), B (formula), C (other types of milk).
+E is unsure if it includes cariogenic drinks
+
+```{r}
+#Bottle use at the moment of the survey
+
+ensab %>%
+  filter(M3_225 == 2) %>%
+  count()
+#4487 don't use the bottle currently
+
+glimpse(ensab$age)
+
+#of those that do, what age are they?
+ensab %>%
+  filter(M3_225 == 1) %>%
+  group_by(age) %>%
+  count()
+
+#225 and 226 include past and current use, might be a problem to create variable of age of bottle use. It might be more important what is in the bottle.
+
+#M3_227: what do they put in the bottle. 0: no aplica, 1: aplica
+
+glimpse(ensab$M3_227CU)
+
+ensab %>%
+  filter(M3_227G == 1) %>%
+  select(M3_227G, M3_227CU, ID_PERSONA) %>% #order M3_227CU in alphabetical order
+  distinct(M3_227CU)
+  
+```
+
+Who does the dental hygiene
+
+## Possible confounders or EMM
 
 Sex: Sexo
 
-Couldn't find the codification in the codebook so I had to guess
+Couldn't find the codification in the codebook so I had to guess.
 
 ```{r}
 glimpse(ensab$Sexo)
@@ -473,7 +556,9 @@ ensab <- ensab %>%
 summary(ensab$location)
 ```
 
-# Exploring the relationship between age of first appointment and caries (dmft)
+# Association between caries and possible exposures
+
+## Exploring the relationship between age of first appointment and caries (dmft)
 
 The hypothesis is that the older the child was at it's first appointment, the higher the dmft index.
 
@@ -611,4 +696,39 @@ tp35 <- tp %>%
 modeltp35 <- glm.nb(data = tp35, dmft ~ tp_info)
 summary(modeltp35)
 ```
+
+## Relationship between breastfeeding and caries
+
+```{r}
+ensab %>%
+  filter(!is.na(bf)) %>%
+  ggplot(aes(x = bf, y = dmft)) +
+  facet_wrap(~age) +
+  geom_boxplot() +
+  labs(x = "Breastfeeding age", y = "dmft Index score", title = "dmft Index score by breastfeeding age")
+```
+
+Negative binomial regression
+
+```{r}
+#Subset the data for breastfeeding
+
+bfdata <- ensab %>%
+  dplyr::select(dmft, bf, age, sex, income, ses, insurance, region, location, ID_PERSONA, ID_HOGAR)
+
+modelbf1 <- glm.nb(data = bfdata, dmft ~ bf)
+summary(modelbf1)
+
+modelbf1a <- glm.nb(data = bfdata, dmft ~ bf + age)
+summary(modelbf1a)
+
+#age 5
+
+bf5 <- bfdata %>%
+  filter(age == 5)
+
+modelbf5 <- glm.nb(data = bf5, dmft ~ bf)
+summary(modelbf5)
+```
+
 
