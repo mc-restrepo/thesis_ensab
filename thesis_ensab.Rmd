@@ -291,7 +291,7 @@ M3_209:
 3: por revision/prevencion
 4: certificado odontologico
 
-M207 Is important: when was appointment of the child with the dentist?
+M207 Is important: when was the last appointment of the child with the dentist?
 1: less than a year ago
 2: between 1-2 years
 3: more than 3 years
@@ -307,10 +307,31 @@ ensab %>%
 ensab <- ensab %>%
   mutate(reason = factor(M3_209, 
     levels = c(1, 2, 3, 4), 
-    labels = c("Emergency", "Treatment", "Prevention", "Certification")))
+    labels = c("Emergency", "Treatment", "Prevention", "Certificate")))
 
 summary(ensab$reason)
 #2648 NAs
+
+ensab %>%
+  filter(!is.na(reason)) %>%
+  ggplot(aes(x = reason, y = dmft)) +
+  geom_boxplot() +
+  facet_wrap(~age) +
+  labs(x = "Reason for last consultation", y = "dmft Index score", title = "dmft Index score by reason for last consultation")
+
+#We will bring emergency and treatment into one category, and prevention and certificate into another
+
+ensab <- ensab %>%
+  mutate(
+    reason_grouped = case_when(
+      M3_209 %in% c(1, 2) ~ 1,  # Group Emergency and Treatment into 1
+      M3_209 %in% c(3, 4) ~ 2   # Group Prevention and Certificate into 2
+    ),
+    reason_grouped = factor(reason_grouped, levels = c(1, 2), labels = c("Emergency/Treatment", "Prevention/Certificate"))
+  )
+
+summary(ensab$reason_grouped)
+  
 ```
 
 Age of start of dental hygiene
@@ -645,6 +666,67 @@ model5m <- glm.nb(data = fdv5, dmft ~ agefdv + sex + income + ses + insurance + 
 summary(model5m)
 exp(model5m$coefficients)
 exp(confint(model5m))
+
+#Direct comparison between 0-12 and 13+
+
+diff_coef <- coef(model5m)["agefdv0-12"] - coef(model5m)["agefdv13+"]
+exp(diff_coef)
+
+
+diff_se <- sqrt(vcov(model5m)["agefdv0-12", "agefdv0-12"] + 
+                vcov(model5m)["agefdv13+", "agefdv13+"] - 
+                2 * vcov(model5m)["agefdv0-12", "agefdv13+"])
+
+lower_bound <- diff_coef - 1.96 * diff_se
+upper_bound <- diff_coef + 1.96 * diff_se
+
+exp(lower_bound)
+exp(upper_bound)
+
+#not statistically significant different
+```
+## Relationship between reason for last consultation and caries
+
+```{r}
+#subset the data to remove any NAs in reason
+
+reason0 <- ensab %>%
+  filter(!is.na(reason)) %>%
+    dplyr::select(dmft, agefdv, reason, age, sex, income, ses, insurance, region, location, ID_PERSONA, ID_HOGAR)
+
+#Checking agefdv categories
+
+summary(reason0$agefdv)
+
+#crude regression
+
+model0 <- glm.nb(data = reason0, dmft ~ reason)
+summary(model0)
+exp(model0$coefficients)
+exp(confint(model0))
+
+model0fdv <- glm.nb(data = reason0, dmft ~ agefdv)
+
+#now let's try to use the reason to adjust for reason of consultation for the first dental visit
+
+model0b <- glm.nb(data = reason0, dmft ~ reason + agefdv + age)
+summary(model0b)
+exp(model0b$coefficients)
+exp(confint(model0b))
+#It seems confounded by age
+
+# 5 years old 
+
+reason5 <- reason0 %>%
+  filter(age == 5)
+
+modelreason5 <- glm.nb(data = reason5, dmft ~ agefdv)
+summary(modelreason5)
+
+modelreason5b <- glm.nb(data = reason5, dmft ~ reason + agefdv)
+summary(modelreason5b)
+#the association is mostly explained by the reason of the last visit and age
+
 
 ```
 
