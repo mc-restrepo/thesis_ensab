@@ -17,6 +17,8 @@ library(readr)
 #install package MASS if not installed previously
 if(!require(MASS)) install.packages("MASS")
 library(MASS)
+if(!require(survey)) install.packages("survey")
+library(survey)
 library(tidyverse)
 
 ninoscompleta <- read_delim(
@@ -206,6 +208,15 @@ ensab <- ensab %>%
 
 #only  3 children did not have the clinical examination portion. We'll exclude them. Now the sample size is 6443 children.
 ```
+## Account for survey design and weights
+
+```{r}
+survensab <- svydesign(ids = ~1, data = ensab, weights = ~Fex_fin)
+summary(survensab)
+glimpse(ensab)
+```
+
+
 #Key variables
 
 Age: M3_100C
@@ -229,7 +240,9 @@ summary(ensab$age)
 
 ## Posible exposures
 
-Age of first dental visit (agefdv). It is composed of:
+### Age of first dental visit (agefdv)
+
+It is composed of:
 - M3_206A: numeric
 - M3_206B: 1: months, 2: years
 
@@ -283,7 +296,7 @@ ensab <- ensab %>%
   dplyr::select(-M3_206B, -M3_206A)
 ```
 
-Reason for last consultation (reason)
+### Reason for last consultation (reason)
 
 M3_209: 
 1: por una urgencia
@@ -334,7 +347,7 @@ summary(ensab$reason_grouped)
   
 ```
 
-Age of start of dental hygiene
+### Age of start of dental hygiene = agehyg
 
 M3_213: units are months, continuous
 91: doesn't know
@@ -346,6 +359,17 @@ ensab %>%
   count()
 #385
 
+ensab %>%
+  filter(M3_213 == 91) %>%
+  count()
+#NA
+
+ensab %>%
+  group_by(age) %>%
+  filter(M3_213 == 92) %>%
+  count()
+#226 children at 1 years old have never gotten dental hygiene done, 4 at age 3 and 2 at age 5
+
 glimpse(ensab$M3_213)
 
 #create distribution
@@ -355,9 +379,38 @@ ensab %>%
   geom_histogram(fill = "skyblue", color = "black") +
   scale_x_continuous(breaks = seq(min(ensab$M3_213, na.rm = TRUE), max(ensab$M3_213, na.rm = TRUE), by = 6)) +
   labs(x = "Age of start of dental hygiene", y = "Participants", title = "Distribution of age of start of dental hygiene")
+
+#max value of M3_213 without 91 or 92 using summary only for M3_213
+
+ensab %>%
+  filter(!(M3_213 %in% c(91, 92))) %>%
+  summary()
+
+#Categorize into: never, 0-6 months, more than 6 months
+
+ensab <- ensab %>%
+  mutate(agehyg = case_when(
+    M3_213 == 91 ~ NA_real_,
+    M3_213 <= 6 ~ 1,
+    M3_213 > 6 & M3_213 <= 12 ~ 2,
+    M3_213 > 12 & M3_213 <= 36 ~ 3,
+    M3_213 == 92 ~ 4
+  )) %>%
+  mutate(agehyg = factor(agehyg, 
+                        levels = c(1, 2, 3, 4),
+                        labels = c( "0-6 months", "6-12 months", "+12 months", "Never")))
+
+#Proportions
+
+ensab %>%
+  group_by(age, agehyg) %>%
+  count() %>%
+  group_by(age) %>%
+  mutate(prop = n / sum(n) * 100)
+
 ```
 
-Information on toothpaste for the child:
+### Information on toothpaste for the child (tp_info)
 
 M3_219
 
@@ -375,7 +428,9 @@ ensab <- ensab %>%
 summary(ensab$tp_info)
 ```
 
-Breastfeeding age in months: M3_224
+### Breastfeeding age in months
+
+M3_224
 
 91: Never
 92: Doesn't know (NA)
@@ -424,7 +479,7 @@ summary(ensab$bf)
          
 ```
 
-Bottle use: M3_225, M3_226, M3_227, M3_227A-M3_227CU, and M3_228
+### Bottle use: M3_225, M3_226, M3_227, M3_227A-M3_227CU, and M3_228
 
 For M3_227, we want to include:
 - D: sugared drinks
@@ -462,7 +517,7 @@ ensab %>%
   
 ```
 
-Who does the dental hygiene
+### Who does the dental hygiene
 
 ## Possible confounders or EMM
 
@@ -579,6 +634,78 @@ summary(ensab$location)
 
 # Association between caries and possible exposures
 
+## Relationship between age of start of dental hygiene and caries (dmft)
+
+The hypothesis is that the later the start of dental hygiene, the higher the dmft index.
+
+```{r}
+
+#Relationship between age of start of dental hygiene and dmft
+
+ensab %>%
+  filter(!is.na(agehyg)) %>%
+  ggplot(aes(x = agehyg, y = dmft)) +
+  geom_boxplot() +
+  facet_wrap(~age) +
+  labs(x = "Age of start of dental hygiene", y = "dmft Index score", title = "dmft Index score by age of start of dental hygiene")
+
+```
+It looks like it is the case
+
+### Regression
+
+Negative binomial regression
+
+```{r}
+# Check for the whole sample first
+
+modelhyg0 <- glm.nb(data = ensab, dmft ~ agehyg + age)
+summary(modelhyg0)
+exp(modelhyg0$coefficients)
+exp(confint(modelhyg0))
+
+#multiple regression
+
+modelhyg0m <- glm.nb(data = ensab, dmft ~ agehyg + age + sex + income + ses + insurance + region + location)
+summary(modelhyg0m)
+exp(modelhyg0m$coefficients)
+exp(confint(modelhyg0m))
+
+#Now let's check for each age group
+
+#1 year old
+                       
+modelhyg1 <- glm.nb(data = ensab %>% filter(age == 1), dmft ~ agehyg)
+summary(modelhyg1)
+exp(modelhyg1$coefficients)
+exp(confint(modelhyg1))
+
+# 3 year old
+
+modelhyg3 <- glm.nb(data = ensab %>% filter(age == 3), dmft ~ agehyg)
+summary(modelhyg3)
+exp(modelhyg3$coefficients)
+exp(confint(modelhyg3))
+
+modelhyg3m <- glm.nb(data = ensab %>% filter(age == 3), dmft ~ agehyg + sex + income + ses + insurance + region + location)
+summary(modelhyg3m)
+exp(modelhyg3m$coefficients)
+exp(confint(modelhyg3m))
+
+# 5 year old
+
+modelhyg5 <- glm.nb(data = ensab %>% filter(age == 5), dmft ~ agehyg)
+summary(modelhyg5)
+exp(modelhyg5$coefficients)
+exp(confint(modelhyg5))
+
+modelhyg5m <- glm.nb(data = ensab %>% filter(age == 5), dmft ~ agehyg + sex + income + ses + insurance + region + location)
+summary(modelhyg5m)
+exp(modelhyg5m$coefficients)
+exp(confint(modelhyg5m))
+```
+
+
 ## Exploring the relationship between age of first appointment and caries (dmft)
 
 The hypothesis is that the older the child was at it's first appointment, the higher the dmft index.
@@ -596,7 +723,7 @@ The expected results are seen in children 1 years old. However, in children 5 ye
 
 It is probably better to explore the relationship by age category.
 
-## Negative binomial regression
+### Negative binomial regression
 
 Subsetting the data stratified by age group: 
 
