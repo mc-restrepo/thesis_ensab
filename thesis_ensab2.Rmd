@@ -1,7 +1,7 @@
 ---
 title: "ENSAB"
 author: "Maria Camila Restrepo"
-date: "2024-11-30"
+date: "2025-02-05"
 output: html_document
 ---
 
@@ -14,12 +14,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(here)
 library(readr)
-#install package MASS if not installed previously
+library(tidyverse)
 if(!require(MASS)) install.packages("MASS")
 library(MASS)
 if(!require(survey)) install.packages("survey")
 library(survey)
-library(tidyverse)
 
 ninoscompleta <- read_delim(
   here("ensab", "M3_NINOS.txt"), 
@@ -59,23 +58,15 @@ Keep variables:
 - MPIO
 - DPTO
 - M3_100C: age
-- M3_113E: regimen del ppal responsable economico
+- M3_113D: grupo etnico
 - M3_113F: maximo nivel educativo alcanzado por el ppal responsable economico
 - M3_119: ingresos mensuales ppal responsable economico
-- M3_205: ha tenido cita con odontologo
-- M3_206A: Edad de primera cita
-- M3_206B: Meses o años. 1: meses, 2 años.
-- M3_208: Lugar de consulta
-- M3_209: Motivo de connsulta
-- M3_210: No atencion
-- M3_213: Edad de comenzar higiene
-- M3_214: Quien hace higiene
+- M3_201: Where does the child spend most of their time
+- M3_202: With whom does the child spend most of their time
 - M3_224: Lactancia materna edad
-- M3_218: Informacion sobre tipo de crema dental
 - M3_225: Biberon
 - M3_226: Biberon edad
 - M3_227: Que le dan en el biberon. 227A-227CU
-- Clase: cabecera, cp, rural
 - Region: a donde pertenece el municipio
 - Subreg:
 - Municipio:
@@ -91,11 +82,9 @@ Keep variables:
 
 Grupo etareo was excluded because it is the same as age.
 
-Hogar has the same basic variables, so we wont join it for now.
-
 ```{r}
 ninos <- ninoscompleta %>% 
-  dplyr::select(ÿDANE, MPIO, DPTO, M3_100C, M3_113E, M3_113F, M3_119, M3_205, M3_206A, M3_206B, M3_207, M3_208, M3_209, M3_210, M3_213, M3_214, M3_218, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, Clase, Region, Subreg, Municipio, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA)
+  dplyr::select(ÿDANE, MPIO, DPTO, M3_100C, M3_113D, M3_113E, M3_113F, M3_119, M3_201, M3_202, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, Region, Subreg, Municipio, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA)
 
 glimpse(ninos)
 
@@ -109,6 +98,21 @@ ninoscompleta %>%
 ninos <- ninos %>%
   rename(census_mpio = ÿDANE)
 ```
+
+Hogar has the same basic variables, so we wont join it for now.
+
+Exploring hogar:
+
+```{r}
+#Ethnicity
+
+hogarcompleta %>%
+  group_by(M1_303D) %>%
+  count()
+
+#14238 NAs. Won't use it
+```
+
 
 ## Main outcome: dmft index
 
@@ -138,12 +142,6 @@ antecedentes médicos). 1: se aplica el examen. 2: no se aplica el examen.
 ```{r}
 examen13 <- examen13completa %>% 
   dplyr::select(MA_201B, MA_208, MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J, MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J, ID_HOGAR, ID_PERSONA)
-
-#Counting how many children have respiratory infections, to maybe look at the association between Enfermedades respiratorias (asma, bronquitis, neumonía) and caries
-
-examen13 %>%
-  filter(MA_201B == 1) %>%
-  count()
 
 #Assign a value to 1 to the following letters: B, C, D, E, G
 examen13 <- examen13 %>%
@@ -273,195 +271,7 @@ summary(ensab$age)
 ```
 
 
-## Posible exposures
-
-### Age of first dental visit (agefdv)
-
-It is composed of:
-- M3_206A: numeric
-- M3_206B: 1: months, 2: years
-
-Take into account M3_205: have they ever had an appointment with a dentist?  
-1: yes, 2: no, 3: doesn't know
-
-Combine 206A and 205 to categorize.
-
-```{r}
-
-#Turn M3_206A into a numeric variable
-ensab$M3_206A <- as.numeric(ensab$M3_206A)
-
-summary(ensab$M3_206A)
-
-ensab %>%
-  filter(M3_205 == 2 | M3_205 == 3) %>%
-  count()
-#2648: coincides with the number of NAs
-
-ensab %>%
-  filter(M3_205 == 3) %>%
-  count()
-#only 46 participants have missing values for M3_205
-
-#multiply values in the filtered rows by 12 and categorize
-ensab <- ensab %>%
-  mutate(agefdv = if_else(M3_206B == 2, M3_206A * 12, M3_206A))
-
-ggplot(ensab, aes(x = agefdv)) +
-  geom_histogram(fill = "skyblue", color = "black") +
-  scale_x_continuous(breaks = seq(min(ensab$agefdv, na.rm = TRUE), max(ensab$agefdv, na.rm = TRUE), by = 6)) +
-  labs(x = "Age of first dental visit", y = "Participants", title = "Distribution of age of first dental visit")
-
-# can do bins 0-6, 7-12, 13-24, 25-36, 37-48, 49-72, or just divide into 3.
-
-ensab <- ensab %>%
-  mutate(agefdv = case_when(
-    M3_205 == 3 ~ NA_real_,
-    M3_205 == 2 ~ 0,
-    agefdv <= 12 ~ 1,
-    agefdv > 12 ~ 2,
-    TRUE ~ agefdv)) %>%
-  mutate(agefdv = factor(agefdv, 
-                         levels = c(0, 1, 2), 
-                         labels = c("Never", "0-12", "13+")))
-
-summary(ensab$agefdv)
-
-ensab <- ensab %>%
-  dplyr::select(-M3_206B, -M3_206A)
-```
-
-### Reason for last consultation (reason)
-
-M3_209: 
-1: por una urgencia
-2: para un tratamiento
-3: por revision/prevencion
-4: certificado odontologico
-
-M207 Is important: when was the last appointment of the child with the dentist?
-1: less than a year ago
-2: between 1-2 years
-3: more than 3 years
-4: does not remember (NA)
-
-```{r}
-ensab %>%
-  filter(M3_207 == 4) %>%
-  count()
-
-#45 NAs to be expected in M3_209
-
-ensab <- ensab %>%
-  mutate(reason = factor(M3_209, 
-    levels = c(1, 2, 3, 4), 
-    labels = c("Emergency", "Treatment", "Prevention", "Certificate")))
-
-summary(ensab$reason)
-#2648 NAs
-
-ensab %>%
-  filter(!is.na(reason)) %>%
-  ggplot(aes(x = reason, y = dmft)) +
-  geom_boxplot() +
-  facet_wrap(~age) +
-  labs(x = "Reason for last consultation", y = "dmft Index score", title = "dmft Index score by reason for last consultation")
-
-#We will bring emergency and treatment into one category, and prevention and certificate into another
-
-ensab <- ensab %>%
-  mutate(
-    reason_grouped = case_when(
-      M3_209 %in% c(1, 2) ~ 1,  # Group Emergency and Treatment into 1
-      M3_209 %in% c(3, 4) ~ 2   # Group Prevention and Certificate into 2
-    ),
-    reason_grouped = factor(reason_grouped, levels = c(1, 2), labels = c("Emergency/Treatment", "Prevention/Certificate"))
-  )
-
-summary(ensab$reason_grouped)
-  
-```
-
-### Age of start of dental hygiene = agehyg
-
-M3_213: units are months, continuous
-91: doesn't know
-92: has never gotten dental hygiene done
-
-```{r}
-ensab %>%
-  filter(M3_213 == 91 | M3_213 == 92) %>%
-  count()
-#385
-
-ensab %>%
-  filter(M3_213 == 91) %>%
-  count()
-#NA
-
-ensab %>%
-  group_by(age) %>%
-  filter(M3_213 == 92) %>%
-  count()
-#226 children at 1 years old have never gotten dental hygiene done, 4 at age 3 and 2 at age 5
-
-glimpse(ensab$M3_213)
-
-#create distribution
-ensab %>%
-  filter(!(M3_213 %in% c(91, 92))) %>%
-  ggplot(aes(x = M3_213)) +
-  geom_histogram(fill = "skyblue", color = "black") +
-  scale_x_continuous(breaks = seq(min(ensab$M3_213, na.rm = TRUE), max(ensab$M3_213, na.rm = TRUE), by = 6)) +
-  labs(x = "Age of start of dental hygiene", y = "Participants", title = "Distribution of age of start of dental hygiene")
-
-#max value of M3_213 without 91 or 92 using summary only for M3_213
-
-ensab %>%
-  filter(!(M3_213 %in% c(91, 92))) %>%
-  summary()
-
-#Categorize into: never, 0-6 months, more than 6 months
-
-ensab <- ensab %>%
-  mutate(agehyg = case_when(
-    M3_213 == 91 ~ NA_real_,
-    M3_213 <= 6 ~ 1,
-    M3_213 > 6 & M3_213 <= 12 ~ 2,
-    M3_213 > 12 & M3_213 <= 36 ~ 3,
-    M3_213 == 92 ~ 4
-  )) %>%
-  mutate(agehyg = factor(agehyg, 
-                        levels = c(1, 2, 3, 4),
-                        labels = c( "0-6 months", "6-12 months", "+12 months", "Never")))
-
-#Proportions
-
-ensab %>%
-  group_by(age, agehyg) %>%
-  count() %>%
-  group_by(age) %>%
-  mutate(prop = n / sum(n) * 100)
-
-```
-
-### Information on toothpaste for the child (tp_info)
-
-M3_219
-
-```{r}
-glimpse(ensab$M3_218)
-
-ensab <- ensab %>%
-  mutate(tp_info = case_when(
-    M3_218 == 3 ~ NA,
-    TRUE ~ M3_218)) %>%
-  mutate(tp_info = factor(tp_info,
-                          levels = c(1, 2),
-                          labels = c("Yes", "No")))
-
-summary(ensab$tp_info)
-```
+## Exposure
 
 ### Breastfeeding age in months
 
@@ -564,16 +374,16 @@ ensab %>%
 
 glimpse(ensab$M3_227CU)
 
-ensab %>%
-  filter(M3_227G == 1) %>%
-  select(M3_227G, M3_227CU, ID_PERSONA) %>% #order M3_227CU in alphabetical order
-  distinct(M3_227CU)
+#ensab %>%
+#  filter(M3_227G == 1) %>%
+#  select(M3_227G, M3_227CU, ID_PERSONA) %>% #order M3_227CU in alphabetical order
+#  distinct(M3_227CU)
   
 ```
 
-### Who does the dental hygiene
-
 ## Possible confounders or EMM
+
+### Demographic variables
 
 Sex: Sexo
 
@@ -589,6 +399,20 @@ ensab <- ensab %>%
 
 summary(ensab$sex)
 ```
+
+Ethnicity: M3_113D
+
+Decided not to include ethnicity because of 5772 missing values
+
+```{r}
+glimpse(ensab$M3_113D)
+
+ensab %>%
+  group_by(M3_113D) %>%
+  count()
+```
+
+### Socioeconomic position
 
 Socioeconomic status: EST_SE_2
 ```{r}
@@ -609,10 +433,14 @@ NMW: national minimum wage (salario minimo legal vigente)
 ```{r}
 glimpse(ensab$M3_119)
 
+ensab %>%
+  group_by(M3_119) %>%
+  count()
+
 #8 are NAs
 ensab %>%
   filter(M3_119 == 8) %>%
-  count()
+  count() #95 NAs
 
 #transform 7 unemployed into 0
 
@@ -628,6 +456,20 @@ ensab <- ensab %>%
 summary(ensab$income)
 
 ```
+
+Educational level of the provider: M3_113F
+
+Decided to exclude because there are 5772 missing values
+
+```{r}
+glimpse(ensab$M3_113F)
+
+ensab %>%
+  group_by(M3_113F) %>%
+  count()
+
+```
+
 
 Health insurance coverage/scheme:
 
@@ -686,312 +528,40 @@ ensab <- ensab %>%
 summary(ensab$location)
 ```
 
-# Association between caries and possible exposures
+### Potentially interesting variables to check for EMM
 
-## Relationship between age of start of dental hygiene and caries (dmft)
+M3_201: Where the child spends most of their time
+Could categorize into home or not home
 
-The hypothesis is that the later the start of dental hygiene, the higher the dmft index.
+M3_202: Who takes care of the child
+1: Mother or father
+2: Relative who is overage
 
 ```{r}
-
-#Relationship between age of start of dental hygiene and dmft
+ensab %>%
+  group_by(M3_201) %>%
+  count()
 
 ensab %>%
-  filter(!is.na(agehyg)) %>%
-  ggplot(aes(x = agehyg, y = dmft)) +
-  geom_boxplot() +
-  facet_wrap(~age) +
-  labs(x = "Age of start of dental hygiene", y = "dmft Index score", title = "dmft Index score by age of start of dental hygiene")
-
-```
-It looks like it is the case
-
-### Regression
-
-Negative binomial regression
-
-```{r}
-# Check for the whole sample first
-
-modelhyg0 <- glm.nb(data = ensab, dmft ~ agehyg + age)
-summary(modelhyg0)
-exp(modelhyg0$coefficients)
-exp(confint(modelhyg0))
-
-#multiple regression
-
-modelhyg0m <- glm.nb(data = ensab, dmft ~ agehyg + age + sex + income + ses + insurance + region + location)
-summary(modelhyg0m)
-exp(modelhyg0m$coefficients)
-exp(confint(modelhyg0m))
-
-#Now let's check for each age group
-
-#1 year old
-                       
-modelhyg1 <- glm.nb(data = ensab %>% filter(age == 1), dmft ~ agehyg)
-summary(modelhyg1)
-exp(modelhyg1$coefficients)
-exp(confint(modelhyg1))
-
-# 3 year old
-
-modelhyg3 <- glm.nb(data = ensab %>% filter(age == 3), dmft ~ agehyg)
-summary(modelhyg3)
-exp(modelhyg3$coefficients)
-exp(confint(modelhyg3))
-
-modelhyg3m <- glm.nb(data = ensab %>% filter(age == 3), dmft ~ agehyg + sex + income + ses + insurance + region + location)
-summary(modelhyg3m)
-exp(modelhyg3m$coefficients)
-exp(confint(modelhyg3m))
-
-# 5 year old
-
-modelhyg5 <- glm.nb(data = ensab %>% filter(age == 5), dmft ~ agehyg)
-summary(modelhyg5)
-exp(modelhyg5$coefficients)
-exp(confint(modelhyg5))
-
-modelhyg5m <- glm.nb(data = ensab %>% filter(age == 5), dmft ~ agehyg + sex + income + ses + insurance + region + location)
-summary(modelhyg5m)
-exp(modelhyg5m$coefficients)
-exp(confint(modelhyg5m))
+  group_by(M3_202) %>%
+  count()
 ```
 
+
+# Association between caries and possible exposures
 
 ## Exploring the relationship between age of first appointment and caries (dmft)
 
 The hypothesis is that the older the child was at it's first appointment, the higher the dmft index.
 
-```{r}
 ensab %>%
   filter(!is.na(agefdv)) %>%
 ggplot(aes(x=agefdv, y=dmft)) +
   geom_boxplot() +
   facet_wrap(~age) +
   labs(x = "Age of first dental visit", y = "dmft Index score", title = "dmft Index score by age of first dental visit")
-```
-
-The expected results are seen in children 1 years old. However, in children 5 years old the children with the lowest median dmft are those in the "never" category. This can probably be confounded by the reason for the last dental appointment. 
-
-It is probably better to explore the relationship by age category.
-
-### Negative binomial regression
-
-Subsetting the data stratified by age group: 
 
 ```{r}
 
-#Subset the data for first dental visit
-
-fdv <- ensab %>%
-  dplyr::select(dmft, agefdv, age, sex, income, ses, insurance, region, location, ID_PERSONA, ID_HOGAR)
-
-#by age group
-
-fdv1 <- fdv %>%
-  filter(age == 1)
-
-fdv3 <- fdv %>%
-  filter(age == 3)
-
-fdv5 <- fdv %>%
-  filter(age == 5)
 ```
-
-Negative binomial models: crude and adjusted
-
-MASS package used
-
-```{r}
-# Crude negative binomial regression age 1
-model1 <- glm.nb(dmft ~ agefdv, data = fdv1)
-
-summary(model1)
-exp(model1$coefficients)
-exp(confint(model1))
-#theta is 0.03 so there is a lot of overdispersion
-
-#Multiple negative binomial regression (adjusted model)
-model1m <- glm.nb(data = fdv1, dmft ~ agefdv + sex + income + ses + insurance + region + location)
-
-summary(model1m)
-exp(model1m$coefficients)
-#exp(confint(model1m)) is failing to converge
-
-# Negative binomial regression age 3
-
-model3 <- glm.nb(dmft ~ agefdv, data = fdv3)
-
-summary(model3)
-exp(model3$coefficients)
-exp(confint(model3))
-
-model3m <- glm.nb(data = fdv3, dmft ~ agefdv + sex + income + ses + insurance + region + location)
-
-summary(model3m)
-exp(model3m$coefficients)
-exp(confint(model3m))
-
-#Negative binomial regression age 5
-
-model5 <- glm.nb(dmft ~ agefdv, data = fdv5)
-
-summary(model5)
-exp(model5$coefficients)
-exp(confint(model5))
-
-model5m <- glm.nb(data = fdv5, dmft ~ agefdv + sex + income + ses + insurance + region + location)
-
-summary(model5m)
-exp(model5m$coefficients)
-exp(confint(model5m))
-
-#Direct comparison between 0-12 and 13+
-
-diff_coef <- coef(model5m)["agefdv0-12"] - coef(model5m)["agefdv13+"]
-exp(diff_coef)
-
-
-diff_se <- sqrt(vcov(model5m)["agefdv0-12", "agefdv0-12"] + 
-                vcov(model5m)["agefdv13+", "agefdv13+"] - 
-                2 * vcov(model5m)["agefdv0-12", "agefdv13+"])
-
-lower_bound <- diff_coef - 1.96 * diff_se
-upper_bound <- diff_coef + 1.96 * diff_se
-
-exp(lower_bound)
-exp(upper_bound)
-
-#not statistically significant different
-```
-## Relationship between reason for last consultation and caries
-
-```{r}
-#subset the data to remove any NAs in reason
-
-reason0 <- ensab %>%
-  filter(!is.na(reason)) %>%
-    dplyr::select(dmft, agefdv, reason, age, sex, income, ses, insurance, region, location, ID_PERSONA, ID_HOGAR)
-
-#Checking agefdv categories
-
-summary(reason0$agefdv)
-
-#crude regression
-
-model0 <- glm.nb(data = reason0, dmft ~ reason)
-summary(model0)
-exp(model0$coefficients)
-exp(confint(model0))
-
-model0fdv <- glm.nb(data = reason0, dmft ~ agefdv)
-
-#now let's try to use the reason to adjust for reason of consultation for the first dental visit
-
-model0b <- glm.nb(data = reason0, dmft ~ reason + agefdv + age)
-summary(model0b)
-exp(model0b$coefficients)
-exp(confint(model0b))
-#It seems confounded by age
-
-# 5 years old 
-
-reason5 <- reason0 %>%
-  filter(age == 5)
-
-modelreason5 <- glm.nb(data = reason5, dmft ~ agefdv)
-summary(modelreason5)
-
-modelreason5b <- glm.nb(data = reason5, dmft ~ reason + agefdv)
-summary(modelreason5b)
-#the association is mostly explained by the reason of the last visit and age
-
-
-```
-
-## Relationship between education on type of toothpaste and caries
-
-```{r}
-ensab %>%
-  filter(!is.na(tp_info)) %>%
-  ggplot(aes(x = tp_info, y = dmft)) +
-  facet_wrap(~age) +
-  geom_boxplot() +
-  labs(x = "Information on toothpaste", y = "dmft Index score", title = "dmft Index score by information on toothpaste")
-
-glimpse(ensab)
-```
-
-Negative binomial regression
-
-```{r}
-#Subset the data for toothpaste information
-
-tp <- ensab %>%
-  dplyr::select(dmft, tp_info, age, sex, income, ses, insurance, region, location, ID_PERSONA, ID_HOGAR)
-
-modeltp1 <- glm.nb(data = tp, dmft ~ tp_info)
-summary(modeltp1)
-
-#ages 5
-
-tp5 <- tp %>%
-  filter(age == 5)
-
-modeltp5 <- glm.nb(data = tp5, dmft ~ tp_info)
-summary(modeltp5)
-exp(modeltp5$coefficients)
-exp(confint(modeltp5))
-#not statistically significant
-
-modeltp5m <- glm.nb(data = tp5, dmft ~ tp_info + sex + income + ses + insurance + region + location)
-summary(modeltp5m)
-
-#the relationship is attenuated after adjusting for confounders
-
-#ages 3 and 5 
-
-tp35 <- tp %>%
-  filter(age == 5 | age == 3)
-
-modeltp35 <- glm.nb(data = tp35, dmft ~ tp_info)
-summary(modeltp35)
-```
-
-## Relationship between breastfeeding and caries
-
-```{r}
-ensab %>%
-  filter(!is.na(bf)) %>%
-  ggplot(aes(x = bf, y = dmft)) +
-  facet_wrap(~age) +
-  geom_boxplot() +
-  labs(x = "Breastfeeding age", y = "dmft Index score", title = "dmft Index score by breastfeeding age")
-```
-
-Negative binomial regression
-
-```{r}
-#Subset the data for breastfeeding
-
-bfdata <- ensab %>%
-  dplyr::select(dmft, bf, age, sex, income, ses, insurance, region, location, ID_PERSONA, ID_HOGAR)
-
-modelbf1 <- glm.nb(data = bfdata, dmft ~ bf)
-summary(modelbf1)
-
-modelbf1a <- glm.nb(data = bfdata, dmft ~ bf + age)
-summary(modelbf1a)
-
-#age 5
-
-bf5 <- bfdata %>%
-  filter(age == 5)
-
-modelbf5 <- glm.nb(data = bf5, dmft ~ bf)
-summary(modelbf5)
-```
-
 
