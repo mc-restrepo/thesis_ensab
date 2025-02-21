@@ -643,6 +643,8 @@ economico</li>
 <li>M3_225: Biberon</li>
 <li>M3_226: Biberon edad</li>
 <li>M3_227: Que le dan en el biberon. 227A-227CU</li>
+<li>M3_229: Nutrition</li>
+<li>Grandesciudades: DANE big city identificator</li>
 <li>Region: a donde pertenece el municipio</li>
 <li>Subreg:</li>
 <li>Municipio:</li>
@@ -658,45 +660,64 @@ economico</li>
 </ul>
 <p>Grupo etareo was excluded because it is the same as age.</p>
 <pre class="r"><code>ninos &lt;- ninoscompleta %&gt;% 
-  dplyr::select(ÿDANE, MPIO, DPTO, M3_100C, M3_113D, M3_113E, M3_113F, M3_119, M3_201, M3_202, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, Region, Subreg, Municipio, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA)
+  dplyr::select(ÿDANE, MPIO, DPTO, M3_100C, M3_113D, M3_113E, M3_113F, M3_119, M3_201, M3_202, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, M3_229AA, M3_229AB, M3_229BA, M3_229BB, M3_229CA, M3_229CB, M3_229DA, M3_229DB, M3_229EA, M3_229EB, M3_229FA, M3_229FB, M3_229GA, M3_229GB, M3_229HA, M3_229HB, M3_229IA, M3_229IB, Region, Subreg, Municipio, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA, Grandesciudades)
 
 glimpse(ninos)</code></pre>
 <pre><code>## Rows: 6,446
-## Columns: 34
-## $ ÿDANE      &lt;dbl&gt; 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001,…
-## $ MPIO       &lt;chr&gt; &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;,…
-## $ DPTO       &lt;chr&gt; &quot;ANTIOQUIA&quot;, &quot;ANTIOQUIA&quot;, &quot;ANTIOQUIA&quot;, &quot;ANTIOQUIA&quot;, &quot;ANTIOQ…
-## $ M3_100C    &lt;dbl&gt; 5, 3, 5, 5, 1, 5, 3, 5, 1, 5, 5, 1, 3, 3, 1, 1, 1, 5, 5, 1,…
-## $ M3_113D    &lt;chr&gt; &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;5&quot;, &quot;NULL&quot;…
-## $ M3_113E    &lt;chr&gt; &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;6&quot;, &quot;NULL&quot;…
-## $ M3_113F    &lt;chr&gt; &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;6&quot;, &quot;NULL&quot;…
-## $ M3_119     &lt;dbl&gt; 3, 2, 2, 2, 3, 1, 8, 2, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2, 3, 2,…
-## $ M3_201     &lt;dbl&gt; 3, 1, 3, 3, 3, 1, 3, 3, 3, 1, 1, 3, 1, 3, 3, 3, 3, 1, 1, 3,…
-## $ M3_202     &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 1, 1, 1, 1, 1,…
-## $ M3_224     &lt;dbl&gt; 0, 6, 6, 4, 7, 5, 6, 6, 1, 8, 6, 1, 5, 0, 4, 7, 6, 6, 91, 1…
-## $ M3_225     &lt;dbl&gt; 2, 2, 2, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1,…
-## $ M3_226     &lt;chr&gt; &quot;24&quot;, &quot;91&quot;, &quot;36&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;18&quot;, &quot;18&quot;, &quot;12&quot;, &quot;NULL&quot;,…
-## $ M3_227     &lt;chr&gt; &quot;ABD&quot;, NA, &quot;ABD&quot;, &quot;CD&quot;, &quot;ABCDEF&quot;, &quot;CDF&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;BCD&quot;,…
-## $ M3_227A    &lt;chr&gt; &quot;1&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;…
-## $ M3_227B    &lt;chr&gt; &quot;1&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;1&quot;, &quot;…
-## $ M3_227C    &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;0&quot;, &quot;…
-## $ M3_227D    &lt;chr&gt; &quot;1&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;0&quot;, &quot;…
-## $ M3_227E    &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;…
-## $ M3_227F    &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;…
-## $ M3_227G    &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;…
-## $ M3_227CU   &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
-## $ Region     &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,…
-## $ Subreg     &lt;dbl&gt; 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,…
-## $ Municipio  &lt;chr&gt; &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;,…
-## $ Estrato    &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,…
-## $ Fex_fin    &lt;dbl&gt; 781.6325, 611.0403, 450.3112, 450.3112, 859.2290, 884.7179,…
-## $ Sexo       &lt;dbl&gt; 2, 2, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 2, 2, 1, 2,…
-## $ Zona       &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…
-## $ EST_SE_2   &lt;dbl&gt; 2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,…
-## $ FRACCION   &lt;dbl&gt; 2, 2, 2, 8, 8, 8, 2, 8, 2, 2, 2, 8, 1, 2, 2, 2, 10, 2, 2, 2…
-## $ REGIMEN    &lt;dbl&gt; 4, 1, 2, 2, 2, 2, 2, 2, 1, 2, 1, 4, 1, 1, 1, 1, 4, 2, 1, 1,…
-## $ ID_HOGAR   &lt;dbl&gt; 100501, 103701, 106801, 107101, 201201, 201301, 2205301, 22…
-## $ ID_PERSONA &lt;dbl&gt; 10050103, 10370104, 10680106, 10710103, 20120104, 20130104,…</code></pre>
+## Columns: 53
+## $ ÿDANE           &lt;dbl&gt; 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001, …
+## $ MPIO            &lt;chr&gt; &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDEL…
+## $ DPTO            &lt;chr&gt; &quot;ANTIOQUIA&quot;, &quot;ANTIOQUIA&quot;, &quot;ANTIOQUIA&quot;, &quot;ANTIOQUIA&quot;, &quot;A…
+## $ M3_100C         &lt;dbl&gt; 5, 3, 5, 5, 1, 5, 3, 5, 1, 5, 5, 1, 3, 3, 1, 1, 1, 5, …
+## $ M3_113D         &lt;chr&gt; &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;5&quot;, &quot;…
+## $ M3_113E         &lt;chr&gt; &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;6&quot;, &quot;…
+## $ M3_113F         &lt;chr&gt; &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;6&quot;, &quot;…
+## $ M3_119          &lt;dbl&gt; 3, 2, 2, 2, 3, 1, 8, 2, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2, …
+## $ M3_201          &lt;dbl&gt; 3, 1, 3, 3, 3, 1, 3, 3, 3, 1, 1, 3, 1, 3, 3, 3, 3, 1, …
+## $ M3_202          &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 1, 1, 1, …
+## $ M3_224          &lt;dbl&gt; 0, 6, 6, 4, 7, 5, 6, 6, 1, 8, 6, 1, 5, 0, 4, 7, 6, 6, …
+## $ M3_225          &lt;dbl&gt; 2, 2, 2, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, …
+## $ M3_226          &lt;chr&gt; &quot;24&quot;, &quot;91&quot;, &quot;36&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;18&quot;, &quot;18&quot;, &quot;12&quot;, &quot;N…
+## $ M3_227          &lt;chr&gt; &quot;ABD&quot;, NA, &quot;ABD&quot;, &quot;CD&quot;, &quot;ABCDEF&quot;, &quot;CDF&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;…
+## $ M3_227A         &lt;chr&gt; &quot;1&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;…
+## $ M3_227B         &lt;chr&gt; &quot;1&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;…
+## $ M3_227C         &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;…
+## $ M3_227D         &lt;chr&gt; &quot;1&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;…
+## $ M3_227E         &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;…
+## $ M3_227F         &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;…
+## $ M3_227G         &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;…
+## $ M3_227CU        &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ M3_229AA        &lt;dbl&gt; 4, 3, 4, 4, 4, 4, 4, 4, 4, 3, 4, 3, 4, 4, 4, 4, 4, 4, …
+## $ M3_229AB        &lt;chr&gt; &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;,…
+## $ M3_229BA        &lt;dbl&gt; 4, 3, 4, 3, 4, 2, 4, 3, 4, 4, 4, 3, 4, 4, 4, 4, 3, 2, …
+## $ M3_229BB        &lt;chr&gt; &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;,…
+## $ M3_229CA        &lt;dbl&gt; 4, 4, 4, 3, 3, 3, 4, 4, 4, 4, 4, 3, 4, 3, 3, 3, 4, 2, …
+## $ M3_229CB        &lt;chr&gt; &quot;2&quot;, &quot;2&quot;, &quot;1&quot;, &quot;1&quot;, &quot;2&quot;, &quot;2&quot;, &quot;1&quot;, &quot;1&quot;, &quot;2&quot;, &quot;2&quot;, &quot;1&quot;,…
+## $ M3_229DA        &lt;dbl&gt; 4, 3, 4, 2, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 3, 4, 4, …
+## $ M3_229DB        &lt;chr&gt; &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;2&quot;,…
+## $ M3_229EA        &lt;dbl&gt; 4, 3, 4, 4, 3, 3, 3, 4, 4, 4, 4, 3, 4, 4, 4, 3, 3, 3, …
+## $ M3_229EB        &lt;chr&gt; &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;1&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;2&quot;,…
+## $ M3_229FA        &lt;dbl&gt; 4, 2, 2, 4, 4, 4, 4, 4, 4, 4, 4, 2, 4, 3, 1, 4, 4, 4, …
+## $ M3_229FB        &lt;chr&gt; &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;,…
+## $ M3_229GA        &lt;dbl&gt; 4, 4, 3, 4, 4, 2, 4, 4, 4, 4, 3, 3, 4, 4, 4, 3, 3, 1, …
+## $ M3_229GB        &lt;chr&gt; &quot;2&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;,…
+## $ M3_229HA        &lt;dbl&gt; 1, 3, 1, 3, 1, 3, 2, 4, 1, 3, 3, 2, 3, 3, 1, 1, 2, 3, …
+## $ M3_229HB        &lt;chr&gt; &quot;NULL&quot;, &quot;2&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;NULL&quot;, &quot;2&quot;, &quot;1&quot;, &quot;1&quot;, &quot;NULL…
+## $ M3_229IA        &lt;dbl&gt; 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, …
+## $ M3_229IB        &lt;chr&gt; &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;2&quot;, &quot;1&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;, &quot;2&quot;,…
+## $ Region          &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, …
+## $ Subreg          &lt;dbl&gt; 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12…
+## $ Municipio       &lt;chr&gt; &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDEL…
+## $ Estrato         &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, …
+## $ Fex_fin         &lt;dbl&gt; 781.6325, 611.0403, 450.3112, 450.3112, 859.2290, 884.…
+## $ Sexo            &lt;dbl&gt; 2, 2, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 2, 2, …
+## $ Zona            &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+## $ EST_SE_2        &lt;dbl&gt; 2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, …
+## $ FRACCION        &lt;dbl&gt; 2, 2, 2, 8, 8, 8, 2, 8, 2, 2, 2, 8, 1, 2, 2, 2, 10, 2,…
+## $ REGIMEN         &lt;dbl&gt; 4, 1, 2, 2, 2, 2, 2, 2, 1, 2, 1, 4, 1, 1, 1, 1, 4, 2, …
+## $ ID_HOGAR        &lt;dbl&gt; 100501, 103701, 106801, 107101, 201201, 201301, 220530…
+## $ ID_PERSONA      &lt;dbl&gt; 10050103, 10370104, 10680106, 10710103, 20120104, 2013…
+## $ Grandesciudades &lt;dbl&gt; 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001, …</code></pre>
 <pre class="r"><code>ninoscompleta %&gt;%
   group_by(MPIO) %&gt;%
   summarise(unique_DANE = n_distinct(ÿDANE)) %&gt;%
@@ -898,54 +919,20 @@ summary(survensab)</code></pre>
 ## design.PSU   60   64   42  15   7   3  1  1  1  1   1
 ## actual.PSU   60   64   42  15   7   3  1  1  1  1   1
 ## Data variables:
-##  [1] &quot;census_mpio&quot; &quot;MPIO&quot;        &quot;DPTO&quot;        &quot;M3_100C&quot;     &quot;M3_113D&quot;    
-##  [6] &quot;M3_113E&quot;     &quot;M3_113F&quot;     &quot;M3_119&quot;      &quot;M3_201&quot;      &quot;M3_202&quot;     
-## [11] &quot;M3_224&quot;      &quot;M3_225&quot;      &quot;M3_226&quot;      &quot;M3_227&quot;      &quot;M3_227A&quot;    
-## [16] &quot;M3_227B&quot;     &quot;M3_227C&quot;     &quot;M3_227D&quot;     &quot;M3_227E&quot;     &quot;M3_227F&quot;    
-## [21] &quot;M3_227G&quot;     &quot;M3_227CU&quot;    &quot;Region&quot;      &quot;Subreg&quot;      &quot;Municipio&quot;  
-## [26] &quot;Estrato&quot;     &quot;Fex_fin&quot;     &quot;Sexo&quot;        &quot;Zona&quot;        &quot;EST_SE_2&quot;   
-## [31] &quot;FRACCION&quot;    &quot;REGIMEN&quot;     &quot;ID_PERSONA&quot;  &quot;MA_201B&quot;     &quot;MB_201B&quot;    
-## [36] &quot;ID_HOGAR&quot;    &quot;dmft&quot;</code></pre>
-<pre class="r"><code>glimpse(ensab)</code></pre>
-<pre><code>## Rows: 6,443
-## Columns: 37
-## $ census_mpio &lt;dbl&gt; 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001, 5001…
-## $ MPIO        &lt;chr&gt; &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;…
-## $ DPTO        &lt;chr&gt; &quot;ANTIOQUIA&quot;, &quot;ANTIOQUIA&quot;, &quot;ANTIOQUIA&quot;, &quot;ANTIOQUIA&quot;, &quot;ANTIO…
-## $ M3_100C     &lt;dbl&gt; 5, 3, 5, 5, 1, 5, 3, 5, 1, 5, 5, 1, 3, 3, 1, 1, 1, 5, 5, 1…
-## $ M3_113D     &lt;chr&gt; &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;5&quot;, &quot;NULL…
-## $ M3_113E     &lt;chr&gt; &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;6&quot;, &quot;NULL…
-## $ M3_113F     &lt;chr&gt; &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;6&quot;, &quot;NULL…
-## $ M3_119      &lt;dbl&gt; 3, 2, 2, 2, 3, 1, 8, 2, 3, 2, 2, 1, 3, 3, 3, 3, 2, 2, 3, 2…
-## $ M3_201      &lt;dbl&gt; 3, 1, 3, 3, 3, 1, 3, 3, 3, 1, 1, 3, 1, 3, 3, 3, 3, 1, 1, 3…
-## $ M3_202      &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 1, 1, 1, 1, 1…
-## $ M3_224      &lt;dbl&gt; 0, 6, 6, 4, 7, 5, 6, 6, 1, 8, 6, 1, 5, 0, 4, 7, 6, 6, 91, …
-## $ M3_225      &lt;dbl&gt; 2, 2, 2, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1…
-## $ M3_226      &lt;chr&gt; &quot;24&quot;, &quot;91&quot;, &quot;36&quot;, &quot;NULL&quot;, &quot;NULL&quot;, &quot;18&quot;, &quot;18&quot;, &quot;12&quot;, &quot;NULL&quot;…
-## $ M3_227      &lt;chr&gt; &quot;ABD&quot;, NA, &quot;ABD&quot;, &quot;CD&quot;, &quot;ABCDEF&quot;, &quot;CDF&quot;, &quot;CD&quot;, &quot;CD&quot;, &quot;BCD&quot;…
-## $ M3_227A     &lt;chr&gt; &quot;1&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, …
-## $ M3_227B     &lt;chr&gt; &quot;1&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;1&quot;, …
-## $ M3_227C     &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;0&quot;, …
-## $ M3_227D     &lt;chr&gt; &quot;1&quot;, &quot;NULL&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;1&quot;, &quot;0&quot;, …
-## $ M3_227E     &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, …
-## $ M3_227F     &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;1&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;1&quot;, &quot;0&quot;, …
-## $ M3_227G     &lt;chr&gt; &quot;0&quot;, &quot;NULL&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, &quot;0&quot;, …
-## $ M3_227CU    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ Region      &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3…
-## $ Subreg      &lt;dbl&gt; 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12…
-## $ Municipio   &lt;chr&gt; &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;, &quot;MEDELLIN&quot;…
-## $ Estrato     &lt;dbl&gt; 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3…
-## $ Fex_fin     &lt;dbl&gt; 781.6325, 611.0403, 450.3112, 450.3112, 859.2290, 884.7179…
-## $ Sexo        &lt;dbl&gt; 2, 2, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 2, 2, 1, 2…
-## $ Zona        &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
-## $ EST_SE_2    &lt;dbl&gt; 2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2…
-## $ FRACCION    &lt;dbl&gt; 2, 2, 2, 8, 8, 8, 2, 8, 2, 2, 2, 8, 1, 2, 2, 2, 10, 2, 2, …
-## $ REGIMEN     &lt;dbl&gt; 4, 1, 2, 2, 2, 2, 2, 2, 1, 2, 1, 4, 1, 1, 1, 1, 4, 2, 1, 1…
-## $ ID_PERSONA  &lt;dbl&gt; 10050103, 10370104, 10680106, 10710103, 20120104, 20130104…
-## $ MA_201B     &lt;dbl&gt; NA, 0, NA, NA, 1, NA, 0, NA, 0, NA, NA, 0, 0, 0, 0, 0, 0, …
-## $ MB_201B     &lt;dbl&gt; 0, NA, 0, 1, NA, 0, NA, 1, NA, 0, 0, NA, NA, NA, NA, NA, N…
-## $ ID_HOGAR    &lt;dbl&gt; 100501, 103701, 106801, 107101, 201201, 201301, 2205301, 2…
-## $ dmft        &lt;dbl&gt; 0, 0, 0, 2, 0, 0, 0, 0, 0, 11, 1, 0, 0, 0, 0, 0, 0, 0, 8, …</code></pre>
+##  [1] &quot;census_mpio&quot;     &quot;MPIO&quot;            &quot;DPTO&quot;            &quot;M3_100C&quot;        
+##  [5] &quot;M3_113D&quot;         &quot;M3_113E&quot;         &quot;M3_113F&quot;         &quot;M3_119&quot;         
+##  [9] &quot;M3_201&quot;          &quot;M3_202&quot;          &quot;M3_224&quot;          &quot;M3_225&quot;         
+## [13] &quot;M3_226&quot;          &quot;M3_227&quot;          &quot;M3_227A&quot;         &quot;M3_227B&quot;        
+## [17] &quot;M3_227C&quot;         &quot;M3_227D&quot;         &quot;M3_227E&quot;         &quot;M3_227F&quot;        
+## [21] &quot;M3_227G&quot;         &quot;M3_227CU&quot;        &quot;M3_229AA&quot;        &quot;M3_229AB&quot;       
+## [25] &quot;M3_229BA&quot;        &quot;M3_229BB&quot;        &quot;M3_229CA&quot;        &quot;M3_229CB&quot;       
+## [29] &quot;M3_229DA&quot;        &quot;M3_229DB&quot;        &quot;M3_229EA&quot;        &quot;M3_229EB&quot;       
+## [33] &quot;M3_229FA&quot;        &quot;M3_229FB&quot;        &quot;M3_229GA&quot;        &quot;M3_229GB&quot;       
+## [37] &quot;M3_229HA&quot;        &quot;M3_229HB&quot;        &quot;M3_229IA&quot;        &quot;M3_229IB&quot;       
+## [41] &quot;Region&quot;          &quot;Subreg&quot;          &quot;Municipio&quot;       &quot;Estrato&quot;        
+## [45] &quot;Fex_fin&quot;         &quot;Sexo&quot;            &quot;Zona&quot;            &quot;EST_SE_2&quot;       
+## [49] &quot;FRACCION&quot;        &quot;REGIMEN&quot;         &quot;ID_PERSONA&quot;      &quot;Grandesciudades&quot;
+## [53] &quot;MA_201B&quot;         &quot;MB_201B&quot;         &quot;ID_HOGAR&quot;        &quot;dmft&quot;</code></pre>
 <pre class="r"><code>#checking how many children share the same household
 
 ensab %&gt;%
@@ -965,7 +952,10 @@ ensab %&gt;%
 ## 4     5  0.0155
 ## 5     6  0.0155</code></pre>
 <pre class="r"><code>#737 children share the same household with another child included in the study. We won&#39;t take it into account for now.</code></pre>
-<p>#Key variables</p>
+</div>
+</div>
+<div id="key-variables" class="section level1">
+<h1>Key variables</h1>
 <p>Age: M3_100C</p>
 <p>It really is categorical and not continuous.</p>
 <pre class="r"><code>glimpse(ensab$M3_100C)</code></pre>
@@ -983,9 +973,321 @@ ensab &lt;- ensab %&gt;%
 summary(ensab$age)</code></pre>
 <pre><code>##    1    3    5 
 ## 2088 2079 2276</code></pre>
-</div>
-<div id="exposure" class="section level2">
-<h2>Exposure</h2>
+<div id="exposure-nutrition" class="section level2">
+<h2>Exposure: Nutrition</h2>
+<p>M3_229AA, M3_229AB, M3_229BA, M3_229BB, M3_229CA, M3_229CB, M3_229DA,
+M3_229DB, M3_229EA, M3_229EB, M3_229FA, M3_229FB, M3_229GA, M3_229GB,
+M3_229HA, M3_229HB, M3_229IA, M3_229IB,</p>
+<ol style="list-style-type: upper-alpha">
+<li>Cereals, roots, tubers, plantain: carbs</li>
+<li>Vegetables, greens, green legumes: veg</li>
+<li>Fruits: fruit</li>
+<li>Meat, eggs, dried legumes and vegetables: prot</li>
+<li>Dairy products: dairy</li>
+<li>Fats and oils: fats</li>
+<li>Sugars and sweets: sugar</li>
+<li>Sodas and soft drinks: soda</li>
+<li>Juices, natural or artificial: juice</li>
+</ol>
+<pre class="r"><code>#make all variables starting with M3_229 to numeric
+
+ensab &lt;- ensab %&gt;%
+  mutate(across(starts_with(&quot;M3_229&quot;), as.numeric))</code></pre>
+<pre><code>## Warning: There were 9 warnings in `mutate()`.
+## The first warning was:
+## ℹ In argument: `across(starts_with(&quot;M3_229&quot;), as.numeric)`.
+## Caused by warning:
+## ! NAs introduced by coercion
+## ℹ Run `dplyr::last_dplyr_warnings()` to see the 8 remaining warnings.</code></pre>
+<pre class="r"><code>#frequency of each variable
+
+ensab %&gt;%
+  dplyr::select(M3_229AA:M3_229IB) %&gt;%
+  pivot_longer(cols = everything(), names_to = &quot;Variable&quot;, values_to = &quot;Value&quot;) %&gt;%
+  group_by(Variable, Value) %&gt;%
+  summarise(Frequency = n(), .groups = &quot;drop&quot;) %&gt;%
+  arrange(Variable, desc(Value)) %&gt;%
+  print(n = 100)</code></pre>
+<pre><code>## # A tibble: 72 × 3
+##    Variable Value Frequency
+##    &lt;chr&gt;    &lt;dbl&gt;     &lt;int&gt;
+##  1 M3_229AA     4      5335
+##  2 M3_229AA     3       926
+##  3 M3_229AA     2       121
+##  4 M3_229AA     1        61
+##  5 M3_229AB     3        13
+##  6 M3_229AB     2      4269
+##  7 M3_229AB     1      2100
+##  8 M3_229AB    NA        61
+##  9 M3_229BA     4      2536
+## 10 M3_229BA     3      2288
+## 11 M3_229BA     2       701
+## 12 M3_229BA     1       918
+## 13 M3_229BB     3        17
+## 14 M3_229BB     2      2256
+## 15 M3_229BB     1      3252
+## 16 M3_229BB    NA       918
+## 17 M3_229CA     4      3419
+## 18 M3_229CA     3      1882
+## 19 M3_229CA     2       498
+## 20 M3_229CA     1       644
+## 21 M3_229CB     3         8
+## 22 M3_229CB     2      2603
+## 23 M3_229CB     1      3188
+## 24 M3_229CB    NA       644
+## 25 M3_229DA     4      5094
+## 26 M3_229DA     3      1186
+## 27 M3_229DA     2       125
+## 28 M3_229DA     1        38
+## 29 M3_229DB     3        12
+## 30 M3_229DB     2      3955
+## 31 M3_229DB     1      2438
+## 32 M3_229DB    NA        38
+## 33 M3_229EA     4      4619
+## 34 M3_229EA     3      1141
+## 35 M3_229EA     2       274
+## 36 M3_229EA     1       409
+## 37 M3_229EB     3         9
+## 38 M3_229EB     2      3755
+## 39 M3_229EB     1      2270
+## 40 M3_229EB    NA       409
+## 41 M3_229FA     4      2353
+## 42 M3_229FA     3      2255
+## 43 M3_229FA     2       884
+## 44 M3_229FA     1       951
+## 45 M3_229FB     3         7
+## 46 M3_229FB     2      1882
+## 47 M3_229FB     1      3603
+## 48 M3_229FB    NA       951
+## 49 M3_229GA     4      3403
+## 50 M3_229GA     3      1648
+## 51 M3_229GA     2       723
+## 52 M3_229GA     1       669
+## 53 M3_229GB     3        12
+## 54 M3_229GB     2      2537
+## 55 M3_229GB     1      3225
+## 56 M3_229GB    NA       669
+## 57 M3_229HA     4       636
+## 58 M3_229HA     3      1426
+## 59 M3_229HA     2      1554
+## 60 M3_229HA     1      2827
+## 61 M3_229HB     3         4
+## 62 M3_229HB     2       770
+## 63 M3_229HB     1      2842
+## 64 M3_229HB    NA      2827
+## 65 M3_229IA     4      4964
+## 66 M3_229IA     3       991
+## 67 M3_229IA     2       211
+## 68 M3_229IA     1       277
+## 69 M3_229IB     3         6
+## 70 M3_229IB     2      4424
+## 71 M3_229IB     1      1736
+## 72 M3_229IB    NA       277</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  group_by(M3_229AA, M3_229AB) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 9 × 3
+## # Groups:   M3_229AA, M3_229AB [9]
+##   M3_229AA M3_229AB     n
+##      &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;
+## 1        1       NA    61
+## 2        2        1    87
+## 3        2        2    34
+## 4        3        1   506
+## 5        3        2   415
+## 6        3        3     5
+## 7        4        1  1507
+## 8        4        2  3820
+## 9        4        3     8</code></pre>
+<pre class="r"><code>#renaming variables for interpretation
+
+ensab &lt;- ensab %&gt;%
+  rename(carbs_week = M3_229AA, 
+         carbs_day = M3_229AB, 
+         veg_week = M3_229BA, 
+         veg_day = M3_229BB, 
+         fruit_week = M3_229CA, 
+         fruit_day = M3_229CB, 
+         prot_week = M3_229DA, 
+         prot_day = M3_229DB, 
+         dairy_week = M3_229EA, 
+         dairy_day = M3_229EB, 
+         fats_week = M3_229FA, 
+         fats_day = M3_229FB, 
+         sugar_week = M3_229GA, 
+         sugar_day = M3_229GB, 
+         soda_week = M3_229HA, 
+         soda_day = M3_229HB, 
+         juice_week = M3_229IA, 
+         juice_day = M3_229IB)
+
+#categorizing with factor for weekly and daily intake
+
+ensab &lt;- ensab %&gt;%
+  mutate(across(contains(&quot;week&quot;), ~ factor(., 
+    levels = c(1, 2, 3, 4),
+    labels = c(&quot;Never&quot;, &quot;1x&quot;, &quot;2-3x&quot;, &quot;4-6x&quot;)
+    )))
+
+ensab &lt;- ensab %&gt;%
+  mutate(across(contains(&quot;day&quot;), ~ case_when( 
+    is.na(.) ~ 0,
+    . == 3 ~ NA,
+    TRUE ~ .))) %&gt;%
+  mutate(across(contains(&quot;day&quot;), ~ factor(., 
+    levels = c(0, 1, 2),
+    labels = c(&quot;Never&quot;, &quot;1x&quot;, &quot;2+x&quot;)
+  )))
+
+# frequency of weekly and daily intake
+
+ensab %&gt;%
+  group_by(carbs_week, carbs_day) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 9 × 3
+## # Groups:   carbs_week, carbs_day [9]
+##   carbs_week carbs_day     n
+##   &lt;fct&gt;      &lt;fct&gt;     &lt;int&gt;
+## 1 Never      Never        61
+## 2 1x         1x           87
+## 3 1x         2+x          34
+## 4 2-3x       1x          506
+## 5 2-3x       2+x         415
+## 6 2-3x       &lt;NA&gt;          5
+## 7 4-6x       1x         1507
+## 8 4-6x       2+x        3820
+## 9 4-6x       &lt;NA&gt;          8</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  group_by(veg_week, veg_day) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 10 × 3
+## # Groups:   veg_week, veg_day [10]
+##    veg_week veg_day     n
+##    &lt;fct&gt;    &lt;fct&gt;   &lt;int&gt;
+##  1 Never    Never     918
+##  2 1x       1x        560
+##  3 1x       2+x       140
+##  4 1x       &lt;NA&gt;        1
+##  5 2-3x     1x       1440
+##  6 2-3x     2+x       841
+##  7 2-3x     &lt;NA&gt;        7
+##  8 4-6x     1x       1252
+##  9 4-6x     2+x      1275
+## 10 4-6x     &lt;NA&gt;        9</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  group_by(fruit_week, fruit_day) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 10 × 3
+## # Groups:   fruit_week, fruit_day [10]
+##    fruit_week fruit_day     n
+##    &lt;fct&gt;      &lt;fct&gt;     &lt;int&gt;
+##  1 Never      Never       644
+##  2 1x         1x          424
+##  3 1x         2+x          72
+##  4 1x         &lt;NA&gt;          2
+##  5 2-3x       1x         1263
+##  6 2-3x       2+x         616
+##  7 2-3x       &lt;NA&gt;          3
+##  8 4-6x       1x         1501
+##  9 4-6x       2+x        1915
+## 10 4-6x       &lt;NA&gt;          3</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  group_by(prot_week, prot_day) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 9 × 3
+## # Groups:   prot_week, prot_day [9]
+##   prot_week prot_day     n
+##   &lt;fct&gt;     &lt;fct&gt;    &lt;int&gt;
+## 1 Never     Never       38
+## 2 1x        1x          93
+## 3 1x        2+x         32
+## 4 2-3x      1x         723
+## 5 2-3x      2+x        460
+## 6 2-3x      &lt;NA&gt;         3
+## 7 4-6x      1x        1622
+## 8 4-6x      2+x       3463
+## 9 4-6x      &lt;NA&gt;         9</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  group_by(dairy_week, dairy_day) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 9 × 3
+## # Groups:   dairy_week, dairy_day [9]
+##   dairy_week dairy_day     n
+##   &lt;fct&gt;      &lt;fct&gt;     &lt;int&gt;
+## 1 Never      Never       409
+## 2 1x         1x          231
+## 3 1x         2+x          43
+## 4 2-3x       1x          732
+## 5 2-3x       2+x         406
+## 6 2-3x       &lt;NA&gt;          3
+## 7 4-6x       1x         1307
+## 8 4-6x       2+x        3306
+## 9 4-6x       &lt;NA&gt;          6</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  group_by(fats_week, fats_day) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 9 × 3
+## # Groups:   fats_week, fats_day [9]
+##   fats_week fats_day     n
+##   &lt;fct&gt;     &lt;fct&gt;    &lt;int&gt;
+## 1 Never     Never      951
+## 2 1x        1x         813
+## 3 1x        2+x         70
+## 4 1x        &lt;NA&gt;         1
+## 5 2-3x      1x        1665
+## 6 2-3x      2+x        584
+## 7 2-3x      &lt;NA&gt;         6
+## 8 4-6x      1x        1125
+## 9 4-6x      2+x       1228</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  group_by(sugar_week, sugar_day) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 10 × 3
+## # Groups:   sugar_week, sugar_day [10]
+##    sugar_week sugar_day     n
+##    &lt;fct&gt;      &lt;fct&gt;     &lt;int&gt;
+##  1 Never      Never       669
+##  2 1x         1x          650
+##  3 1x         2+x          71
+##  4 1x         &lt;NA&gt;          2
+##  5 2-3x       1x         1254
+##  6 2-3x       2+x         391
+##  7 2-3x       &lt;NA&gt;          3
+##  8 4-6x       1x         1321
+##  9 4-6x       2+x        2075
+## 10 4-6x       &lt;NA&gt;          7</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  group_by(soda_week, soda_day) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 9 × 3
+## # Groups:   soda_week, soda_day [9]
+##   soda_week soda_day     n
+##   &lt;fct&gt;     &lt;fct&gt;    &lt;int&gt;
+## 1 Never     Never     2827
+## 2 1x        1x        1397
+## 3 1x        2+x        156
+## 4 1x        &lt;NA&gt;         1
+## 5 2-3x      1x        1095
+## 6 2-3x      2+x        328
+## 7 2-3x      &lt;NA&gt;         3
+## 8 4-6x      1x         350
+## 9 4-6x      2+x        286</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  group_by(juice_week, juice_day) %&gt;%
+  count()</code></pre>
+<pre><code>## # A tibble: 9 × 3
+## # Groups:   juice_week, juice_day [9]
+##   juice_week juice_day     n
+##   &lt;fct&gt;      &lt;fct&gt;     &lt;int&gt;
+## 1 Never      Never       277
+## 2 1x         1x          170
+## 3 1x         2+x          41
+## 4 2-3x       1x          559
+## 5 2-3x       2+x         430
+## 6 2-3x       &lt;NA&gt;          2
+## 7 4-6x       1x         1007
+## 8 4-6x       2+x        3953
+## 9 4-6x       &lt;NA&gt;          4</code></pre>
 <div id="breastfeeding-age-in-months" class="section level3">
 <h3>Breastfeeding age in months</h3>
 <p>M3_224</p>
@@ -1059,14 +1361,38 @@ ensab %&gt;%
 ##                                                                             
 ##                                                                             
 ##                                                                             
-##    M3_227G            M3_227CU             Region          Subreg      
-##  Length:5976        Length:5976        Min.   :1.000   Min.   : 1.000  
-##  Class :character   Class :character   1st Qu.:2.000   1st Qu.: 4.000  
-##  Mode  :character   Mode  :character   Median :4.000   Median : 8.000  
-##                                        Mean   :3.546   Mean   : 8.285  
-##                                        3rd Qu.:5.000   3rd Qu.:13.000  
-##                                        Max.   :6.000   Max.   :16.000  
-##                                                                        
+##    M3_227G            M3_227CU         carbs_week   carbs_day     veg_week   
+##  Length:5976        Length:5976        Never:  58   Never:  58   Never: 831  
+##  Class :character   Class :character   1x   : 115   1x   :1952   1x   : 647  
+##  Mode  :character   Mode  :character   2-3x : 862   2+x  :3954   2-3x :2129  
+##                                        4-6x :4941   NA&#39;s :  12   4-6x :2369  
+##                                                                              
+##                                                                              
+##                                                                              
+##   veg_day     fruit_week   fruit_day    prot_week     prot_day    dairy_week  
+##  Never: 831   Never: 590   Never: 590   Never:  33   Never:  33   Never: 380  
+##  1x   :3018   1x   : 460   1x   :2957   1x   : 116   1x   :2251   1x   : 247  
+##  2+x  :2110   2-3x :1733   2+x  :2422   2-3x :1097   2+x  :3680   2-3x :1077  
+##  NA&#39;s :  17   4-6x :3193   NA&#39;s :   7   4-6x :4730   NA&#39;s :  12   4-6x :4272  
+##                                                                               
+##                                                                               
+##                                                                               
+##  dairy_day    fats_week     fats_day    sugar_week   sugar_day    soda_week   
+##  Never: 380   Never: 869   Never: 869   Never: 614   Never: 614   Never:2617  
+##  1x   :2111   1x   : 831   1x   :3353   1x   : 665   1x   :3008   1x   :1460  
+##  2+x  :3476   2-3x :2097   2+x  :1747   2-3x :1535   2+x  :2344   2-3x :1317  
+##  NA&#39;s :   9   4-6x :2179   NA&#39;s :   7   4-6x :3162   NA&#39;s :  10   4-6x : 582  
+##                                                                               
+##                                                                               
+##                                                                               
+##   soda_day    juice_week   juice_day        Region          Subreg      
+##  Never:2617   Never: 253   Never: 253   Min.   :1.000   Min.   : 1.000  
+##  1x   :2645   1x   : 197   1x   :1606   1st Qu.:2.000   1st Qu.: 4.000  
+##  2+x  : 710   2-3x : 908   2+x  :4112   Median :4.000   Median : 8.000  
+##  NA&#39;s :   4   4-6x :4618   NA&#39;s :   5   Mean   :3.546   Mean   : 8.285  
+##                                         3rd Qu.:5.000   3rd Qu.:13.000  
+##                                         Max.   :6.000   Max.   :16.000  
+##                                                                         
 ##   Municipio            Estrato          Fex_fin            Sexo      
 ##  Length:5976        Min.   : 1.000   Min.   :   1.0   Min.   :1.000  
 ##  Class :character   1st Qu.: 2.000   1st Qu.: 124.7   1st Qu.:1.000  
@@ -1083,21 +1409,21 @@ ensab %&gt;%
 ##  3rd Qu.:1.000   3rd Qu.:2.00   3rd Qu.: 8.00   3rd Qu.:2.000  
 ##  Max.   :2.000   Max.   :4.00   Max.   :13.00   Max.   :4.000  
 ##                                                                
-##    ID_PERSONA           MA_201B          MB_201B         ID_HOGAR        
-##  Min.   :1.005e+07   Min.   :0.0000   Min.   :0.000   Min.   :1.005e+05  
-##  1st Qu.:6.748e+10   1st Qu.:0.0000   1st Qu.:0.000   1st Qu.:6.748e+08  
-##  Median :3.445e+11   Median :0.0000   Median :0.000   Median :3.445e+09  
-##  Mean   :4.042e+11   Mean   :0.1401   Mean   :0.146   Mean   :4.042e+09  
-##  3rd Qu.:6.997e+11   3rd Qu.:0.0000   3rd Qu.:0.000   3rd Qu.:6.997e+09  
-##  Max.   :1.019e+12   Max.   :1.0000   Max.   :1.000   Max.   :1.019e+10  
-##                      NA&#39;s   :2092     NA&#39;s   :3884                       
-##       dmft             bf        
-##  Min.   : 0.00   Min.   : 0.000  
-##  1st Qu.: 0.00   1st Qu.: 4.000  
-##  Median : 0.00   Median : 6.000  
-##  Mean   : 1.64   Mean   : 5.522  
-##  3rd Qu.: 2.00   3rd Qu.: 6.000  
-##  Max.   :20.00   Max.   :12.000  
+##    ID_PERSONA        Grandesciudades    MA_201B          MB_201B     
+##  Min.   :1.005e+07   Min.   : 5001   Min.   :0.0000   Min.   :0.000  
+##  1st Qu.:6.748e+10   1st Qu.:13001   1st Qu.:0.0000   1st Qu.:0.000  
+##  Median :3.445e+11   Median :99999   Median :0.0000   Median :0.000  
+##  Mean   :4.042e+11   Mean   :73888   Mean   :0.1401   Mean   :0.146  
+##  3rd Qu.:6.997e+11   3rd Qu.:99999   3rd Qu.:0.0000   3rd Qu.:0.000  
+##  Max.   :1.019e+12   Max.   :99999   Max.   :1.0000   Max.   :1.000  
+##                                      NA&#39;s   :2092     NA&#39;s   :3884   
+##     ID_HOGAR              dmft             bf        
+##  Min.   :1.005e+05   Min.   : 0.00   Min.   : 0.000  
+##  1st Qu.:6.748e+08   1st Qu.: 0.00   1st Qu.: 4.000  
+##  Median :3.445e+09   Median : 0.00   Median : 6.000  
+##  Mean   :4.042e+09   Mean   : 1.64   Mean   : 5.522  
+##  3rd Qu.:6.997e+09   3rd Qu.: 2.00   3rd Qu.: 6.000  
+##  Max.   :1.019e+10   Max.   :20.00   Max.   :12.000  
 ## </code></pre>
 <pre class="r"><code>#12 seems like the maximum value
 
@@ -1184,10 +1510,24 @@ ensab %&gt;%
 
 glimpse(ensab$M3_227CU)</code></pre>
 <pre><code>##  chr [1:6443] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA ...</code></pre>
-<pre class="r"><code>#ensab %&gt;%
-#  filter(M3_227G == 1) %&gt;%
-#  select(M3_227G, M3_227CU, ID_PERSONA) %&gt;% #order M3_227CU in alphabetical order
-#  distinct(M3_227CU)</code></pre>
+<pre class="r"><code>ensab %&gt;%
+  filter(M3_227G == 1) %&gt;%
+  dplyr::select(M3_227G, M3_227CU, ID_PERSONA) %&gt;% #order M3_227CU in alphabetical order
+  distinct(M3_227CU)</code></pre>
+<pre><code>## # A tibble: 260 × 1
+##    M3_227CU            
+##    &lt;chr&gt;               
+##  1 PAPILLA             
+##  2 COLADAS             
+##  3 JUGOS NATURALES     
+##  4 YOGURT              
+##  5 ZB VITAMIII         
+##  6 AVENA               
+##  7 NESTUN ZVEC KOLA    
+##  8 COLADAS AGUADEPANELA
+##  9 COLADAS BIENESTARINA
+## 10 NESTUN              
+## # ℹ 250 more rows</code></pre>
 </div>
 </div>
 <div id="possible-confounders-or-emm" class="section level2">
@@ -1410,6 +1750,7 @@ appointment, the higher the dmft index.</p>
 y=dmft)) + geom_boxplot() + facet_wrap(~age) + labs(x = “Age of first
 dental visit”, y = “dmft Index score”, title = “dmft Index score by age
 of first dental visit”)</p>
+<pre class="r"><code># Boxplot</code></pre>
 </div>
 </div>
 

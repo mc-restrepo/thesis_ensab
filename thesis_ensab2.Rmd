@@ -67,6 +67,8 @@ Keep variables:
 - M3_225: Biberon
 - M3_226: Biberon edad
 - M3_227: Que le dan en el biberon. 227A-227CU
+- M3_229: Nutrition
+- Grandesciudades: DANE big city identificator
 - Region: a donde pertenece el municipio
 - Subreg:
 - Municipio:
@@ -84,7 +86,7 @@ Grupo etareo was excluded because it is the same as age.
 
 ```{r}
 ninos <- ninoscompleta %>% 
-  dplyr::select(ÿDANE, MPIO, DPTO, M3_100C, M3_113D, M3_113E, M3_113F, M3_119, M3_201, M3_202, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, Region, Subreg, Municipio, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA)
+  dplyr::select(ÿDANE, MPIO, DPTO, M3_100C, M3_113D, M3_113E, M3_113F, M3_119, M3_201, M3_202, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, M3_229AA, M3_229AB, M3_229BA, M3_229BB, M3_229CA, M3_229CB, M3_229DA, M3_229DB, M3_229EA, M3_229EB, M3_229FA, M3_229FB, M3_229GA, M3_229GB, M3_229HA, M3_229HB, M3_229IA, M3_229IB, Region, Subreg, Municipio, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA, Grandesciudades)
 
 glimpse(ninos)
 
@@ -232,7 +234,6 @@ Sampling strata: subregion, named as Estrato in the data set.
 ```{r}
 survensab <- svydesign(ids = ~census_mpio, data = ensab, strata = ~Estrato, weights = ~Fex_fin, nest = TRUE)
 summary(survensab)
-glimpse(ensab)
 
 #checking how many children share the same household
 
@@ -250,7 +251,7 @@ ensab %>%
 ```
 
 
-#Key variables
+# Key variables
 
 Age: M3_100C
 
@@ -271,7 +272,120 @@ summary(ensab$age)
 ```
 
 
-## Exposure
+## Exposure: Nutrition
+
+M3_229AA, M3_229AB, M3_229BA, M3_229BB, M3_229CA, M3_229CB, M3_229DA, M3_229DB, M3_229EA, M3_229EB, M3_229FA, M3_229FB, M3_229GA, M3_229GB, M3_229HA, M3_229HB, M3_229IA, M3_229IB,
+
+A.	Cereals, roots, tubers, plantain: carbs
+B.	Vegetables, greens, green legumes: veg
+C.	Fruits: fruit
+D.	Meat, eggs, dried legumes and vegetables: prot
+E.	Dairy products: dairy
+F.	Fats and oils: fats
+G.	Sugars and sweets: sugar
+H.	Sodas and soft drinks: soda
+I.	Juices, natural or artificial: juice
+
+```{r}
+
+#make all variables starting with M3_229 to numeric
+
+ensab <- ensab %>%
+  mutate(across(starts_with("M3_229"), as.numeric))
+
+#frequency of each variable
+
+ensab %>%
+  dplyr::select(M3_229AA:M3_229IB) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Value") %>%
+  group_by(Variable, Value) %>%
+  summarise(Frequency = n(), .groups = "drop") %>%
+  arrange(Variable, desc(Value)) %>%
+  print(n = 100)
+
+ensab %>%
+  group_by(M3_229AA, M3_229AB) %>%
+  count()
+
+#renaming variables for interpretation
+
+ensab <- ensab %>%
+  rename(carbs_week = M3_229AA, 
+         carbs_day = M3_229AB, 
+         veg_week = M3_229BA, 
+         veg_day = M3_229BB, 
+         fruit_week = M3_229CA, 
+         fruit_day = M3_229CB, 
+         prot_week = M3_229DA, 
+         prot_day = M3_229DB, 
+         dairy_week = M3_229EA, 
+         dairy_day = M3_229EB, 
+         fats_week = M3_229FA, 
+         fats_day = M3_229FB, 
+         sugar_week = M3_229GA, 
+         sugar_day = M3_229GB, 
+         soda_week = M3_229HA, 
+         soda_day = M3_229HB, 
+         juice_week = M3_229IA, 
+         juice_day = M3_229IB)
+
+#categorizing with factor for weekly and daily intake
+
+ensab <- ensab %>%
+  mutate(across(contains("week"), ~ factor(., 
+    levels = c(1, 2, 3, 4),
+    labels = c("Never", "1x", "2-3x", "4-6x")
+    )))
+
+ensab <- ensab %>%
+  mutate(across(contains("day"), ~ case_when( 
+    is.na(.) ~ 0,
+    . == 3 ~ NA,
+    TRUE ~ .))) %>%
+  mutate(across(contains("day"), ~ factor(., 
+    levels = c(0, 1, 2),
+    labels = c("Never", "1x", "2+x")
+  )))
+
+# frequency of weekly and daily intake
+
+ensab %>%
+  group_by(carbs_week, carbs_day) %>%
+  count()
+
+ensab %>%
+  group_by(veg_week, veg_day) %>%
+  count()
+
+ensab %>%
+  group_by(fruit_week, fruit_day) %>%
+  count()
+
+ensab %>%
+  group_by(prot_week, prot_day) %>%
+  count()
+
+ensab %>%
+  group_by(dairy_week, dairy_day) %>%
+  count()
+
+ensab %>%
+  group_by(fats_week, fats_day) %>%
+  count()
+
+ensab %>%
+  group_by(sugar_week, sugar_day) %>%
+  count()
+
+ensab %>%
+  group_by(soda_week, soda_day) %>%
+  count()
+
+ensab %>%
+  group_by(juice_week, juice_day) %>%
+  count()
+```
+
 
 ### Breastfeeding age in months
 
@@ -374,10 +488,10 @@ ensab %>%
 
 glimpse(ensab$M3_227CU)
 
-#ensab %>%
-#  filter(M3_227G == 1) %>%
-#  select(M3_227G, M3_227CU, ID_PERSONA) %>% #order M3_227CU in alphabetical order
-#  distinct(M3_227CU)
+ensab %>%
+  filter(M3_227G == 1) %>%
+  dplyr::select(M3_227G, M3_227CU, ID_PERSONA) %>% #order M3_227CU in alphabetical order
+  distinct(M3_227CU)
   
 ```
 
@@ -562,6 +676,6 @@ ggplot(aes(x=agefdv, y=dmft)) +
   labs(x = "Age of first dental visit", y = "dmft Index score", title = "dmft Index score by age of first dental visit")
 
 ```{r}
-
+# Boxplot
 ```
 
