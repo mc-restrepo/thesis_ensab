@@ -116,7 +116,7 @@ hogarcompleta %>%
 ```
 
 
-## Main outcome: dmft index
+## Main outcome: caries experience and severity
 
 Caries:
 
@@ -131,20 +131,202 @@ H: no registra (ausente o sin erupcionar)
 MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J
 MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J
 
-For permanent teeth: 
-
-0: 0 Sano, 5: missing for another reason, 6: seallant, 8: not erupted, 9: not registered (ausente)
-1: 1 cavitated, 2: filling with caries, 3: filled without caries, 4: missing due to caries, 7: Protesis, corona, retenedor, carilla
-
 MB_208: Aplicación del examen clínico (dependiendo de 
 antecedentes médicos). 1: se aplica el examen. 2: no se aplica el examen.
 
 ### Children 1 and 3 years old
 
-```{r}
-examen13 <- examen13completa %>% 
-  dplyr::select(MA_201B, MA_208, MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J, MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J, ID_HOGAR, ID_PERSONA)
+Select variables:
 
+304: ICDAS 55-65
+306: ICDAS 85-75
+305: cop 55-65
+307: cop 85-75
+
+Ommit variables ending in 1 because they refer to enamel opacities (non-carious).
+
+```{r}
+examen13 <- examen13completa %>%
+  dplyr::select(MA_201B, MA_208, MA_304A, MA_304B, MA_304C, MA_304D, MA_304E, MA_304F, MA_304G, MA_304H, MA_304I, MA_304J, MA_306A, MA_306B, MA_306C, MA_306D, MA_306E, MA_306F, MA_306G, MA_306H, MA_306I, MA_306J, MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J, MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J, ID_HOGAR, ID_PERSONA) %>%
+  mutate(ICDAS55 = MA_304A,
+         ICDAS54 = MA_304B,
+         ICDAS53 = MA_304C,
+         ICDAS52 = MA_304D,
+         ICDAS51 = MA_304E,
+         ICDAS61 = MA_304F,
+         ICDAS62 = MA_304G,
+         ICDAS63 = MA_304H,
+         ICDAS64 = MA_304I,
+         ICDAS65 = MA_304J,
+         ICDAS85 = MA_306A,
+         ICDAS84 = MA_306B,
+         ICDAS83 = MA_306C,
+         ICDAS82 = MA_306D,
+         ICDAS81 = MA_306E,
+         ICDAS71 = MA_306F,
+         ICDAS72 = MA_306G,
+         ICDAS73 = MA_306H,
+         ICDAS74 = MA_306I,
+         ICDAS75 = MA_306J,
+         COP55 = MA_305A,
+         COP54 = MA_305B,
+         COP53 = MA_305C,
+         COP52 = MA_305D,
+         COP51 = MA_305E,
+         COP61 = MA_305F,
+         COP62 = MA_305G,
+         COP63 = MA_305H,
+         COP64 = MA_305I,
+         COP65 = MA_305J,
+         COP85 = MA_307A,
+         COP84 = MA_307B,
+         COP83 = MA_307C,
+         COP82 = MA_307D,
+         COP81 = MA_307E,
+         COP71 = MA_307F,
+         COP72 = MA_307G,
+         COP73 = MA_307H,
+         COP74 = MA_307I,
+         COP75 = MA_307J)
+```
+
+Caries experience: with ICDAS
+
+Experiencia modificada: includes cavitaded and non-cavitaded carious lesions.
+
+304: ICDAS 55-65
+306: ICDAS 85-75
+
+Caries if:
+* 2: first/distinct visual change in enamel (ICDAS 1 and 2)
+* 3: Localized enamel breakdown (considered cavitated) (ICDAS 3)
+* 4: underlying dark shadow from dentin without enamel breakdown (ICDAS 4)
+* 5: distinc cavity with visible dentin (ICDAS 5)
+* 6: extensive cavity with visible dentin (ICDAS 6)
+
+2 is non-cavitated, 3-6 are cavitated.
+
+Not caries if:
+0 or 9
+
+New categorization:
+* No caries: 0 if 0 or 9
+* Non-cavitated: 1 if 2
+* Cavitated: 2 if 3, 4, 5 or 6
+
+dmft including non-cavitated lessions
+
+```{r}
+#Assign a value to 1 to the following numbers: 2, 3, 4, 5, 6
+
+head(examen13$ICDAS55, 20)
+examen13 <- examen13 %>%
+  mutate(
+    across(
+      starts_with("ICDAS"),
+      ~case_when(
+        str_detect(., "^[23456]$") ~ 1,
+        TRUE ~ 0)
+    ))
+head(examen13$ICDAS55, 20)
+```
+
+dmft: cavitated and non-cavitated
+
+Only count missing and filled, decayed is being counted with ICDAS classification.
+
+1 if: C (filled with caries), D (filled without caries), E (missing due to caries), G (prosthesis, crown, retainer, veneer)
+0 if: A (healthy), F (sealant), H (not registered), B (cavitated)
+
+```{r}
+#Assign a value of 1 to the following letters:
+
+head(examen13$COP51, 50)
+examen13 <- examen13 %>%
+  mutate(
+    across(
+      starts_with("COP"),
+      ~case_when(
+        str_detect(., "[CDEG]") ~ 1,
+        TRUE ~ 0)
+    ))
+head(examen13$COP51, 50)
+
+#Create variable dmft_ICDAS that includes the sum of both ICDAS and COP variables
+
+#first: create dummy variable for each tooth that assings 1 if either ICDAS or COP is greater than 0, 0 otherwise. For example, if ICDAS51 is 1, then dmft51 = 1. If COP51 is 1, then dmft51 = 1. If both are 1, then dmft51 = 1. If both are 0, then dmft51 = 0.
+
+examen13 <- examen13 %>%
+  mutate(score55 = case_when(
+    ICDAS55 > 0 | COP55 > 0 ~ 1, TRUE ~ 0),
+    score54 = case_when(
+    ICDAS54 > 0 | COP54 > 0 ~ 1, TRUE ~ 0),
+    score53 = case_when(
+    ICDAS53 > 0 | COP53 > 0 ~ 1, TRUE ~ 0),
+    score52 = case_when(
+    ICDAS52 > 0 | COP52 > 0 ~ 1, TRUE ~ 0),
+    score51 = case_when(
+    ICDAS51 > 0 | COP51 > 0 ~ 1, TRUE ~ 0),
+    score61 = case_when(
+    ICDAS61 > 0 | COP61 > 0 ~ 1, TRUE ~ 0),
+    score62 = case_when(
+    ICDAS62 > 0 | COP62 > 0 ~ 1, TRUE ~ 0),
+    score63 = case_when(
+    ICDAS63 > 0 | COP63 > 0 ~ 1, TRUE ~ 0),
+    score64 = case_when(
+    ICDAS64 > 0 | COP64 > 0 ~ 1, TRUE ~ 0),
+    score65 = case_when(
+    ICDAS65 > 0 | COP65 > 0 ~ 1, TRUE ~ 0),
+    score85 = case_when(
+    ICDAS85 > 0 | COP85 > 0 ~ 1, TRUE ~ 0),
+    score84 = case_when(
+    ICDAS84 > 0 | COP84 > 0 ~ 1, TRUE ~ 0),
+    score83 = case_when(
+    ICDAS83 > 0 | COP83 > 0 ~ 1, TRUE ~ 0),
+    score82 = case_when(
+    ICDAS82 > 0 | COP82 > 0 ~ 1, TRUE ~ 0),
+    score81 = case_when(
+    ICDAS81 > 0 | COP81 > 0 ~ 1, TRUE ~ 0),
+    score71 = case_when(
+    ICDAS71 > 0 | COP71 > 0 ~ 1, TRUE ~ 0),
+    score72 = case_when(
+    ICDAS72 > 0 | COP72 > 0 ~ 1, TRUE ~ 0),
+    score73 = case_when(
+    ICDAS73 > 0 | COP73 > 0 ~ 1, TRUE ~ 0),
+    score74 = case_when(
+    ICDAS74 > 0 | COP74 > 0 ~ 1, TRUE ~ 0),
+    score75 = case_when(
+    ICDAS75 > 0 | COP75 > 0 ~ 1, TRUE ~ 0))
+
+#sum the dummy variables
+examen13 <- examen13 %>%
+  mutate(dmft_ICDAS = rowSums(across(starts_with("score"), ~. > 0)))
+
+summary(examen13$dmft_ICDAS) #now the max is 20
+
+#See distribution
+
+ggplot(data = examen13, aes(x = dmft_ICDAS)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score for 1 and 3 years old")
+```
+
+Caries experience based on dmft_ICDAS
+
+```{r}
+examen13 <- examen13 %>%
+  mutate(cariesexp = case_when(
+    dmft_ICDAS > 0 ~ 1,
+    TRUE ~ 0
+  )) %>%
+  mutate(cariesexp = factor(cariesexp, levels = c(0, 1), labels = c("No caries", "Caries")))
+
+summary(examen13$cariesexp)
+```
+
+dmft(copd)
+
+```{r}
 #Assign a value to 1 to the following letters: B, C, D, E, G
 examen13 <- examen13 %>%
   mutate(
@@ -166,19 +348,197 @@ summary(examen13$dmft)
 #See distribution
 ggplot(data = examen13, aes(x = dmft)) +
   geom_bar(fill = "skyblue", color = "black") +
-  labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score")
+  labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score for 1 and 3 years old")
 ```
 
 ### Children 5 years old
 
-dmft can take into account the first permanent molar. So the maximum value can be up to 24.
+Select variables (like 1y old)
+Exclude 1M from the analysis (because the outcome is ECC). Letters A and L.
 
 ```{r}
 examen5 <- examen5completa %>% 
-  dplyr::select(MB_201B, MB_208, MB_305A, MB_305B, MB_305C, MB_305D, MB_305E, MB_305F, MB_305G, MB_305H, MB_305I, MB_305J, MB_305K, MB_305L, MB_307A, MB_307B, MB_307C, MB_307D, MB_307E, MB_307F, MB_307G, MB_307H, MB_307I, MB_307J, MB_307K, MB_307L, ID_HOGAR, ID_PERSONA)
+  dplyr::select(MB_201B, MB_208, MB_304B, MB_304C, MB_304D, MB_304E, MB_304F, MB_304G, MB_304H, MB_304I, MB_304J, MB_304K, MB_306B, MB_306C, MB_306D, MB_306E, MB_306F, MB_306G, MB_306H, MB_306I, MB_306J, MB_306K, MB_305B, MB_305C, MB_305D, MB_305E, MB_305F, MB_305G, MB_305H, MB_305I, MB_305J, MB_305K, MB_307B, MB_307C, MB_307D, MB_307E, MB_307F, MB_307G, MB_307H, MB_307I, MB_307J, MB_307K, ID_HOGAR, ID_PERSONA) %>%
+  mutate(ICDAS55 = MB_304B,
+         ICDAS54 = MB_304C,
+         ICDAS53 = MB_304D,
+         ICDAS52 = MB_304E,
+         ICDAS51 = MB_304F,
+         ICDAS61 = MB_304G,
+         ICDAS62 = MB_304H,
+         ICDAS63 = MB_304I,
+         ICDAS64 = MB_304J,
+         ICDAS65 = MB_304K,
+         ICDAS85 = MB_306B,
+         ICDAS84 = MB_306C,
+         ICDAS83 = MB_306D,
+         ICDAS82 = MB_306E,
+         ICDAS81 = MB_306F,
+         ICDAS71 = MB_306G,
+         ICDAS72 = MB_306H,
+         ICDAS73 = MB_306I,
+         ICDAS74 = MB_306J,
+         ICDAS75 = MB_306K,
+         COP55 = MB_305B,
+         COP54 = MB_305C,
+         COP53 = MB_305D,
+         COP52 = MB_305E,
+         COP51 = MB_305F,
+         COP61 = MB_305G,
+         COP62 = MB_305H,
+         COP63 = MB_305I,
+         COP64 = MB_305J,
+         COP65 = MB_305K,
+         COP85 = MB_307B,
+         COP84 = MB_307C,
+         COP83 = MB_307D,
+         COP82 = MB_307E,
+         COP81 = MB_307F,
+         COP71 = MB_307G,
+         COP72 = MB_307H,
+         COP73 = MB_307I,
+         COP74 = MB_307J,
+         COP75 = MB_307K)
+```
 
-glimpse(examen5)
+Caries experience: with ICDAS
 
+Experiencia modificada: includes cavitaded and non-cavitaded carious lesions.
+
+304: ICDAS 55-65
+306: ICDAS 85-75
+
+Caries if:
+* 2: first/distinct visual change in enamel (ICDAS 1 and 2)
+* 3: Localized enamel breakdown (considered cavitated) (ICDAS 3)
+* 4: underlying dark shadow from dentin without enamel breakdown (ICDAS 4)
+* 5: distinc cavity with visible dentin (ICDAS 5)
+* 6: extensive cavity with visible dentin (ICDAS 6)
+
+2 is non-cavitated, 3-6 are cavitated.
+
+Not caries if:
+0 or 9
+
+New categorization:
+* No caries: 0 if 0 or 9
+* Non-cavitated: 1 if 2
+* Cavitated: 2 if 3, 4, 5 or 6
+
+dmft including non-cavitated lessions
+
+```{r}
+#Assign a value to 1 to the following numbers: 2, 3, 4, 5, 6
+
+head(examen5$ICDAS55, 20)
+examen5 <- examen5 %>%
+  mutate(
+    across(
+      starts_with("ICDAS"),
+      ~case_when(
+        str_detect(., "^[23456]$") ~ 1,
+        TRUE ~ 0)
+    ))
+head(examen5$ICDAS55, 20)
+```
+
+dmft: cavitated and non-cavitated
+
+Only count missing and filled, decayed is being counted with ICDAS classification.
+
+1 if: C (filled with caries), D (filled without caries), E (missing due to caries), G (prosthesis, crown, retainer, veneer)
+0 if: A (healthy), F (sealant), H (not registered), B (cavitated)
+
+
+```{r}
+#Assign a value of 1 to the following letters:
+
+head(examen5$COP51, 20)
+examen5 <- examen5 %>%
+  mutate(
+    across(
+      starts_with("COP"),
+      ~case_when(
+        str_detect(., "[CDEG]") ~ 1,
+        TRUE ~ 0)
+    ))
+head(examen5$COP51, 20)
+
+#Create variable dmft_ICDAS that includes the sum of both ICDAS and COP variables
+
+#first: create dummy variable for each tooth that assings 1 if either ICDAS or COP is greater than 0, 0 otherwise. For example, if ICDAS51 is 1, then dmft51 = 1. If COP51 is 1, then dmft51 = 1. If both are 1, then dmft51 = 1. If both are 0, then dmft51 = 0.
+
+examen5 <- examen5 %>%
+  mutate(score55 = case_when(
+    ICDAS55 > 0 | COP55 > 0 ~ 1, TRUE ~ 0),
+    score54 = case_when(
+    ICDAS54 > 0 | COP54 > 0 ~ 1, TRUE ~ 0),
+    score53 = case_when(
+    ICDAS53 > 0 | COP53 > 0 ~ 1, TRUE ~ 0),
+    score52 = case_when(
+    ICDAS52 > 0 | COP52 > 0 ~ 1, TRUE ~ 0),
+    score51 = case_when(
+    ICDAS51 > 0 | COP51 > 0 ~ 1, TRUE ~ 0),
+    score61 = case_when(
+    ICDAS61 > 0 | COP61 > 0 ~ 1, TRUE ~ 0),
+    score62 = case_when(
+    ICDAS62 > 0 | COP62 > 0 ~ 1, TRUE ~ 0),
+    score63 = case_when(
+    ICDAS63 > 0 | COP63 > 0 ~ 1, TRUE ~ 0),
+    score64 = case_when(
+    ICDAS64 > 0 | COP64 > 0 ~ 1, TRUE ~ 0),
+    score65 = case_when(
+    ICDAS65 > 0 | COP65 > 0 ~ 1, TRUE ~ 0),
+    score85 = case_when(
+    ICDAS85 > 0 | COP85 > 0 ~ 1, TRUE ~ 0),
+    score84 = case_when(
+    ICDAS84 > 0 | COP84 > 0 ~ 1, TRUE ~ 0),
+    score83 = case_when(
+    ICDAS83 > 0 | COP83 > 0 ~ 1, TRUE ~ 0),
+    score82 = case_when(
+    ICDAS82 > 0 | COP82 > 0 ~ 1, TRUE ~ 0),
+    score81 = case_when(
+    ICDAS81 > 0 | COP81 > 0 ~ 1, TRUE ~ 0),
+    score71 = case_when(
+    ICDAS71 > 0 | COP71 > 0 ~ 1, TRUE ~ 0),
+    score72 = case_when(
+    ICDAS72 > 0 | COP72 > 0 ~ 1, TRUE ~ 0),
+    score73 = case_when(
+    ICDAS73 > 0 | COP73 > 0 ~ 1, TRUE ~ 0),
+    score74 = case_when(
+    ICDAS74 > 0 | COP74 > 0 ~ 1, TRUE ~ 0),
+    score75 = case_when(
+    ICDAS75 > 0 | COP75 > 0 ~ 1, TRUE ~ 0))
+
+#sum the dummy variables
+examen5 <- examen5 %>%
+  mutate(dmft_ICDAS = rowSums(across(starts_with("score"), ~. > 0)))
+
+summary(examen5$dmft_ICDAS) #now the max is 20
+
+#See distribution
+
+ggplot(data = examen5, aes(x = dmft_ICDAS)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score for 1 and 3 years old")
+```
+
+Caries experience based on dmft_ICDAS
+
+```{r}
+examen5 <- examen5 %>%
+  mutate(cariesexp = case_when(
+    dmft_ICDAS > 0 ~ 1,
+    TRUE ~ 0
+  )) %>%
+  mutate(cariesexp = factor(cariesexp, levels = c(0, 1), labels = c("No caries", "Caries")))
+
+summary(examen5$cariesexp)
+```
+
+dmft
+
+```{r}
 #Assign a value to 1 to the following numbers: 1, 2, 3, 4, 7
 examen5 <- examen5 %>%
   mutate(
@@ -199,7 +559,7 @@ summary(examen5$dmft)
 #See distribution
 ggplot(data = examen5, aes(x = dmft)) +
   geom_bar(fill = "skyblue", color = "black") +
-  labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score")
+  labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score for 5 years old")
 ```
 
 Merge datasets:
@@ -208,7 +568,9 @@ Merge datasets:
 ensab <- ninos %>%
   left_join(examen13, by = "ID_PERSONA") %>%
   left_join(examen5, by = "ID_PERSONA") %>%
-  mutate(dmft = coalesce(dmft.x, dmft.y), 
+  mutate(dmft = coalesce(dmft.x, dmft.y),
+         dmft_ICDAS = coalesce(dmft_ICDAS.x, dmft_ICDAS.y),
+         cariesexp = coalesce(cariesexp.x, cariesexp.y),
          ID_HOGAR = coalesce(ID_HOGAR.x, ID_HOGAR.y)) %>%
   dplyr::select(-ID_HOGAR.x, -ID_HOGAR.y, -dmft.x, -dmft.y)
 
@@ -224,6 +586,27 @@ ensab <- ensab %>%
 
 #only  3 children did not have the clinical examination portion. We'll exclude them. Now the sample size is 6443 children.
 ```
+
+### Distribution and summary of outcome
+
+```{r}
+ggplot(data = ensab, aes(x = dmft)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score")
+
+summary(ensab$dmft)
+
+ggplot(data = ensab, aes(x = dmft_ICDAS)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score based on ICDAS")
+#looks much more different, as it is counting all stages of cavities now
+
+summary(ensab$dmft_ICDAS)
+
+summary(ensab$cariesexp)
+
+```
+
 
 ## Account for survey design and weights
 
@@ -384,116 +767,310 @@ ensab %>%
 ensab %>%
   group_by(juice_week, juice_day) %>%
   count()
-```
 
-
-### Breastfeeding age in months
-
-M3_224
-
-91: Never
-92: Doesn't know (NA)
-
-```{r}
-glimpse(ensab$M3_224)
-
-ensab %>%
-  filter(M3_224 == 92) %>%
-  count()
-#98 NAs
+# Create a nutrition index for each category
 
 ensab <- ensab %>%
-  mutate(bf = case_when(
-    M3_224 == 92 ~ NA,
-    TRUE ~ M3_224))
+  mutate(carbs = case_when(
+    carbs_week == "Never" & carbs_day == "Never" ~ 0,
+    carbs_week == "1x" & carbs_day == "1x" ~ 1,
+    carbs_week == "1x" & carbs_day == "2+x" ~ 2,
+    carbs_week == "2-3x" & carbs_day == "1x" ~ 3,
+    carbs_week == "2-3x" & carbs_day == "2+x" ~ 4,
+    carbs_week == "4-6x" & carbs_day == "1x" ~ 5,
+    carbs_week == "4-6x" & carbs_day == "2+x" ~ 6,
+    is.na(carbs_day) ~ NA))
 
-#distribution of bf
+summary(ensab$carbs)
+ggplot(data = ensab, aes(x = carbs)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Carbs Index score", y = "Participants", title = "Distribution of Carbs Index score")
 
-ensab %>%
-  filter(!(bf == 91)) %>%
-  ggplot(aes(x = bf)) +
-  geom_histogram(fill = "skyblue", color = "black") +
-  scale_x_continuous(breaks = seq(min(ensab$bf, na.rm = TRUE), max(ensab$bf, na.rm = TRUE), by = 6)) +
-  labs(x = "Breastfeeding age", y = "Participants", title = "Distribution of breastfeeding age")
-
-ensab %>%
-  filter(!(bf == 91)) %>%
-  summary()
-
-#12 seems like the maximum value
-
-#Categorize into: never, 0-6 months, more than 6 months
+# collapse carbs 2 and 3, and 4 and 5
 
 ensab <- ensab %>%
-  mutate(bf = case_when(
-    bf == 91 ~ 1,
-    bf <= 6 ~ 2,
-    bf > 6 ~ 3,
+  mutate(carbs = case_when(
+    carbs == 3 ~ 2,  # Recode 3 to 2
+    carbs == 4 ~ 3,  # Recode 4 to 3
+    carbs == 5 ~ 3,  # Recode 5 to 3
+    carbs == 6 ~ 4,  # Recode 6 to 4
+    TRUE ~ carbs     # Keep other values unchanged
   )) %>%
-  mutate(bf = factor(bf, 
-                     levels = c(1, 2, 3),
-                     labels = c("Never", "0-6 months", "More than 6 months")))
+  mutate(carbs = factor(carbs,
+                        levels = c(0, 1, 2, 3, 4),
+                        labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
+summary(ensab$carbs)
 
-summary(ensab$bf)
-         
+#Vegetables
+
+ensab <- ensab %>%
+  mutate(veg = case_when(
+    veg_week == "Never" & veg_day == "Never" ~ 0,
+    veg_week == "1x" & veg_day == "1x" ~ 1,
+    veg_week == "1x" & veg_day == "2+x" ~ 2,
+    veg_week == "2-3x" & veg_day == "1x" ~ 3,
+    veg_week == "2-3x" & veg_day == "2+x" ~ 4,
+    veg_week == "4-6x" & veg_day == "1x" ~ 5,
+    veg_week == "4-6x" & veg_day == "2+x" ~ 6,
+    is.na(veg_day) ~ NA))
+
+summary(ensab$veg)
+ggplot(data = ensab, aes(x = veg)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Veg Index score", y = "Participants", title = "Distribution of Veg Index score")
+
+# collapse veg 2 and 3, and 4 and 5
+
+summary(ensab$veg)
+
+ensab <- ensab %>%
+  mutate(veg = case_when(
+    veg == 3 ~ 2,  # Recode 3 to 2
+    veg == 4 ~ 3,  # Recode 4 to 3
+    veg == 5 ~ 3,  # Recode 5 to 3
+    veg == 6 ~ 4,  # Recode 6 to 4
+    TRUE ~ veg     # Keep other values unchanged
+  )) %>%
+  mutate(veg = factor(veg,
+                        levels = c(0, 1, 2, 3, 4),
+                        labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
+summary(ensab$veg)
+
+#Fruit
+
+ensab <- ensab %>%
+  mutate(fruit = case_when(
+    fruit_week == "Never" & fruit_day == "Never" ~ 0,
+    fruit_week == "1x" & fruit_day == "1x" ~ 1,
+    fruit_week == "1x" & fruit_day == "2+x" ~ 2,
+    fruit_week == "2-3x" & fruit_day == "1x" ~ 3,
+    fruit_week == "2-3x" & fruit_day == "2+x" ~ 4,
+    fruit_week == "4-6x" & fruit_day == "1x" ~ 5,
+    fruit_week == "4-6x" & fruit_day == "2+x" ~ 6,
+    is.na(fruit_day) ~ NA))
+
+summary(ensab$fruit)
+ggplot(data = ensab, aes(x = fruit)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Fruit Index score", y = "Participants", title = "Distribution of Fruit Index score")
+
+# collapse fruit 2 and 3, and 4 and 5
+
+summary(ensab$fruit)
+
+ensab <- ensab %>%
+  mutate(fruit = case_when(
+    fruit == 3 ~ 2,  # Recode 3 to 2
+    fruit == 4 ~ 3,  # Recode 4 to 3
+    fruit == 5 ~ 3,  # Recode 5 to 3
+    fruit == 6 ~ 4,  # Recode 6 to 4
+    TRUE ~ fruit     # Keep other values unchanged
+  )) %>%
+  mutate(fruit = factor(fruit,
+                        levels = c(0, 1, 2, 3, 4),
+                        labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
+summary(ensab$fruit)
+
+#Protein
+
+ensab <- ensab %>%
+  mutate(prot = case_when(
+    prot_week == "Never" & prot_day == "Never" ~ 0,
+    prot_week == "1x" & prot_day == "1x" ~ 1,
+    prot_week == "1x" & prot_day == "2+x" ~ 2,
+    prot_week == "2-3x" & prot_day == "1x" ~ 3,
+    prot_week == "2-3x" & prot_day == "2+x" ~ 4,
+    prot_week == "4-6x" & prot_day == "1x" ~ 5,
+    prot_week == "4-6x" & prot_day == "2+x" ~ 6,
+    is.na(prot_day) ~ NA))
+
+summary(ensab$prot)
+ggplot(data = ensab, aes(x = prot)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Prot Index score", y = "Participants", title = "Distribution of Prot Index score")
+
+summary(ensab$prot)
+
+ensab <- ensab %>%
+  mutate(prot = case_when(
+    prot == 3 ~ 2,  # Recode 3 to 2
+    prot == 4 ~ 3,  # Recode 4 to 3
+    prot == 5 ~ 3,  # Recode 5 to 3
+    prot == 6 ~ 4,  # Recode 6 to 4
+    TRUE ~ prot     # Keep other values unchanged
+  )) %>%
+  mutate(prot = factor(prot,
+                       levels = c(0, 1, 2, 3, 4),
+                       labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
+summary(ensab$prot)
+
+#dairy
+
+ensab <- ensab %>%
+  mutate(dairy = case_when(
+    dairy_week == "Never" & dairy_day == "Never" ~ 0,
+    dairy_week == "1x" & dairy_day == "1x" ~ 1,
+    dairy_week == "1x" & dairy_day == "2+x" ~ 2,
+    dairy_week == "2-3x" & dairy_day == "1x" ~ 3,
+    dairy_week == "2-3x" & dairy_day == "2+x" ~ 4,
+    dairy_week == "4-6x" & dairy_day == "1x" ~ 5,
+    dairy_week == "4-6x" & dairy_day == "2+x" ~ 6,
+    is.na(dairy_day) ~ NA))
+
+summary(ensab$dairy)
+ggplot(data = ensab, aes(x = dairy)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Dairy Index score", y = "Participants", title = "Distribution of Dairy Index score")
+
+summary(ensab$dairy)
+
+ensab <- ensab %>%
+  mutate(dairy = case_when(
+    dairy == 3 ~ 2,  # Recode 3 to 2
+    dairy == 4 ~ 3,  # Recode 4 to 3
+    dairy == 5 ~ 3,  # Recode 5 to 3
+    dairy == 6 ~ 4,  # Recode 6 to 4
+    TRUE ~ dairy     # Keep other values unchanged
+  )) %>%
+  mutate(dairy = factor(dairy,
+                        levels = c(0, 1, 2, 3, 4),
+                        labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
+summary(ensab$dairy)
+
+#Fats
+
+ensab <- ensab %>%
+  mutate(fats = case_when(
+    fats_week == "Never" & fats_day == "Never" ~ 0,
+    fats_week == "1x" & fats_day == "1x" ~ 1,
+    fats_week == "1x" & fats_day == "2+x" ~ 2,
+    fats_week == "2-3x" & fats_day == "1x" ~ 3,
+    fats_week == "2-3x" & fats_day == "2+x" ~ 4,
+    fats_week == "4-6x" & fats_day == "1x" ~ 5,
+    fats_week == "4-6x" & fats_day == "2+x" ~ 6,
+    is.na(fats_day) ~ NA))
+
+summary(ensab$fats)
+ggplot(data = ensab, aes(x = fats)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Fats Index score", y = "Participants", title = "Distribution of Fats Index score")
+
+summary(ensab$fats)
+
+ensab <- ensab %>%
+  mutate(fats = case_when(
+    fats == 3 ~ 2,  # Recode 3 to 2
+    fats == 4 ~ 3,  # Recode 4 to 3
+    fats == 5 ~ 3,  # Recode 5 to 3
+    fats == 6 ~ 4,  # Recode 6 to 4
+    TRUE ~ fats     # Keep other values unchanged
+  )) %>%
+  mutate(fats = factor(fats,
+                       levels = c(0, 1, 2, 3, 4),
+                       labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
+summary(ensab$fats)
+
+#Sugar
+
+ensab <- ensab %>%
+  mutate(sugar = case_when(
+    sugar_week == "Never" & sugar_day == "Never" ~ 0,
+    sugar_week == "1x" & sugar_day == "1x" ~ 1,
+    sugar_week == "1x" & sugar_day == "2+x" ~ 2,
+    sugar_week == "2-3x" & sugar_day == "1x" ~ 3,
+    sugar_week == "2-3x" & sugar_day == "2+x" ~ 4,
+    sugar_week == "4-6x" & sugar_day == "1x" ~ 5,
+    sugar_week == "4-6x" & sugar_day == "2+x" ~ 6,
+    is.na(sugar_day) ~ NA))
+
+summary(ensab$sugar)
+
+ggplot(data = ensab, aes(x = sugar)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Sugar Index score", y = "Participants", title = "Distribution of Sugar Index score")
+
+summary(ensab$sugar)
+
+ensab <- ensab %>%
+  mutate(sugar = case_when(
+    sugar == 3 ~ 2,  # Recode 3 to 2
+    sugar == 4 ~ 3,  # Recode 4 to 3
+    sugar == 5 ~ 3,  # Recode 5 to 3
+    sugar == 6 ~ 4,  # Recode 6 to 4
+    TRUE ~ sugar     # Keep other values unchanged
+  )) %>%
+  mutate(sugar = factor(sugar,
+                        levels = c(0, 1, 2, 3, 4),
+                        labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
+summary(ensab$sugar)
+
+#Soda
+
+ensab <- ensab %>%
+  mutate(soda = case_when(
+    soda_week == "Never" & soda_day == "Never" ~ 0,
+    soda_week == "1x" & soda_day == "1x" ~ 1,
+    soda_week == "1x" & soda_day == "2+x" ~ 2,
+    soda_week == "2-3x" & soda_day == "1x" ~ 3,
+    soda_week == "2-3x" & soda_day == "2+x" ~ 4,
+    soda_week == "4-6x" & soda_day == "1x" ~ 5,
+    soda_week == "4-6x" & soda_day == "2+x" ~ 6,
+    is.na(soda_day) ~ NA))
+
+summary(ensab$soda)
+ggplot(data = ensab, aes(x = soda)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Soda Index score", y = "Participants", title = "Distribution of Soda Index score")
+
+summary(ensab$soda)
+
+ensab <- ensab %>%
+  mutate(soda = case_when(
+    soda == 3 ~ 2,  # Recode 3 to 2
+    soda == 4 ~ 3,  # Recode 4 to 3
+    soda == 5 ~ 3,  # Recode 5 to 3
+    soda == 6 ~ 4,  # Recode 6 to 4
+    TRUE ~ soda     # Keep other values unchanged
+  )) %>%
+  mutate(soda = factor(soda,
+                       levels = c(0, 1, 2, 3, 4),
+                       labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
+summary(ensab$soda)
+
+#Juice
+
+ensab <- ensab %>%
+  mutate(juice = case_when(
+    juice_week == "Never" & juice_day == "Never" ~ 0,
+    juice_week == "1x" & juice_day == "1x" ~ 1,
+    juice_week == "1x" & juice_day == "2+x" ~ 2,
+    juice_week == "2-3x" & juice_day == "1x" ~ 3,
+    juice_week == "2-3x" & juice_day == "2+x" ~ 4,
+    juice_week == "4-6x" & juice_day == "1x" ~ 5,
+    juice_week == "4-6x" & juice_day == "2+x" ~ 6,
+    is.na(juice_day) ~ NA)) 
+
+summary(ensab$juice)
+ggplot(data = ensab, aes(x = juice)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Juice Index score", y = "Participants", title = "Distribution of Juice Index score")
+
+summary(ensab$juice)
+
+ensab <- ensab %>%
+  mutate(juice = case_when(
+    juice == 3 ~ 2,  # Recode 3 to 2
+    juice == 4 ~ 3,  # Recode 4 to 3
+    juice == 5 ~ 3,  # Recode 5 to 3
+    juice == 6 ~ 4,  # Recode 6 to 4
+    TRUE ~ juice     # Keep other values unchanged
+  )) %>%
+  mutate(juice = factor(juice,
+                        levels = c(0, 1, 2, 3, 4),
+                        labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
+summary(ensab$juice)
 ```
 
-### Bottle use: M3_225, M3_226, M3_227, M3_227A-M3_227CU, and M3_228
-
-For M3_227, we want to include:
-- D: sugared drinks
-- F: sodas
-- G: others, explore which ones and if they are cariogenic or not
-Exclude A (mothers milk), B (formula), C (other types of milk).
-E is unsure if it includes cariogenic drinks
-
-```{r}
-#Bottle use at the moment of the survey
-
-ensab %>%
-  filter(M3_225 == 2) %>%
-  count()
-#4487 don't use the bottle currently
-
-#proportion of those who use and dont use bottle: variable M3_225
-
-prop.table(table(ensab$M3_225)) #70% don't use the bottle
-
-glimpse(ensab$age)
-
-#of those that do, what age are they?
-ensab %>%
-  filter(M3_225 == 1) %>%
-  group_by(age) %>%
-  count()
-
-#225 and 226 include past and current use, might be a problem to create variable of age of bottle use. It might be more important what is in the bottle.
-
-#M3_226:
-
-ensab %>%
-  filter(M3_226 == 91) %>%
-  count()
-#1879 never were given bottle
-
-1879/6443*100
-
-ensab %>%
-  filter(M3_226 == 92) %>%
-  count()
-#30 NAs
-
-
-#M3_227: what do they put in the bottle. 0: no aplica, 1: aplica
-
-glimpse(ensab$M3_227CU)
-
-ensab %>%
-  filter(M3_227G == 1) %>%
-  dplyr::select(M3_227G, M3_227CU, ID_PERSONA) %>% #order M3_227CU in alphabetical order
-  distinct(M3_227CU)
-  
-```
 
 ## Possible confounders or EMM
 
@@ -661,8 +1238,142 @@ ensab %>%
   count()
 ```
 
+# Characteristics of sample: Table 1
 
-# Association between caries and possible exposures
+```{r}
+survensab <- svydesign(ids = ~census_mpio, data = ensab, strata = ~Estrato, weights = ~Fex_fin, nest = TRUE)
+summary(survensab)
+
+#age
+prop.table(svytable(~age, design = survensab))
+
+#sex
+prop.table(svytable(~sex, design = survensab))
+
+#socioeconomic status
+prop.table(svytable(~ses, design = survensab))
+
+#svymean(~cariesexp, design = survensab)
+#Error in onestrat(`attr<-`(x[index, , drop = FALSE], "recentering", recentering),  : 
+#  Stratum (7) has only one PSU at stage 1
+```
+
+Caries
+
+```{r}
+prop.table(svytable(~cariesexp, design = survensab))
+
+```
+
+# Association between caries and nutrition
+
+## Each food group separately
+
+Carbs
+
+```{r}
+#logistic regression
+
+#mcarbs <- svyglm(cariesexp ~ carbs, design = survensab, family = "binomial")
+mcarbs_svyno <- glm(cariesexp ~ carbs, data = ensab, family = "binomial")
+summary(mcarbs_svyno)
+
+mcarbs2_svyno <- glm(cariesexp ~ carbs + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
+summary(mcarbs2_svyno)
+
+```
+
+Veg
+
+```{r}
+mveg_svyno <- glm(cariesexp ~ veg, data = ensab, family = "binomial")
+summary(mveg_svyno)
+
+mveg2_svyno <- glm(cariesexp ~ veg + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
+summary(mveg2_svyno)
+exp(mveg2_svyno$coefficients)
+
+```
+
+Fruit
+
+```{r}
+mfruit_svyno <- glm(cariesexp ~ fruit, data = ensab, family = "binomial")
+summary(mfruit_svyno)
+
+mfruit2_svyno <- glm(cariesexp ~ fruit + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
+summary(mfruit2_svyno)
+exp(mfruit2_svyno$coefficients)
+```
+
+Protein
+
+```{r}
+mprot_svyno <- glm(cariesexp ~ prot, data = ensab, family = "binomial")
+summary(mprot_svyno)
+
+mprot2_svyno <- glm(cariesexp ~ prot + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
+summary(mprot2_svyno)
+exp(mprot2_svyno$coefficients)
+
+```
+
+Dairy
+
+```{r}
+mdairy_svyno <- glm(cariesexp ~ dairy, data = ensab, family = "binomial")
+summary(mdairy_svyno)
+
+mdairy2_svyno <- glm(cariesexp ~ dairy + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
+summary(mdairy2_svyno)
+exp(mdairy2_svyno$coefficients)
+```
+
+Fats
+
+```{r}
+mfats_svyno <- glm(cariesexp ~ fats, data = ensab, family = "binomial")
+summary(mfats_svyno)
+
+mfats2_svyno <- glm(cariesexp ~ fats + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
+summary(mfats2_svyno)
+exp(mfats2_svyno$coefficients)
+```
+
+Sugar
+
+```{r}
+msugar_svyno <- glm(cariesexp ~ sugar, data = ensab, family = "binomial")
+summary(msugar_svyno)
+
+msugar2_svyno <- glm(cariesexp ~ sugar + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
+summary(msugar2_svyno)
+exp(msugar2_svyno$coefficients)
+```
+
+Soda
+
+```{r}
+msoda_svyno <- glm(cariesexp ~ soda, data = ensab, family = "binomial")
+summary(msoda_svyno)
+
+msoda2_svyno <- glm(cariesexp ~ soda + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
+summary(msoda2_svyno)
+exp(msoda2_svyno$coefficients)
+
+```
+
+Juice
+
+```{r}
+mjuice_svyno <- glm(cariesexp ~ juice, data = ensab, family = "binomial")
+summary(mjuice_svyno)
+
+mjuice2_svyno <- glm(cariesexp ~ juice + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
+summary(mjuice2_svyno)
+exp(mjuice2_svyno$coefficients)
+```
+
 
 ## Exploring the relationship between age of first appointment and caries (dmft)
 
