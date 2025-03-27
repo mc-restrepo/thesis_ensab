@@ -50,6 +50,7 @@ We have a total of 6446 children for the sample size
 
 ```{r}
 glimpse(ninoscompleta)
+summary(ninoscompleta$Estrato)
 names(ninoscompleta)
 ```
 
@@ -72,7 +73,6 @@ Keep variables:
 - Region: a donde pertenece el municipio
 - Subreg:
 - Municipio:
-- Estrato: Estrato muestral dentro de subregion
 - Fex_fin: factor de expansion final
 - Sexo
 - Zona: urbana, rural
@@ -86,7 +86,7 @@ Grupo etareo was excluded because it is the same as age.
 
 ```{r}
 ninos <- ninoscompleta %>% 
-  dplyr::select(ÿDANE, MPIO, DPTO, M3_100C, M3_113D, M3_113E, M3_113F, M3_119, M3_201, M3_202, M3_224, M3_225, M3_226, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, M3_229AA, M3_229AB, M3_229BA, M3_229BB, M3_229CA, M3_229CB, M3_229DA, M3_229DB, M3_229EA, M3_229EB, M3_229FA, M3_229FB, M3_229GA, M3_229GB, M3_229HA, M3_229HB, M3_229IA, M3_229IB, Region, Subreg, Municipio, Estrato, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA, Grandesciudades)
+  dplyr::select(ÿDANE, MPIO, DPTO, M3_100C, M3_113D, M3_113E, M3_113F, M3_119, M3_201, M3_202, M3_205, M3_213, M3_226, M3_206A, M3_224, M3_225, M3_206B, M3_227, M3_227A, M3_227B, M3_227C, M3_227D, M3_227E, M3_227F, M3_227G, M3_227CU, M3_229AA, M3_229AB, M3_229BA, M3_229BB, M3_229CA, M3_229CB, M3_229DA, M3_229DB, M3_229EA, M3_229EB, M3_229FA, M3_229FB, M3_229GA, M3_229GB, M3_229HA, M3_229HB, M3_229IA, M3_229IB, Region, Subreg, Municipio, Fex_fin, Sexo, Zona, EST_SE_2, FRACCION, REGIMEN, ID_HOGAR, ID_PERSONA, Grandesciudades)
 
 glimpse(ninos)
 
@@ -115,6 +115,14 @@ hogarcompleta %>%
 #14238 NAs. Won't use it
 ```
 
+# Explorative data analysis
+
+Steps of explorative data analysis:
+1. Explore each variable, look at the data
+2. Explore the distribution of each variable
+3. Look at the relationships between variables
+5. Explore the amount of missing data and make decisions for dropping the variable, observations or imputing
+6. Final analytical data set for bivariate associations and multivariable associations
 
 ## Main outcome: caries experience and severity
 
@@ -607,33 +615,6 @@ summary(ensab$cariesexp)
 
 ```
 
-
-## Account for survey design and weights
-
-Primary sampling unit: municipality
-
-Sampling strata: subregion, named as Estrato in the data set. 
-
-```{r}
-survensab <- svydesign(ids = ~census_mpio, data = ensab, strata = ~Estrato, weights = ~Fex_fin, nest = TRUE)
-summary(survensab)
-
-#checking how many children share the same household
-
-ensab %>%
-  group_by(ID_HOGAR) %>%
-  count() %>%
-  arrange(desc(n)) %>%
-  filter(n > 1) %>%
-  rename(cph = n) %>%
-  group_by(cph) %>%
-  summarise(prop = n() / nrow(ensab) * 100)
-
-#737 children share the same household with another child included in the study. We won't take it into account for now.
-
-```
-
-
 # Key variables
 
 Age: M3_100C
@@ -668,6 +649,8 @@ F.	Fats and oils: fats
 G.	Sugars and sweets: sugar
 H.	Sodas and soft drinks: soda
 I.	Juices, natural or artificial: juice
+
+carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice
 
 ```{r}
 
@@ -768,7 +751,11 @@ ensab %>%
   group_by(juice_week, juice_day) %>%
   count()
 
-# Create a nutrition index for each category
+```
+
+### Nutrition index for each category
+
+```{r}
 
 ensab <- ensab %>%
   mutate(carbs = case_when(
@@ -801,6 +788,13 @@ ensab <- ensab %>%
                         labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
 summary(ensab$carbs)
 
+ggplot(data = ensab, aes(x = carbs)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Carbs Index score", y = "Participants", title = "Distribution of Carbs Index score recoded")
+```
+
+
+```{r}
 #Vegetables
 
 ensab <- ensab %>%
@@ -836,6 +830,10 @@ ensab <- ensab %>%
                         labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
 summary(ensab$veg)
 
+ggplot(data = ensab, aes(x = veg)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Veg Index score", y = "Participants", title = "Distribution of Veg Index score recoded")
+
 #Fruit
 
 ensab <- ensab %>%
@@ -870,6 +868,10 @@ ensab <- ensab %>%
                         levels = c(0, 1, 2, 3, 4),
                         labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
 summary(ensab$fruit)
+ggplot(data = ensab, aes(x = fruit)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Fruit Index score", y = "Participants", title = "Distribution of Fruit Index score recoded")
+
 
 #Protein
 
@@ -903,6 +905,10 @@ ensab <- ensab %>%
                        levels = c(0, 1, 2, 3, 4),
                        labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
 summary(ensab$prot)
+summary(ensab$prot)
+ggplot(data = ensab, aes(x = prot)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Prot Index score", y = "Participants", title = "Distribution of Prot Index score recoded")
 
 #dairy
 
@@ -936,6 +942,10 @@ ensab <- ensab %>%
                         levels = c(0, 1, 2, 3, 4),
                         labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
 summary(ensab$dairy)
+summary(ensab$dairy)
+ggplot(data = ensab, aes(x = dairy)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Dairy Index score", y = "Participants", title = "Distribution of Dairy Index score recoded")
 
 #Fats
 
@@ -969,6 +979,9 @@ ensab <- ensab %>%
                        levels = c(0, 1, 2, 3, 4),
                        labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
 summary(ensab$fats)
+ggplot(data = ensab, aes(x = fats)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Fats Index score", y = "Participants", title = "Distribution of Fats Index score recoded")
 
 #Sugar
 
@@ -1003,6 +1016,9 @@ ensab <- ensab %>%
                         levels = c(0, 1, 2, 3, 4),
                         labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
 summary(ensab$sugar)
+ggplot(data = ensab, aes(x = sugar)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Sugar Index score", y = "Participants", title = "Distribution of Sugar Index score recoded")
 
 #Soda
 
@@ -1036,6 +1052,10 @@ ensab <- ensab %>%
                        levels = c(0, 1, 2, 3, 4),
                        labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
 summary(ensab$soda)
+ggplot(data = ensab, aes(x = soda)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Soda Index score", y = "Participants", title = "Distribution of Soda Index score recoded")
+
 
 #Juice
 
@@ -1069,6 +1089,41 @@ ensab <- ensab %>%
                         levels = c(0, 1, 2, 3, 4),
                         labels = c("Never", "1x", "2-3x", "4-7x", "8+x")))
 summary(ensab$juice)
+ggplot(data = ensab, aes(x = juice)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(x = "Juice Index score", y = "Participants", title = "Distribution of Juice Index score recoded")
+```
+
+### NAs in all nutrition variables
+
+```{r}
+#check for NAs in all nutrition variables
+
+missingnut <- ensab %>%
+  dplyr::select(carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice) %>%
+  summarise(across(everything(), ~ sum(is.na(.)))) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "NAs") %>%
+  arrange(desc(NAs))
+missingnut
+
+#proportion of missing values
+sum(missingnut$NAs)/nrow(ensab) #1.3%, so will exclude. Should now have at least 6355 observations
+
+ensab <- ensab %>%
+  filter(!is.na(carbs) & !is.na(veg) & !is.na(fruit) & !is.na(prot) & !is.na(dairy) & !is.na(fats) & !is.na(sugar) & !is.na(soda) & !is.na(juice))
+#Now we have 6382 observations, which means most of this NAs were from the same participants. 
+6443-6382 #61 participants had at least one missing value in the nutrition variables
+
+#check if there are still NAs
+
+ensab %>%
+  dplyr::select(carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice) %>%
+  summarise(across(everything(), ~ sum(is.na(.)))) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "NAs") %>%
+  arrange(desc(NAs)) #no NAs now
+
+6382/6446*100
+#retained 99% of the sample
 ```
 
 
@@ -1186,6 +1241,8 @@ ensab <- ensab %>%
 summary(ensab$insurance)
 ```
 
+### Location 
+
 Region
 
 ```{r}
@@ -1240,39 +1297,1163 @@ ensab %>%
 
 # Characteristics of sample: Table 1
 
+
+## Account for survey design and weights
+
+checking how many children share the same household
 ```{r}
-survensab <- svydesign(ids = ~census_mpio, data = ensab, strata = ~Estrato, weights = ~Fex_fin, nest = TRUE)
+ensab %>%
+  group_by(ID_HOGAR) %>%
+  count() %>%
+  arrange(desc(n)) %>%
+  filter(n > 1) %>%
+  rename(cph = n) %>%
+  group_by(cph) %>%
+  summarise(prop = n() / nrow(ensab) * 100)
+
+#737 children share the same household with another child included in the study. We won't take it into account for now.
+```
+
+Primary sampling unit: municipality
+
+Sampling strata: Could be region or subregion
+
+Documentation about survey package, and understanding finite population correction (fpc)
+
+```{r}
+
+ensab %>%
+  group_by(Subreg) %>%
+  count()
+
+#Region as strata
+survensab <- svydesign(
+  ids = ~census_mpio, 
+  data = ensab, 
+  strata = ~Region, 
+  weights = ~Fex_fin, 
+  nest = TRUE
+)
+
+#calculate fpc
+
+reg_raw <- table(ensab$Region)
+reg_exp <- svytable(~Region, design = survensab) #expanded number of participants 
+reg_raw
+reg_exp
+sum(reg_raw)
+sum(reg_exp)
+
+#checking ratio of raw vs expanded
+sum(reg_raw)/sum(reg_exp)
+
+#total sample checking ratio of raw vs expanded
+1498/5215631
+
+#calculate the proportion of the population sampled in each region
+reg_prop <- reg_raw/reg_exp
+reg_prop
+
+ensab <- ensab %>%
+  mutate(region_prop = case_when(
+    Region == 1 ~ reg_prop[1],
+    Region == 2 ~ reg_prop[2],
+    Region == 3 ~ reg_prop[3],
+    Region == 4 ~ reg_prop[4],
+    Region == 5 ~ reg_prop[5],
+    Region == 6 ~ reg_prop[6]
+  ))
+
+ensab %>%
+  group_by(Region) %>%
+  summarise(prop = mean(region_prop)) #checking the values for fpc are correct
+
+survensab <- svydesign(
+  ids = ~census_mpio, 
+  data = ensab, 
+  strata = ~Region, 
+  weights = ~Fex_fin, 
+  nest = TRUE,
+  options = list(survey.lonely.psu = "adjust"),
+  fpc = ~region_prop)
+
+sum(reg_exp)
+sum(ensab$Fex_fin)
+
+#adding fpc still didn't work. Using subregion as strata for now
+
+#Subregion as strata
+survensab <- svydesign(
+  ids = ~census_mpio, 
+  data = ensab, 
+  strata = ~Subreg, 
+  weights = ~Fex_fin, 
+  nest = TRUE
+)
+
 summary(survensab)
-
-#age
-prop.table(svytable(~age, design = survensab))
-
-#sex
-prop.table(svytable(~sex, design = survensab))
-
-#socioeconomic status
-prop.table(svytable(~ses, design = survensab))
 
 #svymean(~cariesexp, design = survensab)
 #Error in onestrat(`attr<-`(x[index, , drop = FALSE], "recentering", recentering),  : 
 #  Stratum (7) has only one PSU at stage 1
+
+#adjust, certainty, remove
+  
 ```
 
-Caries
+## Table 1 stratified by outcome (caries or no caries)
+
+```{r}
+#Total sample
+
+table(ensab$cariesexp)
+svytable(~cariesexp, design = survensab)
+
+```
+
+Age
+
+```{r}
+age_total <- prop.table(svytable(~age, design = survensab))
+age_total <- round(age_total * 100, 2)
+age_total
+
+#by outcome (caries experience)
+summary(ensab$cariesexp)
+age_caries <- prop.table(svytable(~age, design = subset(survensab, cariesexp == "Caries")))
+age_caries <- round(age_caries * 100, 2)
+age_caries
+
+age_nocaries <- prop.table(svytable(~age, design = subset(survensab, cariesexp == "No caries")))
+age_nocaries <- round(age_nocaries * 100, 2)
+age_nocaries
+```
+
+Sex
+
+```{r}
+sex_total <- prop.table(svytable(~sex, design = survensab))
+sex_total <- round(sex_total * 100, 2)
+sex_total
+
+#by outcome (cariesexp)
+
+sex_caries <-  prop.table(svytable(~sex, design = subset(survensab, cariesexp == "Caries")))
+sex_caries <- round(sex_caries * 100, 2)
+sex_caries
+
+sex_nocaries <- prop.table(svytable(~sex, design = subset(survensab, cariesexp == "No caries")))
+sex_nocaries <- round(sex_nocaries*100, 2)
+sex_nocaries
+```
+
+Socioeconomic status
+
+```{r}
+ses_total <- prop.table(svytable(~ses, design = survensab))
+ses_total <- round(ses_total * 100, 2)
+ses_total
+
+#by outcome (cariesexp)
+
+ses_caries <- prop.table(svytable(~ses, design = subset(survensab, cariesexp == "Caries")))
+ses_caries <- round(ses_caries * 100, 2)
+ses_caries
+
+ses_nocaries <- prop.table(svytable(~ses, design = subset(survensab, cariesexp == "No caries")))
+ses_nocaries <- round(ses_nocaries * 100, 2)
+ses_nocaries
+
+```
+
+Income
+
+```{r}
+income_total <- prop.table(svytable(~income, design = survensab))
+income_total <- round(income_total * 100, 2)
+income_total
+
+#by outcome (cariesexp)
+
+income_caries <- prop.table(svytable(~income, design = subset(survensab, cariesexp == "Caries")))
+income_caries <- round(income_caries * 100, 2)
+income_caries
+
+income_nocaries <- prop.table(svytable(~income, design = subset(survensab, cariesexp == "No caries")))
+income_nocaries <- round(income_nocaries * 100, 2)
+income_nocaries
+
+```
+
+Region
+
+```{r}
+region_total <- prop.table(svytable(~region, design = survensab))
+region_total <- round(region_total * 100, 2)
+region_total
+paste(region_total, collapse = " ")
+
+#by outcome (cariesexp)
+
+region_caries <- prop.table(svytable(~region, design = subset(survensab, cariesexp == "Caries")))
+region_caries <- round(region_caries * 100, 2)
+region_caries
+paste(region_caries, collapse = " ")
+
+region_nocaries <- prop.table(svytable(~region, design = subset(survensab, cariesexp == "No caries")))
+region_nocaries <- round(region_nocaries * 100, 2)
+region_nocaries
+paste(region_nocaries, collapse = " ")
+
+```
+
+Area of residence
+
+```{r}
+location_total <- prop.table(svytable(~location, design = survensab))
+location_total <- round(location_total * 100, 2)
+location_total
+
+#by outcome (cariesexp)
+
+location_caries <- prop.table(svytable(~location, design = subset(survensab, cariesexp == "Caries")))
+location_caries <- round(location_caries * 100, 2)
+location_caries
+
+location_nocaries <- prop.table(svytable(~location, design = subset(survensab, cariesexp == "No caries")))
+location_nocaries <- round(location_nocaries * 100, 2)
+location_nocaries
+
+```
+
+Insurance
+
+```{r}
+insurance_total <- prop.table(svytable(~insurance, design = survensab))
+insurance_total <- round(insurance_total * 100, 2)
+insurance_total
+
+#by outcome (cariesexp)
+
+insurance_caries <- prop.table(svytable(~insurance, design = subset(survensab, cariesexp == "Caries")))
+insurance_caries <- round(insurance_caries * 100, 2)
+insurance_caries
+
+insurance_nocaries <- prop.table(svytable(~insurance, design = subset(survensab, cariesexp == "No caries")))
+insurance_nocaries <- round(insurance_nocaries * 100, 2)
+insurance_nocaries
+
+```
+
+### Age of first dental visit (agefdv)
+
+It is composed of:
+- M3_206A: numeric
+- M3_206B: 1: months, 2: years
+
+Take into account M3_205: have they ever had an appointment with a dentist?  
+1: yes, 2: no, 3: doesn't know
+
+Combine 206A and 205 to categorize.
+
+```{r}
+#Turn M3_206A into a numeric variable
+ensab$M3_206A <- as.numeric(ensab$M3_206A)
+
+summary(ensab$M3_206A)
+
+ensab %>%
+  filter(M3_205 == 2 | M3_205 == 3) %>%
+  count()
+#2648: coincides with the number of NAs
+
+ensab %>%
+  filter(M3_205 == 3) %>%
+  count()
+#only 46 participants have missing values for M3_205
+
+#multiply values in the filtered rows by 12 and categorize
+ensab <- ensab %>%
+  mutate(agefdv = if_else(M3_206B == 2, M3_206A * 12, M3_206A))
+
+ggplot(ensab, aes(x = agefdv)) +
+  geom_histogram(fill = "skyblue", color = "black") +
+  scale_x_continuous(breaks = seq(min(ensab$agefdv, na.rm = TRUE), max(ensab$agefdv, na.rm = TRUE), by = 6)) +
+  labs(x = "Age of first dental visit", y = "Participants", title = "Distribution of age of first dental visit")
+
+# can do bins 0-6, 7-12, 13-24, 25-36, 37-48, 49-72, or just divide into 3.
+
+ensab <- ensab %>%
+  mutate(agefdv = case_when(
+    M3_205 == 3 ~ NA_real_,
+    M3_205 == 2 ~ 0,
+    agefdv <= 12 ~ 1,
+    agefdv > 12 ~ 2,
+    TRUE ~ agefdv)) %>%
+  mutate(agefdv = factor(agefdv, 
+                         levels = c(0, 1, 2), 
+                         labels = c("Never", "0-12", "13+")))
+
+summary(ensab$agefdv)
+
+ensab <- ensab %>%
+  dplyr::select(-M3_206B, -M3_206A)
+```
+
+Proportions
+
+```{r}
+
+survensab <- svydesign(
+  ids = ~census_mpio, 
+  data = ensab, 
+  strata = ~Subreg, 
+  weights = ~Fex_fin, 
+  nest = TRUE
+)
+
+agefdv_total <- prop.table(svytable(~factor(agefdv, exclude = NULL), design = survensab))
+agefdv_total <- round(agefdv_total * 100, 2)
+agefdv_total
+
+#by outcome (cariesexp)
+
+agefdv_caries <- prop.table(svytable(~factor(agefdv, exclude = NULL), design = subset(survensab, cariesexp == "Caries")))
+agefdv_caries <- round(agefdv_caries * 100, 2)
+agefdv_caries
+
+agefdv_nocaries <- prop.table(svytable(~factor(agefdv, exclude = NULL), design = subset(survensab, cariesexp == "No caries")))
+agefdv_nocaries <- round(agefdv_nocaries * 100, 2)
+agefdv_nocaries
+
+
+```
+
+
+### Reason for last consultation (reason), will not be included for now
+
+M3_209: 
+1: por una urgencia
+2: para un tratamiento
+3: por revision/prevencion
+4: certificado odontologico
+
+M207 Is important: when was the last appointment of the child with the dentist?
+1: less than a year ago
+2: between 1-2 years
+3: more than 3 years
+4: does not remember (NA)
+
+### Age of start of dental hygiene = agehyg
+
+M3_213: units are months, continuous
+91: doesn't know
+92: has never gotten dental hygiene done
+
+```{r}
+ensab %>%
+  filter(M3_213 == 91 | M3_213 == 92) %>%
+  count()
+#385
+
+ensab %>%
+  filter(M3_213 == 91) %>%
+  count()
+#NA
+
+ensab %>%
+  group_by(age) %>%
+  filter(M3_213 == 92) %>%
+  count()
+#226 children at 1 years old have never gotten dental hygiene done, 4 at age 3 and 2 at age 5
+
+glimpse(ensab$M3_213)
+
+#create distribution
+ensab %>%
+  filter(!(M3_213 %in% c(91, 92))) %>%
+  ggplot(aes(x = M3_213)) +
+  geom_histogram(fill = "skyblue", color = "black") +
+  scale_x_continuous(breaks = seq(min(ensab$M3_213, na.rm = TRUE), max(ensab$M3_213, na.rm = TRUE), by = 6)) +
+  labs(x = "Age of start of dental hygiene", y = "Participants", title = "Distribution of age of start of dental hygiene")
+
+#max value of M3_213 without 91 or 92 using summary only for M3_213
+
+ensab %>%
+  filter(!(M3_213 %in% c(91, 92))) %>%
+  summary()
+
+#Categorize into: never, 0-6 months, more than 6 months
+
+ensab <- ensab %>%
+  mutate(agehyg = case_when(
+    M3_213 == 91 ~ NA_real_,
+    M3_213 <= 6 ~ 1,
+    M3_213 > 6 & M3_213 <= 12 ~ 2,
+    M3_213 > 12 & M3_213 <= 36 ~ 3,
+    M3_213 == 92 ~ 4
+  )) %>%
+  mutate(agehyg = factor(agehyg, 
+                        levels = c(1, 2, 3, 4),
+                        labels = c( "0-6 months", "6-12 months", "+12 months", "Never")))
+
+#Proportions
+
+ensab %>%
+  group_by(age, agehyg) %>%
+  count() %>%
+  group_by(age) %>%
+  mutate(prop = n / sum(n) * 100)
+
+```
+
+Proportions with survey design
+
+```{r}
+survensab <- svydesign(
+  ids = ~census_mpio, 
+  data = ensab, 
+  strata = ~Subreg, 
+  weights = ~Fex_fin, 
+  nest = TRUE
+)
+
+agehyg_total <- prop.table(svytable(~factor(agehyg, exclude = NULL), design = survensab))
+agehyg_total <- round(agehyg_total * 100, 2)
+agehyg_total
+
+#by outcome (cariesexp)
+
+agehyg_caries <- prop.table(svytable(~factor(agehyg, exclude = NULL), design = subset(survensab, cariesexp == "Caries")))
+agehyg_caries <- round(agehyg_caries * 100, 2)
+agehyg_caries
+
+agehyg_nocaries <- prop.table(svytable(~factor(agehyg, exclude = NULL), design = subset(survensab, cariesexp == "No caries")))
+agehyg_nocaries <- round(agehyg_nocaries * 100, 2)
+agehyg_nocaries
+
+```
+
+
+### Bottle feeding
+
+
+# Table 2: Caries experience
 
 ```{r}
 prop.table(svytable(~cariesexp, design = survensab))
 
+survensab_rep <- as.svrepdesign(
+    survensab, 
+    type = "bootstrap", 
+    replicates = 500
+  )
+
+survensab_rep
+
+#cariesexp proportion with bootstrapping standard error (survensab_rep)
+
+prop.table(svymean(~cariesexp, design = survensab_rep))
+confint(svymean(~cariesexp, design = survensab_rep))
+
+#as.svrepdesign
+
+(sqrt(0.6775306)*0.3224694)/6382
+
+#accounting for survey design
+
+#svymean(~cariesexp, design = survensab)
+#Error in onestrat(`attr<-`(x[index, , drop = FALSE], "recentering", recentering),  : 
+#  Stratum (7) has only one PSU at stage 1
+
+if(!require("interpretCI")) install.packages("interpretCI")
+library(interpretCI)
+prop.table(table(ensab$cariesexp))
+propCI(n = 6382, x = 0.6775306, alpha = 0.05)
+
+prop.table(svytable(~cariesexp, design = survensab))
+
+svymean(~cariesexp, design = survensab_rep)
+
+table(ensab$cariesexp)
 ```
 
-# Association between caries and nutrition
+Multi-level logistic regression to account for clustering by subregion and region
 
-## Each food group separately
+```{r}
+library(lme4)
 
-Carbs
+maria <- glmer(cariesexp ~ 1| Region, data = ensab, family = "binomial")
+summary(maria)
+
+predictedmaria <- predict(maria)
+
+table(predictedmaria)
+
+#without clustering
+
+maria2 <- glm(cariesexp ~ 1, data = ensab, family = "binomial")
+summary(maria2)
+
+exp(0.74245-1.96*0.02678)/(1+exp(0.74245-1.96*0.02678))
+exp(0.74245+1.96*0.02678)/(1+exp(0.74245+1.96*0.02678))
+
+#.6648452    .6879348
+
+#CI maria
+
+exp(0.74234-1.96*0.09807)/(1+exp(0.74234-1.96*0.09807))
+exp(0.74234+1.96*0.09807)/(1+exp(0.74234+1.96*0.09807))
+
+#bootstrapped
+
+0.66719-1.96*0.0191
+0.66719+1.96*0.0191
+
+#clustering with subregion and region
+
+maria_subreg <- glmer(cariesexp ~ 1| Region: Subreg, data = ensab, family = "binomial")
+summary(maria_subreg)
+# confidence intervals
+exp(0.7300-1.96*0.1179)/(1+exp(0.7300-1.96*0.1179))
+exp(0.7300+1.96*0.1179)/(1+exp(0.7300+1.96*0.1179))
+
+#try adding weights, may not be necessary
+
+#maria_sub_w <- glmer(cariesexp ~ 1| Region: Subreg, weights=Fex_fin, data = ensab, family = "binomial")
+
+glimpse(ensab)
+```
+
+
+## Collapsing categories with few numbers of observations
+
+Socioeconomic status: Collapse "Middle low" into "Middle to high
+
+```{r}
+  
+summary(ensab$ses)
+
+ensab <- ensab %>%
+  mutate(ses = dplyr::recode(ses,
+                      "Middle low" = "Middle to high"))
+
+summary(ensab$ses) #middle to high is now 999+94
+```
+
+Income: Collapse Unemployed with Less than half NMW and collapse 2-3 NWM, 3-4 NMW and More than 4 NMW
+
+```{r}
+summary(ensab$income)
+ensab <- ensab %>%
+  mutate(income = dplyr::recode(income,
+                                "Unemployed" = "Less than half NMW",
+                                "2-3 NMW" = "More than 2 NMW",
+                                "3-4 NMW" = "More than 2 NMW",
+                                "More than 4 NMW" = "More than 2 NMW"))
+summary(ensab$income)
+summary(as.numeric(ensab$income))
+```
+
+Cereals: Collapse Never and Once a week with 2-3 times a week, to <4x (less than four times a week)
+
+```{r}
+summary(ensab$carbs)
+summary(as.numeric(ensab$carbs))
+
+ensab <- ensab %>%
+  mutate(carbs = dplyr::recode(carbs,
+                               "Never" = "<4x",
+                               "1x" = "<4x",
+                               "2-3x" = "<4x"))
+
+summary(ensab$carbs)
+summary(as.numeric(ensab$carbs))
+```
+
+Fruits: Collapse Never and Once a week into <2x (less than twice a week)
+
+```{r}
+summary(ensab$fruit)
+ensab <- ensab %>%
+  mutate(fruit = dplyr::recode(fruit,
+                               "Never" = "<2x",
+                               "1x" = "<2x"))
+summary(ensab$fruit)
+```
+
+Protein:  Collapse Never and Once a week with 2-3 times a week, to <4x (less than four times a week)
+
+```{r}
+summary(ensab$prot)
+ensab <- ensab %>%
+  mutate(prot = dplyr::recode(prot,
+                               "Never" = "<4x",
+                               "1x" = "<4x",
+                               "2-3x" = "<4x"))
+summary(ensab$prot)
+```
+
+Dairy: Collapse Never and Once a week into <2x (less than twice a week)
+
+```{r}
+summary(ensab$dairy)
+ensab <- ensab %>%
+  mutate(dairy = dplyr::recode(dairy,
+                               "Never" = "<2x",
+                               "1x" = "<2x"))
+summary(ensab$dairy)
+```
+
+Juice: Collapse Never and Once a week into <2x (less than twice a week)
+
+```{r}
+summary(ensab$juice)
+ensab <- ensab %>%
+  mutate(juice = dplyr::recode(juice,
+                               "Never" = "<2x",
+                               "1x" = "<2x"))
+summary(ensab$juice)
+```
+
+# Association between nutrition and caries
+
+Steps of multivariable analysis:
+1. DAG
+2. Fit different models
+4. Check for multi-collinearity with VIF
+5. Check model fit with likelihood ratio test (chi squared): nested models. Backwards or forwards selection
+
+
+## Table 2: Proportions for each
+
+carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice
+
+### Carbs proportions
+
+```{r}
+carbs_total <- prop.table(svytable(~carbs, design = survensab))
+carbs_total <- round(carbs_total * 100, 2)
+carbs_total
+
+carbsprop <- glmer(carbs ~ 1| Region : Subreg, data = ensab, family = "binomial")
+summary(carbsprop)
+
+prop.table(svymean(~carbs, design = survensab_rep))
+```
+
+
+### Vegetables proportions
+
+```{r}
+veg_total <- prop.table(svytable(~veg, design = survensab))
+veg_total <- round(veg_total * 100, 2)
+veg_total
+```
+
+Fruits proportions
+
+```{r}
+fruit_total <- prop.table(svytable(~fruit, design = survensab))
+fruit_total <- round(fruit_total * 100, 2)
+fruit_total
+
+```
+
+Protein proportions
+
+```{r}
+prot_total <- prop.table(svytable(~prot, design = survensab))
+prot_total <- round(prot_total * 100, 2)
+prot_total
+```
+
+Protein proportions
+
+```{r}
+prot_total <- prop.table(svytable(~prot, design = survensab))
+prot_total <- round(prot_total * 100, 2)
+prot_total
+```
+
+Dairy proportions
+
+```{r}
+dairy_total <- prop.table(svytable(~dairy, design = survensab))
+dairy_total <- round(dairy_total * 100, 2)
+dairy_total
+```
+
+Fats proportions
+
+```{r}
+fats_total <- prop.table(svytable(~fats, design = survensab))
+fats_total <- round(fats_total * 100, 2)
+fats_total
+
+```
+
+Sugars
+
+```{r}
+sugar_total <- prop.table(svytable(~sugar, design = survensab))
+sugar_total <- round(sugar_total * 100, 2)
+sugar_total
+
+```
+
+Soda
+
+```{r}
+soda_total <- prop.table(svytable(~soda, design = survensab))
+soda_total <- round(soda_total * 100, 2)
+soda_total
+
+```
+
+Juice
+
+```{r}
+juice_total <- prop.table(svytable(~juice, design = survensab))
+juice_total <- round(juice_total * 100, 2)
+juice_total
+```
+
+## Table 3: Nested Random intercepts logistic regression
+
+To get OR Random intercept model (rim)
+
+Add every confounder one by one
+
+### Carbs
+
+```{r}
+library(MASS) #for stepAIC, but it doesn't work with glmer
+library(car) #for vif
+
+
+# Fit the full model (starting model)
+rimfull_carbs <- glmer(cariesexp ~ carbs + (1|Region:Subreg), data = ensab, family = binomial)
+
+# Add one predictor at a time and compare AIC
+rim_age_carbs <- update(rimfull_carbs, . ~ . + age)
+rim_sex_carbs <- update(rim_age_carbs, . ~ . + sex)
+rim_ses_carbs <- update(rim_sex_carbs, . ~ . + ses)
+rim_inc_carbs <- update(rim_ses_carbs, . ~ . + income)
+rim_loc_carbs <- update(rim_inc_carbs, . ~ . + location)
+rim_ins_carbs <- update(rim_loc_carbs, . ~ . + insurance)
+
+# Store models in a list
+models_carbs <- list(
+  "Full Model"     = rimfull_carbs,
+  "Age"            = rim_age_carbs,
+  "Sex"            = rim_sex_carbs,
+  "SES"            = rim_ses_carbs,
+  "Income"         = rim_inc_carbs,
+  "Location"       = rim_loc_carbs,
+  "Insurance"      = rim_ins_carbs
+)
+
+# Compare AIC values
+aic_carbs <- sapply(models_carbs, AIC)
+aic_carbs <- sort(aic_carbs)
+
+# Print sorted AIC values
+print(aic_carbs)
+
+summary(rim_ins_carbs)
+exp(fixef(rim_ins_carbs))
+#confint(rim_ins_carbs)
+
+#check multicollinearity with VIF
+vif(rim_ins_carbs) #it's low
+
+```
+### Veg
+
+```{r}
+# Fit the full model (starting model)
+rimfull_veg <- glmer(cariesexp ~ veg + (1|Region:Subreg), data = ensab, family = binomial)
+
+# Add one predictor at a time and compare AIC
+rim_age_veg <- update(rimfull_veg, . ~ . + age)
+rim_sex_veg <- update(rim_age_veg, . ~ . + sex)
+rim_ses_veg <- update(rim_sex_veg, . ~ . + ses)
+rim_inc_veg <- update(rim_ses_veg, . ~ . + income)
+rim_loc_veg <- update(rim_inc_veg, . ~ . + location)
+rim_ins_veg <- update(rim_loc_veg, . ~ . + insurance)
+
+# Store models in a list
+models_veg <- list(
+  "Full Model"     = rimfull_veg,
+  "Age"            = rim_age_veg,
+  "Sex"            = rim_sex_veg,
+  "SES"            = rim_ses_veg,
+  "Income"         = rim_inc_veg,
+  "Location"       = rim_loc_veg,
+  "Insurance"      = rim_ins_veg
+)
+
+# Compare AIC values
+aic_veg <- sapply(models_veg, AIC)
+aic_veg <- sort(aic_veg)
+
+# Print sorted AIC values
+print(aic_veg)
+
+summary(rim_ins_veg)
+exp(fixef(rim_ins_veg))
+#confint(rim_ins_veg)
+
+# Check multicollinearity with VIF
+vif(rim_ins_veg) # it's low
+
+```
+### Fruit
+
+```{r}
+# Fit the full model (starting model)
+rimfull_fruit <- glmer(cariesexp ~ fruit + (1|Region:Subreg), data = ensab, family = binomial)
+summary(rimfull_fruit)
+
+# Add one predictor at a time and compare AIC
+rim_age_fruit <- update(rimfull_fruit, . ~ . + age)
+rim_sex_fruit <- update(rim_age_fruit, . ~ . + sex)
+rim_ses_fruit <- update(rim_sex_fruit, . ~ . + ses)
+rim_inc_fruit <- update(rim_ses_fruit, . ~ . + income)
+rim_loc_fruit <- update(rim_inc_fruit, . ~ . + location)
+rim_ins_fruit <- update(rim_loc_fruit, . ~ . + insurance)
+
+# Store models in a list
+models_fruit <- list(
+  "Full Model"     = rimfull_fruit,
+  "Age"            = rim_age_fruit,
+  "Sex"            = rim_sex_fruit,
+  "SES"            = rim_ses_fruit,
+  "Income"         = rim_inc_fruit,
+  "Location"       = rim_loc_fruit,
+  "Insurance"      = rim_ins_fruit
+)
+
+# Compare AIC values
+aic_fruit <- sapply(models_fruit, AIC)
+aic_fruit <- sort(aic_fruit)
+
+# Print sorted AIC values
+print(aic_fruit)
+
+# Model summary
+summary(rim_ins_fruit)
+
+# Exponentiate fixed effects for odds ratios
+exp(fixef(rim_ins_fruit))
+
+# Confidence intervals for the fixed effects
+#confint(rim_ins_fruit)
+
+# Check multicollinearity with VIF
+vif(rim_ins_fruit) # it's low
+
+```
+
+### Protein
+
+```{r}
+# Fit the full model (starting model)
+# Fit the full model (starting model)
+rimfull_prot <- glmer(cariesexp ~ prot + (1|Region:Subreg), data = ensab, family = binomial)
+summary(rimfull_prot)
+
+# Add one predictor at a time and compare AIC
+rim_age_prot <- update(rimfull_prot, . ~ . + age)
+rim_sex_prot <- update(rim_age_prot, . ~ . + sex)
+rim_ses_prot <- update(rim_sex_prot, . ~ . + ses)
+rim_inc_prot <- update(rim_ses_prot, . ~ . + income)
+rim_loc_prot <- update(rim_inc_prot, . ~ . + location)
+rim_ins_prot <- update(rim_loc_prot, . ~ . + insurance)
+
+# Store models in a list
+models_prot <- list(
+  "Full Model"     = rimfull_prot,
+  "Age"            = rim_age_prot,
+  "Sex"            = rim_sex_prot,
+  "SES"            = rim_ses_prot,
+  "Income"         = rim_inc_prot,
+  "Location"       = rim_loc_prot,
+  "Insurance"      = rim_ins_prot
+)
+
+# Compare AIC values
+aic_prot <- sapply(models_prot, AIC)
+aic_prot <- sort(aic_prot)
+
+# Print sorted AIC values
+print(aic_prot)
+
+# Model summary
+summary(rim_ins_prot)
+
+# Exponentiate fixed effects for odds ratios
+exp(fixef(rim_ins_prot))
+
+# Confidence intervals for the fixed effects
+#confint(rim_ins_prot)
+
+# Check multicollinearity with VIF
+vif(rim_ins_prot) # it's low
+
+
+```
+
+### Dairy 
+
+```{r}
+# Fit the full model (starting model)
+rimfull_dairy <- glmer(cariesexp ~ dairy + (1|Region:Subreg), data = ensab, family = binomial)
+summary(rimfull_dairy)
+
+# Add one predictor at a time and compare AIC
+rim_age_dairy <- update(rimfull_dairy, . ~ . + age)
+rim_sex_dairy <- update(rim_age_dairy, . ~ . + sex)
+rim_ses_dairy <- update(rim_sex_dairy, . ~ . + ses)
+rim_inc_dairy <- update(rim_ses_dairy, . ~ . + income)
+rim_loc_dairy <- update(rim_inc_dairy, . ~ . + location)
+rim_ins_dairy <- update(rim_loc_dairy, . ~ . + insurance)
+
+# Store models in a list
+models_dairy <- list(
+  "Full Model"     = rimfull_dairy,
+  "Age"            = rim_age_dairy,
+  "Sex"            = rim_sex_dairy,
+  "SES"            = rim_ses_dairy,
+  "Income"         = rim_inc_dairy,
+  "Location"       = rim_loc_dairy,
+  "Insurance"      = rim_ins_dairy
+)
+
+# Compare AIC values
+aic_dairy <- sapply(models_dairy, AIC)
+aic_dairy <- sort(aic_dairy)
+
+# Print sorted AIC values
+print(aic_dairy)
+
+# Model summary
+summary(rim_ins_dairy)
+
+# Exponentiate fixed effects for odds ratios
+exp(fixef(rim_ins_dairy))
+
+# Confidence intervals for the fixed effects
+#confint(rim_ins_dairy)
+
+# Check multicollinearity with VIF
+vif(rim_ins_dairy) # it's low
+
+```
+
+### Fats
+
+```{r}
+# Fit the full model (starting model)
+rimfull_fats <- glmer(cariesexp ~ fats + (1|Region:Subreg), data = ensab, family = binomial)
+summary(rimfull_fats)
+
+# Add one predictor at a time and compare AIC
+rim_age_fats <- update(rimfull_fats, . ~ . + age)
+rim_sex_fats <- update(rim_age_fats, . ~ . + sex)
+rim_ses_fats <- update(rim_sex_fats, . ~ . + ses)
+rim_inc_fats <- update(rim_ses_fats, . ~ . + income)
+rim_loc_fats <- update(rim_inc_fats, . ~ . + location)
+rim_ins_fats <- update(rim_loc_fats, . ~ . + insurance)
+
+# Store models in a list
+models_fats <- list(
+  "Full Model"     = rimfull_fats,
+  "Age"            = rim_age_fats,
+  "Sex"            = rim_sex_fats,
+  "SES"            = rim_ses_fats,
+  "Income"         = rim_inc_fats,
+  "Location"       = rim_loc_fats,
+  "Insurance"      = rim_ins_fats
+)
+
+# Compare AIC values
+aic_fats <- sapply(models_fats, AIC)
+aic_fats <- sort(aic_fats)
+
+# Print sorted AIC values
+print(aic_fats)
+
+# Model summary
+summary(rim_ins_fats)
+
+# Exponentiate fixed effects for odds ratios
+exp(fixef(rim_ins_fats))
+
+# Confidence intervals for the fixed effects
+#confint(rim_ins_fats)
+
+# Check multicollinearity with VIF
+vif(rim_ins_fats) # it's low
+
+```
+
+
+### Sugar
+
+```{r}
+# Fit the full model (starting model)
+rimfull_sugar <- glmer(cariesexp ~ sugar + (1|Region:Subreg), data = ensab, family = binomial)
+summary(rimfull_sugar)
+
+# Add one predictor at a time and compare AIC
+rim_age_sugar <- update(rimfull_sugar, . ~ . + age)
+rim_sex_sugar <- update(rim_age_sugar, . ~ . + sex)
+rim_ses_sugar <- update(rim_sex_sugar, . ~ . + ses)
+rim_inc_sugar <- update(rim_ses_sugar, . ~ . + income)
+rim_loc_sugar <- update(rim_inc_sugar, . ~ . + location)
+rim_ins_sugar <- update(rim_loc_sugar, . ~ . + insurance)
+
+# Store models in a list
+models_sugar <- list(
+  "Full Model"     = rimfull_sugar,
+  "Age"            = rim_age_sugar,
+  "Sex"            = rim_sex_sugar,
+  "SES"            = rim_ses_sugar,
+  "Income"         = rim_inc_sugar,
+  "Location"       = rim_loc_sugar,
+  "Insurance"      = rim_ins_sugar
+)
+
+# Compare AIC values
+aic_sugar <- sapply(models_sugar, AIC)
+aic_sugar <- sort(aic_sugar)
+
+# Print sorted AIC values
+print(aic_sugar)
+
+# Model summary
+summary(rim_ins_sugar)
+
+# Exponentiate fixed effects for odds ratios
+exp(fixef(rim_ins_sugar))
+
+# Confidence intervals for the fixed effects
+#confint(rim_ins_sugar)
+
+# Check multicollinearity with VIF
+vif(rim_ins_sugar) # it's low
+
+```
+
+### Soda
+
+```{r}
+# Fit the full model (starting model)
+rimfull_soda <- glmer(cariesexp ~ soda + (1|Region:Subreg), data = ensab, family = binomial)
+summary(rimfull_soda)
+
+# Add one predictor at a time and compare AIC
+rim_age_soda <- update(rimfull_soda, . ~ . + age)
+rim_sex_soda <- update(rim_age_soda, . ~ . + sex)
+rim_ses_soda <- update(rim_sex_soda, . ~ . + ses)
+rim_inc_soda <- update(rim_ses_soda, . ~ . + income)
+rim_loc_soda <- update(rim_inc_soda, . ~ . + location)
+rim_ins_soda <- update(rim_loc_soda, . ~ . + insurance)
+
+# Store models in a list
+models_soda <- list(
+  "Full Model"     = rimfull_soda,
+  "Age"            = rim_age_soda,
+  "Sex"            = rim_sex_soda,
+  "SES"            = rim_ses_soda,
+  "Income"         = rim_inc_soda,
+  "Location"       = rim_loc_soda,
+  "Insurance"      = rim_ins_soda
+)
+
+# Compare AIC values
+aic_soda <- sapply(models_soda, AIC)
+aic_soda <- sort(aic_soda)
+
+# Print sorted AIC values
+print(aic_soda)
+
+# Model summary
+summary(rim_ins_soda)
+
+# Exponentiate fixed effects for odds ratios
+exp(fixef(rim_ins_soda))
+
+# Confidence intervals for the fixed effects
+#confint(rim_ins_soda)
+
+# Check multicollinearity with VIF
+vif(rim_ins_soda) # it's low
+
+```
+
+### Juice
+
+```{r}
+# Fit the full model (starting model)
+rimfull_juice <- glmer(cariesexp ~ juice + (1|Region:Subreg), data = ensab, family = binomial)
+summary(rimfull_juice)
+
+# Add one predictor at a time and compare AIC
+rim_age_juice <- update(rimfull_juice, . ~ . + age)
+rim_sex_juice <- update(rim_age_juice, . ~ . + sex)
+rim_ses_juice <- update(rim_sex_juice, . ~ . + ses)
+rim_inc_juice <- update(rim_ses_juice, . ~ . + income)
+rim_loc_juice <- update(rim_inc_juice, . ~ . + location)
+rim_ins_juice <- update(rim_loc_juice, . ~ . + insurance)
+
+# Store models in a list
+models_juice <- list(
+  "Full Model"     = rimfull_juice,
+  "Age"            = rim_age_juice,
+  "Sex"            = rim_sex_juice,
+  "SES"            = rim_ses_juice,
+  "Income"         = rim_inc_juice,
+  "Location"       = rim_loc_juice,
+  "Insurance"      = rim_ins_juice
+)
+
+# Compare AIC values
+aic_juice <- sapply(models_juice, AIC)
+aic_juice <- sort(aic_juice)
+
+# Print sorted AIC values
+print(aic_juice)
+
+# Model summary
+summary(rim_ins_juice)
+
+# Exponentiate fixed effects for odds ratios
+exp(fixef(rim_ins_juice))
+
+# Confidence intervals for the fixed effects
+#confint(rim_ins_juice)
+
+# Check multicollinearity with VIF
+vif(rim_ins_juice) # it's low
+
+```
+
+
+## Logistic regression (no survey design)
+
+### Carbs
+
+Simple logistic regression
 
 ```{r}
 #logistic regression
+
+library(car) #for VIF
+if(!require("rcompanion")) install.packages("rcompanion")
+library(rcompanion) #for cramers V
 
 #mcarbs <- svyglm(cariesexp ~ carbs, design = survensab, family = "binomial")
 mcarbs_svyno <- glm(cariesexp ~ carbs, data = ensab, family = "binomial")
@@ -1281,6 +2462,26 @@ summary(mcarbs_svyno)
 mcarbs2_svyno <- glm(cariesexp ~ carbs + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
 summary(mcarbs2_svyno)
 
+#checking multicollinearity and correlation between suspected variables
+
+vif(mcarbs2_svyno) #check for multi-collinearity
+
+chisq.test(table(as.numeric(ensab$ses), as.numeric(ensab$income))) #they are associated
+
+cramerV(table(ensab$ses, ensab$income)) #Cramer V of 0.2, weak association
+
+cramerV(table(ensab$ses, ensab$insurance)) #Cramer V of 0.2, weak association
+
+#create a correlation matrix between all the predictors
+
+cor_matrix <- cor(
+  sapply(ensab[, c("carbs", "age", "sex", "ses", "income", "insurance", "region", "location")], 
+         function(x) as.numeric(as.factor(x))),
+  use = "complete.obs", 
+  method = "spearman"
+)
+
+image(cor_matrix, axes = FALSE, main = "Correlation matrix")
 ```
 
 Veg
