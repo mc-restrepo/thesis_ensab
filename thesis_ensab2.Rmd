@@ -1298,6 +1298,7 @@ ensab %>%
 # Characteristics of sample: Table 1
 
 
+
 ## Account for survey design and weights
 
 checking how many children share the same household
@@ -1738,6 +1739,36 @@ agehyg_nocaries
 ### Bottle feeding
 
 
+## Without survey design
+
+Stratified by outcome
+
+```{r}
+library(table1)
+library(expss) #for apply_labels
+
+ensab <- apply_labels(ensab,
+                      age = "Age in years, n (%)",
+                      sex = "Sex, n (%)",
+                      ses = "Socioeconomic status, n (%)",
+                      income = "Income of provider, n (%)",
+                      region = "Region, n (%)",
+                      location = "Area of residence, n (%)",
+                      insurance = "Type of insurance affiliation, n (%)",
+                      agehyg = "Age of oral hygiene start,n (%)",
+                      agefdv = "Age of first dental visit, n (%)"
+                      )
+
+table1ECC <- table1(~ age + sex + ses + income + region + location + insurance + agehyg + agefdv | cariesexp , data = ensab,
+                    caption = "Table 1. Sociodemographic and Oral Health Characteristics of Children 1, 3, and 5 years old of ENSAB IV, Colombia, 2014",
+                    footnote = "Caries experience: presence of tooth decay (cavitaded or non-cavitaded), missing teeth due to caries and/or filled tooth surfaces (dmft >1) in the primary teeth of children younger than 6 years old. No caries experience is defined as dmft = 0. NMW: National minimum wage per month. Data source: ENSAB IV, 2014.")
+
+table1ECC
+
+```
+
+
+
 # Table 2: Caries experience
 
 ```{r}
@@ -1779,52 +1810,6 @@ table(ensab$cariesexp)
 ```
 
 Multi-level logistic regression to account for clustering by subregion and region
-
-```{r}
-library(lme4)
-
-maria <- glmer(cariesexp ~ 1| Region, data = ensab, family = "binomial")
-summary(maria)
-
-predictedmaria <- predict(maria)
-
-table(predictedmaria)
-
-#without clustering
-
-maria2 <- glm(cariesexp ~ 1, data = ensab, family = "binomial")
-summary(maria2)
-
-exp(0.74245-1.96*0.02678)/(1+exp(0.74245-1.96*0.02678))
-exp(0.74245+1.96*0.02678)/(1+exp(0.74245+1.96*0.02678))
-
-#.6648452    .6879348
-
-#CI maria
-
-exp(0.74234-1.96*0.09807)/(1+exp(0.74234-1.96*0.09807))
-exp(0.74234+1.96*0.09807)/(1+exp(0.74234+1.96*0.09807))
-
-#bootstrapped
-
-0.66719-1.96*0.0191
-0.66719+1.96*0.0191
-
-#clustering with subregion and region
-
-maria_subreg <- glmer(cariesexp ~ 1| Region: Subreg, data = ensab, family = "binomial")
-summary(maria_subreg)
-# confidence intervals
-exp(0.7300-1.96*0.1179)/(1+exp(0.7300-1.96*0.1179))
-exp(0.7300+1.96*0.1179)/(1+exp(0.7300+1.96*0.1179))
-
-#try adding weights, may not be necessary
-
-#maria_sub_w <- glmer(cariesexp ~ 1| Region: Subreg, weights=Fex_fin, data = ensab, family = "binomial")
-
-glimpse(ensab)
-```
-
 
 ## Collapsing categories with few numbers of observations
 
@@ -1936,9 +1921,6 @@ carbs_total <- prop.table(svytable(~carbs, design = survensab))
 carbs_total <- round(carbs_total * 100, 2)
 carbs_total
 
-carbsprop <- glmer(carbs ~ 1| Region : Subreg, data = ensab, family = "binomial")
-summary(carbsprop)
-
 prop.table(svymean(~carbs, design = survensab_rep))
 ```
 
@@ -2033,411 +2015,40 @@ library(car) #for vif
 
 
 # Fit the full model (starting model)
-rimfull_carbs <- glmer(cariesexp ~ carbs + (1|Region:Subreg), data = ensab, family = binomial)
+#rimfull_carbs <- glmer(cariesexp ~ carbs + (1|Region:Subreg), data = ensab, family = binomial)
 
 # Add one predictor at a time and compare AIC
-rim_age_carbs <- update(rimfull_carbs, . ~ . + age)
-rim_sex_carbs <- update(rim_age_carbs, . ~ . + sex)
-rim_ses_carbs <- update(rim_sex_carbs, . ~ . + ses)
-rim_inc_carbs <- update(rim_ses_carbs, . ~ . + income)
-rim_loc_carbs <- update(rim_inc_carbs, . ~ . + location)
-rim_ins_carbs <- update(rim_loc_carbs, . ~ . + insurance)
+# rim_age_carbs <- update(rimfull_carbs, . ~ . + age)
+# rim_sex_carbs <- update(rim_age_carbs, . ~ . + sex)
+# rim_ses_carbs <- update(rim_sex_carbs, . ~ . + ses)
+# rim_inc_carbs <- update(rim_ses_carbs, . ~ . + income)
+# rim_loc_carbs <- update(rim_inc_carbs, . ~ . + location)
+# rim_ins_carbs <- update(rim_loc_carbs, . ~ . + insurance)
 
 # Store models in a list
-models_carbs <- list(
-  "Full Model"     = rimfull_carbs,
-  "Age"            = rim_age_carbs,
-  "Sex"            = rim_sex_carbs,
-  "SES"            = rim_ses_carbs,
-  "Income"         = rim_inc_carbs,
-  "Location"       = rim_loc_carbs,
-  "Insurance"      = rim_ins_carbs
-)
-
-# Compare AIC values
-aic_carbs <- sapply(models_carbs, AIC)
-aic_carbs <- sort(aic_carbs)
-
-# Print sorted AIC values
-print(aic_carbs)
-
-summary(rim_ins_carbs)
-exp(fixef(rim_ins_carbs))
-#confint(rim_ins_carbs)
-
-#check multicollinearity with VIF
-vif(rim_ins_carbs) #it's low
-
-```
-### Veg
-
-```{r}
-# Fit the full model (starting model)
-rimfull_veg <- glmer(cariesexp ~ veg + (1|Region:Subreg), data = ensab, family = binomial)
-
-# Add one predictor at a time and compare AIC
-rim_age_veg <- update(rimfull_veg, . ~ . + age)
-rim_sex_veg <- update(rim_age_veg, . ~ . + sex)
-rim_ses_veg <- update(rim_sex_veg, . ~ . + ses)
-rim_inc_veg <- update(rim_ses_veg, . ~ . + income)
-rim_loc_veg <- update(rim_inc_veg, . ~ . + location)
-rim_ins_veg <- update(rim_loc_veg, . ~ . + insurance)
-
-# Store models in a list
-models_veg <- list(
-  "Full Model"     = rimfull_veg,
-  "Age"            = rim_age_veg,
-  "Sex"            = rim_sex_veg,
-  "SES"            = rim_ses_veg,
-  "Income"         = rim_inc_veg,
-  "Location"       = rim_loc_veg,
-  "Insurance"      = rim_ins_veg
-)
-
-# Compare AIC values
-aic_veg <- sapply(models_veg, AIC)
-aic_veg <- sort(aic_veg)
-
-# Print sorted AIC values
-print(aic_veg)
-
-summary(rim_ins_veg)
-exp(fixef(rim_ins_veg))
-#confint(rim_ins_veg)
-
-# Check multicollinearity with VIF
-vif(rim_ins_veg) # it's low
-
-```
-### Fruit
-
-```{r}
-# Fit the full model (starting model)
-rimfull_fruit <- glmer(cariesexp ~ fruit + (1|Region:Subreg), data = ensab, family = binomial)
-summary(rimfull_fruit)
-
-# Add one predictor at a time and compare AIC
-rim_age_fruit <- update(rimfull_fruit, . ~ . + age)
-rim_sex_fruit <- update(rim_age_fruit, . ~ . + sex)
-rim_ses_fruit <- update(rim_sex_fruit, . ~ . + ses)
-rim_inc_fruit <- update(rim_ses_fruit, . ~ . + income)
-rim_loc_fruit <- update(rim_inc_fruit, . ~ . + location)
-rim_ins_fruit <- update(rim_loc_fruit, . ~ . + insurance)
-
-# Store models in a list
-models_fruit <- list(
-  "Full Model"     = rimfull_fruit,
-  "Age"            = rim_age_fruit,
-  "Sex"            = rim_sex_fruit,
-  "SES"            = rim_ses_fruit,
-  "Income"         = rim_inc_fruit,
-  "Location"       = rim_loc_fruit,
-  "Insurance"      = rim_ins_fruit
-)
-
-# Compare AIC values
-aic_fruit <- sapply(models_fruit, AIC)
-aic_fruit <- sort(aic_fruit)
-
-# Print sorted AIC values
-print(aic_fruit)
-
-# Model summary
-summary(rim_ins_fruit)
-
-# Exponentiate fixed effects for odds ratios
-exp(fixef(rim_ins_fruit))
-
-# Confidence intervals for the fixed effects
-#confint(rim_ins_fruit)
-
-# Check multicollinearity with VIF
-vif(rim_ins_fruit) # it's low
-
-```
-
-### Protein
-
-```{r}
-# Fit the full model (starting model)
-# Fit the full model (starting model)
-rimfull_prot <- glmer(cariesexp ~ prot + (1|Region:Subreg), data = ensab, family = binomial)
-summary(rimfull_prot)
-
-# Add one predictor at a time and compare AIC
-rim_age_prot <- update(rimfull_prot, . ~ . + age)
-rim_sex_prot <- update(rim_age_prot, . ~ . + sex)
-rim_ses_prot <- update(rim_sex_prot, . ~ . + ses)
-rim_inc_prot <- update(rim_ses_prot, . ~ . + income)
-rim_loc_prot <- update(rim_inc_prot, . ~ . + location)
-rim_ins_prot <- update(rim_loc_prot, . ~ . + insurance)
-
-# Store models in a list
-models_prot <- list(
-  "Full Model"     = rimfull_prot,
-  "Age"            = rim_age_prot,
-  "Sex"            = rim_sex_prot,
-  "SES"            = rim_ses_prot,
-  "Income"         = rim_inc_prot,
-  "Location"       = rim_loc_prot,
-  "Insurance"      = rim_ins_prot
-)
-
-# Compare AIC values
-aic_prot <- sapply(models_prot, AIC)
-aic_prot <- sort(aic_prot)
-
-# Print sorted AIC values
-print(aic_prot)
-
-# Model summary
-summary(rim_ins_prot)
-
-# Exponentiate fixed effects for odds ratios
-exp(fixef(rim_ins_prot))
-
-# Confidence intervals for the fixed effects
-#confint(rim_ins_prot)
-
-# Check multicollinearity with VIF
-vif(rim_ins_prot) # it's low
-
-
-```
-
-### Dairy 
-
-```{r}
-# Fit the full model (starting model)
-rimfull_dairy <- glmer(cariesexp ~ dairy + (1|Region:Subreg), data = ensab, family = binomial)
-summary(rimfull_dairy)
-
-# Add one predictor at a time and compare AIC
-rim_age_dairy <- update(rimfull_dairy, . ~ . + age)
-rim_sex_dairy <- update(rim_age_dairy, . ~ . + sex)
-rim_ses_dairy <- update(rim_sex_dairy, . ~ . + ses)
-rim_inc_dairy <- update(rim_ses_dairy, . ~ . + income)
-rim_loc_dairy <- update(rim_inc_dairy, . ~ . + location)
-rim_ins_dairy <- update(rim_loc_dairy, . ~ . + insurance)
-
-# Store models in a list
-models_dairy <- list(
-  "Full Model"     = rimfull_dairy,
-  "Age"            = rim_age_dairy,
-  "Sex"            = rim_sex_dairy,
-  "SES"            = rim_ses_dairy,
-  "Income"         = rim_inc_dairy,
-  "Location"       = rim_loc_dairy,
-  "Insurance"      = rim_ins_dairy
-)
-
-# Compare AIC values
-aic_dairy <- sapply(models_dairy, AIC)
-aic_dairy <- sort(aic_dairy)
-
-# Print sorted AIC values
-print(aic_dairy)
-
-# Model summary
-summary(rim_ins_dairy)
-
-# Exponentiate fixed effects for odds ratios
-exp(fixef(rim_ins_dairy))
-
-# Confidence intervals for the fixed effects
-#confint(rim_ins_dairy)
-
-# Check multicollinearity with VIF
-vif(rim_ins_dairy) # it's low
-
-```
-
-### Fats
-
-```{r}
-# Fit the full model (starting model)
-rimfull_fats <- glmer(cariesexp ~ fats + (1|Region:Subreg), data = ensab, family = binomial)
-summary(rimfull_fats)
-
-# Add one predictor at a time and compare AIC
-rim_age_fats <- update(rimfull_fats, . ~ . + age)
-rim_sex_fats <- update(rim_age_fats, . ~ . + sex)
-rim_ses_fats <- update(rim_sex_fats, . ~ . + ses)
-rim_inc_fats <- update(rim_ses_fats, . ~ . + income)
-rim_loc_fats <- update(rim_inc_fats, . ~ . + location)
-rim_ins_fats <- update(rim_loc_fats, . ~ . + insurance)
-
-# Store models in a list
-models_fats <- list(
-  "Full Model"     = rimfull_fats,
-  "Age"            = rim_age_fats,
-  "Sex"            = rim_sex_fats,
-  "SES"            = rim_ses_fats,
-  "Income"         = rim_inc_fats,
-  "Location"       = rim_loc_fats,
-  "Insurance"      = rim_ins_fats
-)
-
-# Compare AIC values
-aic_fats <- sapply(models_fats, AIC)
-aic_fats <- sort(aic_fats)
-
-# Print sorted AIC values
-print(aic_fats)
-
-# Model summary
-summary(rim_ins_fats)
-
-# Exponentiate fixed effects for odds ratios
-exp(fixef(rim_ins_fats))
-
-# Confidence intervals for the fixed effects
-#confint(rim_ins_fats)
-
-# Check multicollinearity with VIF
-vif(rim_ins_fats) # it's low
-
-```
-
-
-### Sugar
-
-```{r}
-# Fit the full model (starting model)
-rimfull_sugar <- glmer(cariesexp ~ sugar + (1|Region:Subreg), data = ensab, family = binomial)
-summary(rimfull_sugar)
-
-# Add one predictor at a time and compare AIC
-rim_age_sugar <- update(rimfull_sugar, . ~ . + age)
-rim_sex_sugar <- update(rim_age_sugar, . ~ . + sex)
-rim_ses_sugar <- update(rim_sex_sugar, . ~ . + ses)
-rim_inc_sugar <- update(rim_ses_sugar, . ~ . + income)
-rim_loc_sugar <- update(rim_inc_sugar, . ~ . + location)
-rim_ins_sugar <- update(rim_loc_sugar, . ~ . + insurance)
-
-# Store models in a list
-models_sugar <- list(
-  "Full Model"     = rimfull_sugar,
-  "Age"            = rim_age_sugar,
-  "Sex"            = rim_sex_sugar,
-  "SES"            = rim_ses_sugar,
-  "Income"         = rim_inc_sugar,
-  "Location"       = rim_loc_sugar,
-  "Insurance"      = rim_ins_sugar
-)
-
-# Compare AIC values
-aic_sugar <- sapply(models_sugar, AIC)
-aic_sugar <- sort(aic_sugar)
-
-# Print sorted AIC values
-print(aic_sugar)
-
-# Model summary
-summary(rim_ins_sugar)
-
-# Exponentiate fixed effects for odds ratios
-exp(fixef(rim_ins_sugar))
-
-# Confidence intervals for the fixed effects
-#confint(rim_ins_sugar)
-
-# Check multicollinearity with VIF
-vif(rim_ins_sugar) # it's low
-
-```
-
-### Soda
-
-```{r}
-# Fit the full model (starting model)
-rimfull_soda <- glmer(cariesexp ~ soda + (1|Region:Subreg), data = ensab, family = binomial)
-summary(rimfull_soda)
-
-# Add one predictor at a time and compare AIC
-rim_age_soda <- update(rimfull_soda, . ~ . + age)
-rim_sex_soda <- update(rim_age_soda, . ~ . + sex)
-rim_ses_soda <- update(rim_sex_soda, . ~ . + ses)
-rim_inc_soda <- update(rim_ses_soda, . ~ . + income)
-rim_loc_soda <- update(rim_inc_soda, . ~ . + location)
-rim_ins_soda <- update(rim_loc_soda, . ~ . + insurance)
-
-# Store models in a list
-models_soda <- list(
-  "Full Model"     = rimfull_soda,
-  "Age"            = rim_age_soda,
-  "Sex"            = rim_sex_soda,
-  "SES"            = rim_ses_soda,
-  "Income"         = rim_inc_soda,
-  "Location"       = rim_loc_soda,
-  "Insurance"      = rim_ins_soda
-)
-
-# Compare AIC values
-aic_soda <- sapply(models_soda, AIC)
-aic_soda <- sort(aic_soda)
-
-# Print sorted AIC values
-print(aic_soda)
-
-# Model summary
-summary(rim_ins_soda)
-
-# Exponentiate fixed effects for odds ratios
-exp(fixef(rim_ins_soda))
-
-# Confidence intervals for the fixed effects
-#confint(rim_ins_soda)
-
-# Check multicollinearity with VIF
-vif(rim_ins_soda) # it's low
-
-```
-
-### Juice
-
-```{r}
-# Fit the full model (starting model)
-rimfull_juice <- glmer(cariesexp ~ juice + (1|Region:Subreg), data = ensab, family = binomial)
-summary(rimfull_juice)
-
-# Add one predictor at a time and compare AIC
-rim_age_juice <- update(rimfull_juice, . ~ . + age)
-rim_sex_juice <- update(rim_age_juice, . ~ . + sex)
-rim_ses_juice <- update(rim_sex_juice, . ~ . + ses)
-rim_inc_juice <- update(rim_ses_juice, . ~ . + income)
-rim_loc_juice <- update(rim_inc_juice, . ~ . + location)
-rim_ins_juice <- update(rim_loc_juice, . ~ . + insurance)
-
-# Store models in a list
-models_juice <- list(
-  "Full Model"     = rimfull_juice,
-  "Age"            = rim_age_juice,
-  "Sex"            = rim_sex_juice,
-  "SES"            = rim_ses_juice,
-  "Income"         = rim_inc_juice,
-  "Location"       = rim_loc_juice,
-  "Insurance"      = rim_ins_juice
-)
-
-# Compare AIC values
-aic_juice <- sapply(models_juice, AIC)
-aic_juice <- sort(aic_juice)
-
-# Print sorted AIC values
-print(aic_juice)
-
-# Model summary
-summary(rim_ins_juice)
-
-# Exponentiate fixed effects for odds ratios
-exp(fixef(rim_ins_juice))
-
-# Confidence intervals for the fixed effects
-#confint(rim_ins_juice)
-
-# Check multicollinearity with VIF
-vif(rim_ins_juice) # it's low
+# models_carbs <- list(
+#   "Full Model"     = rimfull_carbs,
+#   "Age"            = rim_age_carbs,
+#   "Sex"            = rim_sex_carbs,
+#   "SES"            = rim_ses_carbs,
+#   "Income"         = rim_inc_carbs,
+#   "Location"       = rim_loc_carbs,
+#   "Insurance"      = rim_ins_carbs
+# )
+
+# # Compare AIC values
+# aic_carbs <- sapply(models_carbs, AIC)
+# aic_carbs <- sort(aic_carbs)
+# 
+# # Print sorted AIC values
+# print(aic_carbs)
+# 
+# summary(rim_ins_carbs)
+# exp(fixef(rim_ins_carbs))
+# #confint(rim_ins_carbs)
+# 
+# #check multicollinearity with VIF
+# vif(rim_ins_carbs) #it's low
 
 ```
 
