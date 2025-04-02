@@ -146,6 +146,8 @@ antecedentes médicos). 1: se aplica el examen. 2: no se aplica el examen.
 
 Select variables:
 
+M4_104: Age
+MA_208: if they were clinically examined for ENSAB
 304: ICDAS 55-65
 306: ICDAS 85-75
 305: cop 55-65
@@ -153,10 +155,12 @@ Select variables:
 
 Ommit variables ending in 1 because they refer to enamel opacities (non-carious).
 
+
 ```{r}
 examen13 <- examen13completa %>%
-  dplyr::select(MA_201B, MA_208, MA_304A, MA_304B, MA_304C, MA_304D, MA_304E, MA_304F, MA_304G, MA_304H, MA_304I, MA_304J, MA_306A, MA_306B, MA_306C, MA_306D, MA_306E, MA_306F, MA_306G, MA_306H, MA_306I, MA_306J, MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J, MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J, ID_HOGAR, ID_PERSONA) %>%
-  mutate(ICDAS55 = MA_304A,
+  dplyr::select(M4_104, MA_208, MA_304A, MA_304B, MA_304C, MA_304D, MA_304E, MA_304F, MA_304G, MA_304H, MA_304I, MA_304J, MA_306A, MA_306B, MA_306C, MA_306D, MA_306E, MA_306F, MA_306G, MA_306H, MA_306I, MA_306J, MA_305A, MA_305B, MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H, MA_305I, MA_305J, MA_307A, MA_307B, MA_307C, MA_307D, MA_307E, MA_307F, MA_307G, MA_307H, MA_307I, MA_307J, ID_HOGAR, ID_PERSONA) %>%
+  mutate(age = M4_104, #used mutate instead of rename because I also want to retain the original variables that start with MA for non-ICDAS dmft to be calculated
+          ICDAS55 = MA_304A,
          ICDAS54 = MA_304B,
          ICDAS53 = MA_304C,
          ICDAS52 = MA_304D,
@@ -359,6 +363,41 @@ ggplot(data = examen13, aes(x = dmft)) +
   labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score for 1 and 3 years old")
 ```
 
+### Caries severity in 1-3 years old
+
+Caries severity is binary, classified as:
+
+* 1 years old: Any sign of caries is severe ECC
+* 3 years old: 
+one or more decayed, missing (due to caries), or filled smooth surfaces in primary maxillary anterior teeth. 
+or a decayed, missing, or filled score of greater than or equal to 4.
+
+This means:
+
+In children 3 years old,
+A value of greater than or equal to 1 of the sum of score53, score52, score51, score61, score62, score63
+OR dmft_ICDAS greater than or equal to 4
+
+And children 1 years old, dmft_ICDAS greater than 0
+
+```{r}
+
+# for 3 years old
+
+examen13 <- examen13 %>%
+  mutate(score53_63 = rowSums(across(c(score53, score52, score51, score61, score62, score63)))) %>%
+  mutate(cariessev = case_when(
+    age == 3 & (score53_63 > 0 | dmft_ICDAS >= 4) ~ 1,
+    age == 1 & dmft_ICDAS > 0 ~ 1,
+    TRUE ~ 0
+  )) %>%
+  mutate(cariessev = factor(cariessev, levels = c(0, 1), labels = c("No severe ECC", "Severe ECC")))
+
+summary(examen13$cariessev)
+
+```
+
+
 ### Children 5 years old
 
 Select variables (like 1y old)
@@ -366,8 +405,9 @@ Exclude 1M from the analysis (because the outcome is ECC). Letters A and L.
 
 ```{r}
 examen5 <- examen5completa %>% 
-  dplyr::select(MB_201B, MB_208, MB_304B, MB_304C, MB_304D, MB_304E, MB_304F, MB_304G, MB_304H, MB_304I, MB_304J, MB_304K, MB_306B, MB_306C, MB_306D, MB_306E, MB_306F, MB_306G, MB_306H, MB_306I, MB_306J, MB_306K, MB_305B, MB_305C, MB_305D, MB_305E, MB_305F, MB_305G, MB_305H, MB_305I, MB_305J, MB_305K, MB_307B, MB_307C, MB_307D, MB_307E, MB_307F, MB_307G, MB_307H, MB_307I, MB_307J, MB_307K, ID_HOGAR, ID_PERSONA) %>%
-  mutate(ICDAS55 = MB_304B,
+  dplyr::select(M4_104, MB_208, MB_304B, MB_304C, MB_304D, MB_304E, MB_304F, MB_304G, MB_304H, MB_304I, MB_304J, MB_304K, MB_306B, MB_306C, MB_306D, MB_306E, MB_306F, MB_306G, MB_306H, MB_306I, MB_306J, MB_306K, MB_305B, MB_305C, MB_305D, MB_305E, MB_305F, MB_305G, MB_305H, MB_305I, MB_305J, MB_305K, MB_307B, MB_307C, MB_307D, MB_307E, MB_307F, MB_307G, MB_307H, MB_307I, MB_307J, MB_307K, ID_HOGAR, ID_PERSONA) %>%
+  mutate(age = M4_104,
+         ICDAS55 = MB_304B,
          ICDAS54 = MB_304C,
          ICDAS53 = MB_304D,
          ICDAS52 = MB_304E,
@@ -570,7 +610,36 @@ ggplot(data = examen5, aes(x = dmft)) +
   labs(x = "dmft Index score", y = "Participants", title = "Distribution of dmft Index score for 5 years old")
 ```
 
-Merge datasets:
+### Caries severity in 5 years old
+
+Caries severity is binary, classified as:
+
+* 5 years old: 
+one or more decayed, missing (due to caries), or filled smooth surfaces in primary maxillary anterior teeth. 
+or a decayed, missing, or filled score of greater than or equal to 4.
+
+This means:
+A value of greater than or equal to 1 of the sum of score53, score52, score51, score61, score62, score63
+OR dmft_ICDAS greater than or equal to 6
+
+
+```{r}
+
+# for 3 years old
+
+examen5 <- examen5 %>%
+  mutate(score53_63 = rowSums(across(c(score53, score52, score51, score61, score62, score63)))) %>%
+  mutate(cariessev = case_when(
+    score53_63 > 0 | dmft_ICDAS >= 6 ~ 1,
+    TRUE ~ 0
+  )) %>%
+  mutate(cariessev = factor(cariessev, levels = c(0, 1), labels = c("No severe ECC", "Severe ECC")))
+
+summary(examen5$cariessev)
+
+```
+
+### Merge datasets
 
 ```{r}
 ensab <- ninos %>%
@@ -579,8 +648,9 @@ ensab <- ninos %>%
   mutate(dmft = coalesce(dmft.x, dmft.y),
          dmft_ICDAS = coalesce(dmft_ICDAS.x, dmft_ICDAS.y),
          cariesexp = coalesce(cariesexp.x, cariesexp.y),
-         ID_HOGAR = coalesce(ID_HOGAR.x, ID_HOGAR.y)) %>%
-  dplyr::select(-ID_HOGAR.x, -ID_HOGAR.y, -dmft.x, -dmft.y)
+         ID_HOGAR = coalesce(ID_HOGAR.x, ID_HOGAR.y),
+         cariessev = coalesce(cariessev.x, cariessev.y)) %>%
+  dplyr::select(-ID_HOGAR.x, -ID_HOGAR.y, -dmft.x, -dmft.y, cariessev.x, cariessev.y, -dmft_ICDAS.x, -dmft_ICDAS.y, -cariesexp.x, -cariesexp.y)
 
 #Missing data
 
@@ -612,6 +682,9 @@ ggplot(data = ensab, aes(x = dmft_ICDAS)) +
 summary(ensab$dmft_ICDAS)
 
 summary(ensab$cariesexp)
+prop.table(table(ensab$cariesexp))
+summary(ensab$cariessev)
+prop.table(table(ensab$cariessev))
 
 ```
 
@@ -1766,8 +1839,6 @@ table1ECC <- table1(~ age + sex + ses + income + region + location + insurance +
 table1ECC
 
 ```
-
-
 
 # Table 2: Caries experience
 
