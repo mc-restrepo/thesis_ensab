@@ -200,6 +200,8 @@ examen13 <- examen13completa %>%
          COP73 = MA_307H,
          COP74 = MA_307I,
          COP75 = MA_307J)
+
+glimpse(examen13)
 ```
 
 Caries experience: with ICDAS
@@ -254,6 +256,7 @@ Only count missing and filled, decayed is being counted with ICDAS classificatio
 #Assign a value of 1 to the following letters:
 
 head(examen13$COP51, 50)
+
 examen13 <- examen13 %>%
   mutate(
     across(
@@ -334,6 +337,7 @@ examen13 <- examen13 %>%
   mutate(cariesexp = factor(cariesexp, levels = c(0, 1), labels = c("No caries", "Caries")))
 
 summary(examen13$cariesexp)
+
 ```
 
 dmft(copd)
@@ -351,8 +355,7 @@ examen13 <- examen13 %>%
 
 #create variable dmft
 examen13 <- examen13 %>%
-  mutate(dmft = rowSums(across(starts_with("MA_3"), ~. > 0))) %>%
-  dplyr::select(-starts_with("MA_3"))
+  mutate(dmft = rowSums(across(starts_with("MA_3"), ~. > 0))) 
 
 glimpse(examen13)
 summary(examen13$dmft)
@@ -367,9 +370,9 @@ ggplot(data = examen13, aes(x = dmft)) +
 
 Caries severity is binary, classified as:
 
-* 1 years old: Any sign of caries is severe ECC
+* 1 years old: any sign of smooth-surface caries in children under 3 yrs of age (smooth surface will only)
 * 3 years old: 
-one or more decayed, missing (due to caries), or filled smooth surfaces in primary maxillary anterior teeth. 
+one or more decayed (does not include non-cavitated), missing (due to caries), or filled smooth surfaces in primary maxillary anterior teeth. 
 or a decayed, missing, or filled score of greater than or equal to 4.
 
 This means:
@@ -382,18 +385,38 @@ And children 1 years old, dmft_ICDAS greater than 0
 
 ```{r}
 
-# for 3 years old
+#Calculating non-cavitated and cavitaded caries in anterior teeth, for caries severity of children 1yo
+examen13 <- examen13 %>%
+mutate(score_ant = rowSums(across(c(score53, score52, score51, score61, score62, score63, score83)))) 
+
+#comparing cariesexp in 1yo with severe ECC if dmft >0 or if score_ant > 0
+
+examen13 %>%
+  filter(age == 1) %>%
+  summarize(proportion = sum(dmft_ICDAS > 0, na.rm = TRUE)/n())
+examen13 %>%
+            
+  filter(age == 1) %>%
+  summarize(prop = sum(score_ant > 0, na.rm = TRUE)/n()) #this one will be used
+
+examen13 %>%
+  filter(age == 1) %>%
+  summarize(proportion = sum(dmft > 0, na.rm = TRUE)/n())
+
+#for cariessev we will take into account normal dmft (only cavitated), which is why we will use variables that start with MA instead of score, corresponding to teeth 53 to 63
+glimpse(examen13$MA_305C)
 
 examen13 <- examen13 %>%
-  mutate(score53_63 = rowSums(across(c(score53, score52, score51, score61, score62, score63)))) %>%
+  mutate(score53_63 = rowSums(across(c(MA_305C, MA_305D, MA_305E, MA_305F, MA_305G, MA_305H)))) %>%
   mutate(cariessev = case_when(
-    age == 3 & (score53_63 > 0 | dmft_ICDAS >= 4) ~ 1,
-    age == 1 & dmft_ICDAS > 0 ~ 1,
+    age == 3 & (score53_63 > 0 | dmft >= 4) ~ 1,
+    age == 1 & score_ant > 0 ~ 1,
     TRUE ~ 0
   )) %>%
   mutate(cariessev = factor(cariessev, levels = c(0, 1), labels = c("No severe ECC", "Severe ECC")))
 
 summary(examen13$cariessev)
+summary(examen13$cariesexp)
 
 ```
 
@@ -599,8 +622,7 @@ examen5 <- examen5 %>%
 
 #create variable dmft
 examen5 <- examen5 %>%
-  mutate(dmft = rowSums(across(starts_with("MB_3"), ~. > 0))) %>%
-  dplyr::select(-starts_with("MB_3"))
+  mutate(dmft = rowSums(across(starts_with("MB_3"), ~. > 0))) 
 
 summary(examen5$dmft)
 
@@ -619,23 +641,22 @@ one or more decayed, missing (due to caries), or filled smooth surfaces in prima
 or a decayed, missing, or filled score of greater than or equal to 4.
 
 This means:
-A value of greater than or equal to 1 of the sum of score53, score52, score51, score61, score62, score63
-OR dmft_ICDAS greater than or equal to 6
+A value of greater than or equal to 1 of the sum of MB_305C, MB_305D, MB_305E, MB_305F, MB_305G, MB_305H (1 if dmf or 0 if not for tooth 53-63)
+OR dmft greater than or equal to 6
 
 
 ```{r}
 
-# for 3 years old
-
 examen5 <- examen5 %>%
-  mutate(score53_63 = rowSums(across(c(score53, score52, score51, score61, score62, score63)))) %>%
+  mutate(score53_63 = rowSums(across(c(MB_305C, MB_305D, MB_305E, MB_305F, MB_305G, MB_305H)))) %>%
   mutate(cariessev = case_when(
-    score53_63 > 0 | dmft_ICDAS >= 6 ~ 1,
+    score53_63 > 0 | dmft >= 6 ~ 1,
     TRUE ~ 0
   )) %>%
   mutate(cariessev = factor(cariessev, levels = c(0, 1), labels = c("No severe ECC", "Severe ECC")))
 
 summary(examen5$cariessev)
+summary(examen5$cariesexp)
 
 ```
 
@@ -643,14 +664,14 @@ summary(examen5$cariessev)
 
 ```{r}
 ensab <- ninos %>%
-  left_join(examen13, by = "ID_PERSONA") %>%
-  left_join(examen5, by = "ID_PERSONA") %>%
+  left_join(examen13 %>% dplyr::select(MA_208, ID_PERSONA, dmft, dmft_ICDAS, cariesexp, cariessev), by = "ID_PERSONA") %>%
+  left_join(examen5 %>% dplyr::select(MB_208, ID_PERSONA, dmft, dmft_ICDAS, cariesexp, cariessev), by = "ID_PERSONA") %>%
   mutate(dmft = coalesce(dmft.x, dmft.y),
          dmft_ICDAS = coalesce(dmft_ICDAS.x, dmft_ICDAS.y),
          cariesexp = coalesce(cariesexp.x, cariesexp.y),
-         ID_HOGAR = coalesce(ID_HOGAR.x, ID_HOGAR.y),
          cariessev = coalesce(cariessev.x, cariessev.y)) %>%
-  dplyr::select(-ID_HOGAR.x, -ID_HOGAR.y, -dmft.x, -dmft.y, cariessev.x, cariessev.y, -dmft_ICDAS.x, -dmft_ICDAS.y, -cariesexp.x, -cariesexp.y)
+  dplyr::select(-dmft.x, -dmft.y, -dmft_ICDAS.x, -dmft_ICDAS.y, 
+         -cariesexp.x, -cariesexp.y, -cariessev.x, -cariessev.y)
 
 #Missing data
 
@@ -687,6 +708,23 @@ summary(ensab$cariessev)
 prop.table(table(ensab$cariessev))
 
 ```
+
+Making cariessev not binary but ordinal, named cariessev3 (cariessev with 3 categories):
+No caries, Non-severe ECC, Severe ECC
+
+```{r}
+ensab <- ensab %>%
+  mutate(cariessev3 = case_when(
+    cariesexp == "No caries" ~ 0,
+    cariessev == "No severe ECC" & cariesexp == "Caries" ~ 1,
+    cariessev == "Severe ECC" ~ 2
+  )) %>%
+  mutate(cariessev3 = factor(cariessev3, levels = c(0, 1, 2), labels = c("No ECC", "Non-severe ECC", "Severe ECC")))
+
+table(ensab$cariessev3)
+prop.table(table(ensab$cariessev3))
+```
+
 
 # Key variables
 
@@ -1840,7 +1878,9 @@ table1ECC
 
 ```
 
-# Table 2: Caries experience
+# Table 2: Caries experience and caries severity
+
+## Taking into account survey design
 
 ```{r}
 prop.table(svytable(~cariesexp, design = survensab))
@@ -1877,8 +1917,204 @@ prop.table(svytable(~cariesexp, design = survensab))
 
 svymean(~cariesexp, design = survensab_rep)
 
-table(ensab$cariesexp)
+prop.table(table(ensab$cariesexp))
 ```
+
+## Without survey design
+
+### Caries experience
+
+Total
+
+```{r}
+
+# Create a binary vector
+x_vector <- as.numeric(ensab$cariesexp == "Caries")
+# Total sample size
+n_total <- length(x_vector)
+
+# Calculate proportion confidence interval using propCI
+cariesexp_prop <- propCI(x = x_vector, n = n_total, alpha = 0.05)
+
+# Multiply the CI values by 100 to express them as percentages and round to two decimals
+
+cariesexp_pt <- data.frame(
+  p = round(cariesexp_prop$result$p * 100, 2),
+  lower = round(cariesexp_prop$result$lower * 100, 2),
+  upper = round(cariesexp_prop$result$upper * 100, 2),
+  ME = round(cariesexp_prop$result$ME * 100, 2)
+)
+
+print(cariesexp_pt)
+
+```
+
+Per age
+
+```{r}
+# 1 years old age ==1 
+
+x_vector <- as.numeric(ensab$cariesexp[ensab$age == "1"] == "Caries")
+n_total <- length(x_vector)
+# Calculate proportion confidence interval using propCI
+cariesexp_prop <- propCI(x = x_vector, n = n_total, alpha = 0.05)
+# Multiply the CI values by 100 to express them as percentages and round to two decimals
+cariesexp_pt <- data.frame(
+  p = round(cariesexp_prop$result$p * 100, 2),
+  lower = round(cariesexp_prop$result$lower * 100, 2),
+  upper = round(cariesexp_prop$result$upper * 100, 2),
+  ME = round(cariesexp_prop$result$ME * 100, 2)
+)
+cariesexp_pt
+
+# 3 years old age == 3
+
+x_vector <- as.numeric(ensab$cariesexp[ensab$age == "3"] == "Caries")
+n_total <- length(x_vector)
+# Calculate proportion confidence interval using propCI
+cariesexp_prop <- propCI(x = x_vector, n = n_total, alpha = 0.05)
+# Multiply the CI values by 100 to express them as percentages and round to two decimals
+cariesexp_pt <- data.frame(
+  p = round(cariesexp_prop$result$p * 100, 2),
+  lower = round(cariesexp_prop$result$lower * 100, 2),
+  upper = round(cariesexp_prop$result$upper * 100, 2),
+  ME = round(cariesexp_prop$result$ME * 100, 2)
+)
+cariesexp_pt
+
+# 5 years old age == 5
+
+x_vector <- as.numeric(ensab$cariesexp[ensab$age == "5"] == "Caries")
+n_total <- length(x_vector)
+# Calculate proportion confidence interval using propCI
+cariesexp_prop <- propCI(x = x_vector, n = n_total, alpha = 0.05)
+# Multiply the CI values by 100 to express them as percentages and round to two decimals
+cariesexp_pt <- data.frame(
+  p = round(cariesexp_prop$result$p * 100, 2),
+  lower = round(cariesexp_prop$result$lower * 100, 2),
+  upper = round(cariesexp_prop$result$upper * 100, 2),
+  ME = round(cariesexp_prop$result$ME * 100, 2)
+)
+cariesexp_pt
+
+```
+
+
+### Caries severity
+
+Total 
+
+```{r}
+glimpse(ensab$cariessev3)
+summary(ensab$cariessev3)
+summary(ensab$cariessev)
+
+x_vector <- as.numeric(ensab$cariessev3 == "Severe ECC")
+# Total sample size
+n_total <- length(x_vector)
+# Calculate proportion confidence interval using propCI
+cariessev3_prop <- propCI(x = x_vector, n = n_total, alpha = 0.05)
+# Multiply the CI values by 100 to express them as percentages and round to two decimals
+cariessev3_pt <- data.frame(
+  p = round(cariessev3_prop$result$p * 100, 2),
+  lower = round(cariessev3_prop$result$lower * 100, 2),
+  upper = round(cariessev3_prop$result$upper * 100, 2),
+  ME = round(cariessev3_prop$result$ME * 100, 2)
+)
+cariessev3_pt
+
+```
+
+By age
+
+```{r}
+# 1 years old age ==1
+
+x_vector <- as.numeric(ensab$cariessev3[ensab$age == "1"] == "Severe ECC")
+n_total <- length(x_vector)
+# Calculate proportion confidence interval using propCI
+cariessev3_prop <- propCI(x = x_vector, n = n_total, alpha = 0.05)
+# Multiply the CI values by 100 to express them as percentages and round to two decimals
+cariessev3_pt <- data.frame(
+  p = round(cariessev3_prop$result$p * 100, 2),
+  lower = round(cariessev3_prop$result$lower * 100, 2),
+  upper = round(cariessev3_prop$result$upper * 100, 2),
+  ME = round(cariessev3_prop$result$ME * 100, 2)
+)
+cariessev3_pt
+
+# 3 years old age == 3
+
+x_vector <- as.numeric(ensab$cariessev3[ensab$age == "3"] == "Severe ECC")
+n_total <- length(x_vector)
+# Calculate proportion confidence interval using propCI
+cariessev3_prop <- propCI(x = x_vector, n = n_total, alpha = 0.05)
+# Multiply the CI values by 100 to express them as percentages and round to two decimals
+cariessev3_pt <- data.frame(
+  p = round(cariessev3_prop$result$p * 100, 2),
+  lower = round(cariessev3_prop$result$lower * 100, 2),
+  upper = round(cariessev3_prop$result$upper * 100, 2),
+  ME = round(cariessev3_prop$result$ME * 100, 2)
+)
+cariessev3_pt
+
+# 5 years old age == 5
+
+x_vector <- as.numeric(ensab$cariessev3[ensab$age == "5"] == "Severe ECC")
+n_total <- length(x_vector)
+# Calculate proportion confidence interval using propCI
+cariessev3_prop <- propCI(x = x_vector, n = n_total, alpha = 0.05)
+# Multiply the CI values by 100 to express them as percentages and round to two decimals
+cariessev3_pt <- data.frame(
+  p = round(cariessev3_prop$result$p * 100, 2),
+  lower = round(cariessev3_prop$result$lower * 100, 2),
+  upper = round(cariessev3_prop$result$upper * 100, 2),
+  ME = round(cariessev3_prop$result$ME * 100, 2)
+)
+cariessev3_pt
+
+```
+
+
+### Trouble shooting: I am getting higher results than ENSAB and than Guarnizo et al
+
+```{r}
+ensab %>%
+  summarize(proportion = sum(dmft > 0, na.rm = TRUE)/n())
+#Guarnizo et al are getting 36.90 and I am getting  47.4
+# Maybe because I am not accounting for survey design?
+```
+
+### Graph
+
+caries experience by age
+
+```{r}
+ggplot(ensab, aes(x = age, fill = cariesexp)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Age", y = "Proportion", title = "Caries experience by age") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Caries" = "#F8766D")) +
+  theme(legend.position = "top")
+```
+
+Caries severity by age
+
+```{r}
+
+glimpse(ensab$cariessev3)
+ggplot(ensab, aes(x = age, fill = cariessev3)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Age", y = "Proportion", title = "Caries severity by age") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Severe ECC" = "#CC3333", "Non-severe ECC" = "#F8766D", "No ECC" = "grey")) +
+  theme(legend.position = "top")
+```
+
+
+#Table 3: multiple regression
 
 Multi-level logistic regression to account for clustering by subregion and region
 
@@ -1911,7 +2147,7 @@ summary(ensab$income)
 summary(as.numeric(ensab$income))
 ```
 
-Cereals: Collapse Never and Once a week with 2-3 times a week, to <4x (less than four times a week)
+Carbs: Collapse Never and Once a week with 2-3 times a week, to <4x (less than four times a week)
 
 ```{r}
 summary(ensab$carbs)
@@ -1972,16 +2208,8 @@ ensab <- ensab %>%
 summary(ensab$juice)
 ```
 
-# Association between nutrition and caries
 
-Steps of multivariable analysis:
-1. DAG
-2. Fit different models
-4. Check for multi-collinearity with VIF
-5. Check model fit with likelihood ratio test (chi squared): nested models. Backwards or forwards selection
-
-
-## Table 2: Proportions for each
+## Table 3: Proportions for each
 
 carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice
 
@@ -2004,7 +2232,7 @@ veg_total <- round(veg_total * 100, 2)
 veg_total
 ```
 
-Fruits proportions
+### Fruits proportions
 
 ```{r}
 fruit_total <- prop.table(svytable(~fruit, design = survensab))
@@ -2013,7 +2241,8 @@ fruit_total
 
 ```
 
-Protein proportions
+
+### Protein proportions
 
 ```{r}
 prot_total <- prop.table(svytable(~prot, design = survensab))
@@ -2021,15 +2250,7 @@ prot_total <- round(prot_total * 100, 2)
 prot_total
 ```
 
-Protein proportions
-
-```{r}
-prot_total <- prop.table(svytable(~prot, design = survensab))
-prot_total <- round(prot_total * 100, 2)
-prot_total
-```
-
-Dairy proportions
+### Dairy proportions
 
 ```{r}
 dairy_total <- prop.table(svytable(~dairy, design = survensab))
@@ -2037,7 +2258,7 @@ dairy_total <- round(dairy_total * 100, 2)
 dairy_total
 ```
 
-Fats proportions
+### Fats proportions
 
 ```{r}
 fats_total <- prop.table(svytable(~fats, design = survensab))
@@ -2046,7 +2267,7 @@ fats_total
 
 ```
 
-Sugars
+### Sugars
 
 ```{r}
 sugar_total <- prop.table(svytable(~sugar, design = survensab))
@@ -2055,7 +2276,7 @@ sugar_total
 
 ```
 
-Soda
+### Soda
 
 ```{r}
 soda_total <- prop.table(svytable(~soda, design = survensab))
@@ -2064,7 +2285,7 @@ soda_total
 
 ```
 
-Juice
+### Juice
 
 ```{r}
 juice_total <- prop.table(svytable(~juice, design = survensab))
@@ -2072,7 +2293,31 @@ juice_total <- round(juice_total * 100, 2)
 juice_total
 ```
 
-## Table 3: Nested Random intercepts logistic regression
+### No survey design
+
+Carbs
+
+```{r}
+
+carbs_total <- prop.table(table(ensab$carbs))
+carbs_total <- round(carbs_total * 100, 2)
+carbs_total
+
+
+
+```
+
+
+
+# Table 4: Association between nutrition and caries
+
+Steps of multivariable analysis:
+1. DAG
+2. Fit different models
+4. Check for multi-collinearity with VIF
+5. Check model fit with likelihood ratio test (chi squared): nested models. Backwards or forwards selection
+
+## Nested Random intercepts logistic regression
 
 To get OR Random intercept model (rim)
 
