@@ -3369,7 +3369,11 @@ agehyg_nocaries</code></pre>
 <pre class="r"><code>library(expss) #for apply_labels</code></pre>
 <pre><code>## Loading required package: maditr</code></pre>
 <pre><code>## 
-## To get total summary skip &#39;by&#39; argument: take_all(mtcars, mean)</code></pre>
+## Use magrittr pipe &#39;%&gt;%&#39; to chain several operations:
+##              mtcars %&gt;%
+##                  let(mpg_hp = mpg/hp) %&gt;%
+##                  take(mean(mpg_hp), by = am)
+## </code></pre>
 <pre><code>## 
 ## Attaching package: &#39;maditr&#39;</code></pre>
 <pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
@@ -3385,7 +3389,7 @@ agehyg_nocaries</code></pre>
 ## 
 ##     sort_by</code></pre>
 <pre><code>## 
-## Use &#39;expss_output_viewer()&#39; to display tables in the RStudio Viewer.
+## Use &#39;expss_output_rnotebook()&#39; to display tables inside R Notebooks.
 ##  To return to the console output, use &#39;expss_output_default()&#39;.</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;expss&#39;</code></pre>
@@ -3741,13 +3745,13 @@ survensab_rep</code></pre>
 <pre class="r"><code>#cariesexp proportion with bootstrapping standard error (survensab_rep)
 
 prop.table(svymean(~cariesexp, design = survensab_rep))</code></pre>
-<pre><code>##                       mean    SE
-## cariesexpNo caries 0.33281 0.015
-## cariesexpCaries    0.66719 0.015</code></pre>
+<pre><code>##                       mean     SE
+## cariesexpNo caries 0.33281 0.0145
+## cariesexpCaries    0.66719 0.0145</code></pre>
 <pre class="r"><code>confint(svymean(~cariesexp, design = survensab_rep))</code></pre>
 <pre><code>##                        2.5 %    97.5 %
-## cariesexpNo caries 0.3033290 0.3622982
-## cariesexpCaries    0.6377018 0.6966710</code></pre>
+## cariesexpNo caries 0.3043705 0.3612567
+## cariesexpCaries    0.6387433 0.6956295</code></pre>
 <pre class="r"><code>#as.svrepdesign
 
 (sqrt(0.6775306)*0.3224694)/6382</code></pre>
@@ -3794,9 +3798,9 @@ prop.table(table(ensab$cariesexp))</code></pre>
 ## No caries    Caries 
 ## 0.3328136 0.6671864</code></pre>
 <pre class="r"><code>svymean(~cariesexp, design = survensab_rep)</code></pre>
-<pre><code>##                       mean    SE
-## cariesexpNo caries 0.33281 0.015
-## cariesexpCaries    0.66719 0.015</code></pre>
+<pre><code>##                       mean     SE
+## cariesexpNo caries 0.33281 0.0145
+## cariesexpCaries    0.66719 0.0145</code></pre>
 <pre class="r"><code>prop.table(table(ensab$cariesexp))</code></pre>
 <pre><code>## 
 ## No caries    Caries 
@@ -3987,13 +3991,539 @@ Guarnizo et al</h3>
   scale_fill_manual(values = c(&quot;Severe ECC&quot; = &quot;#CC3333&quot;, &quot;Non-severe ECC&quot; = &quot;#F8766D&quot;, &quot;No ECC&quot; = &quot;grey&quot;)) +
   theme(legend.position = &quot;top&quot;)</code></pre>
 <p><img src="data:image/png;base64,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" width="672" /></p>
-<p>#Table 3: multiple regression</p>
+<p>#Table 3: Frequency of consumption of food groups by age</p>
 <p>Multi-level logistic regression to account for clustering by
 subregion and region</p>
 </div>
 </div>
-<div id="collapsing-categories-with-few-numbers-of-observations" class="section level2">
-<h2>Collapsing categories with few numbers of observations</h2>
+<div id="taking-into-account-survey-desing" class="section level2">
+<h2>Taking into account survey desing</h2>
+<p>carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice</p>
+<div id="carbs-proportions" class="section level3">
+<h3>Carbs proportions</h3>
+<pre class="r"><code>carbs_total &lt;- prop.table(svytable(~carbs, design = survensab))
+carbs_total &lt;- round(carbs_total * 100, 2)
+carbs_total</code></pre>
+<pre><code>## carbs
+## Never    1x  2-3x  4-7x   8+x 
+##  0.92  1.16  7.49 28.01 62.43</code></pre>
+<pre class="r"><code>prop.table(svymean(~carbs, design = survensab_rep))</code></pre>
+<pre><code>##                 mean     SE
+## carbsNever 0.0091565 0.0022
+## carbs1x    0.0115600 0.0023
+## carbs2-3x  0.0748628 0.0073
+## carbs4-7x  0.2800780 0.0175
+## carbs8+x   0.6243427 0.0210</code></pre>
+</div>
+<div id="vegetables-proportions" class="section level3">
+<h3>Vegetables proportions</h3>
+<pre class="r"><code>veg_total &lt;- prop.table(svytable(~veg, design = survensab))
+veg_total &lt;- round(veg_total * 100, 2)
+veg_total</code></pre>
+<pre><code>## veg
+## Never    1x  2-3x  4-7x   8+x 
+## 16.10  9.25 23.69 29.65 21.32</code></pre>
+</div>
+<div id="fruits-proportions" class="section level3">
+<h3>Fruits proportions</h3>
+<pre class="r"><code>fruit_total &lt;- prop.table(svytable(~fruit, design = survensab))
+fruit_total &lt;- round(fruit_total * 100, 2)
+fruit_total</code></pre>
+<pre><code>## fruit
+## Never    1x  2-3x  4-7x   8+x 
+## 12.01  6.81 19.96 33.93 27.29</code></pre>
+</div>
+<div id="protein-proportions" class="section level3">
+<h3>Protein proportions</h3>
+<pre class="r"><code>prot_total &lt;- prop.table(svytable(~prot, design = survensab))
+prot_total &lt;- round(prot_total * 100, 2)
+prot_total</code></pre>
+<pre><code>## prot
+## Never    1x  2-3x  4-7x   8+x 
+##  0.46  1.37 11.80 30.63 55.73</code></pre>
+</div>
+<div id="dairy-proportions" class="section level3">
+<h3>Dairy proportions</h3>
+<pre class="r"><code>dairy_total &lt;- prop.table(svytable(~dairy, design = survensab))
+dairy_total &lt;- round(dairy_total * 100, 2)
+dairy_total</code></pre>
+<pre><code>## dairy
+## Never    1x  2-3x  4-7x   8+x 
+##  6.31  3.42 12.13 25.37 52.77</code></pre>
+</div>
+<div id="fats-proportions" class="section level3">
+<h3>Fats proportions</h3>
+<pre class="r"><code>fats_total &lt;- prop.table(svytable(~fats, design = survensab))
+fats_total &lt;- round(fats_total * 100, 2)
+fats_total</code></pre>
+<pre><code>## fats
+## Never    1x  2-3x  4-7x   8+x 
+## 15.09 12.62 26.38 27.13 18.78</code></pre>
+</div>
+<div id="sugars" class="section level3">
+<h3>Sugars</h3>
+<pre class="r"><code>sugar_total &lt;- prop.table(svytable(~sugar, design = survensab))
+sugar_total &lt;- round(sugar_total * 100, 2)
+sugar_total</code></pre>
+<pre><code>## sugar
+## Never    1x  2-3x  4-7x   8+x 
+## 10.69 10.37 19.54 26.59 32.81</code></pre>
+</div>
+<div id="soda" class="section level3">
+<h3>Soda</h3>
+<pre class="r"><code>soda_total &lt;- prop.table(svytable(~soda, design = survensab))
+soda_total &lt;- round(soda_total * 100, 2)
+soda_total</code></pre>
+<pre><code>## soda
+## Never    1x  2-3x  4-7x   8+x 
+## 44.03 20.56 20.47 10.51  4.43</code></pre>
+</div>
+<div id="juice" class="section level3">
+<h3>Juice</h3>
+<pre class="r"><code>juice_total &lt;- prop.table(svytable(~juice, design = survensab))
+juice_total &lt;- round(juice_total * 100, 2)
+juice_total</code></pre>
+<pre><code>## juice
+## Never    1x  2-3x  4-7x   8+x 
+##  4.18  2.37  9.21 23.11 61.13</code></pre>
+</div>
+</div>
+<div id="no-survey-design" class="section level2">
+<h2>No survey design</h2>
+<p>Carbs</p>
+<pre class="r"><code>totalcarbs &lt;- ensab %&gt;%
+  group_by(carbs) %&gt;%
+  summarise(Total = n(), .groups = &quot;drop&quot;) %&gt;%
+  mutate(Percent = Total / sum(Total)) %&gt;%
+  mutate(Total = paste0(round(Total, 3), &quot; (&quot;, round(Percent * 100, 2), &quot;%)&quot;)) %&gt;%
+  select(Freq = carbs, Total)
+
+totalcarbs</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Freq  Total        
+##   &lt;fct&gt; &lt;chr&gt;        
+## 1 Never 61 (0.96%)   
+## 2 1x    86 (1.35%)   
+## 3 2-3x  537 (8.41%)  
+## 4 4-7x  1909 (29.91%)
+## 5 8+x   3789 (59.37%)</code></pre>
+<pre class="r"><code>agecarbs &lt;- ensab %&gt;%
+  group_by(age, carbs) %&gt;%
+  summarise(Total = n()) %&gt;%
+  mutate(Percent = Total/sum(Total)) %&gt;%
+  mutate(Percent_complete = paste0(round(Total, 3), &quot; (&quot;, round(Percent*100, 2), &quot;%)&quot;)) %&gt;%
+  select(age, Freq = carbs, Percent_complete) %&gt;%
+  pivot_wider(names_from = &quot;age&quot;, values_from = Percent_complete) </code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<pre class="r"><code>agecarbs</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Freq  `1`           `3`           `5`          
+##   &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
+## 1 Never 38 (1.83%)    11 (0.53%)    12 (0.53%)   
+## 2 1x    35 (1.69%)    18 (0.88%)    33 (1.46%)   
+## 3 2-3x  190 (9.17%)   179 (8.7%)    168 (7.45%)  
+## 4 4-7x  655 (31.63%)  603 (29.31%)  651 (28.88%) 
+## 5 8+x   1153 (55.67%) 1246 (60.57%) 1390 (61.67%)</code></pre>
+<pre class="r"><code>t2carbs &lt;- left_join(totalcarbs, agecarbs, by = &quot;Freq&quot;) %&gt;%
+  mutate(Food = &quot;Carbs&quot;) %&gt;%
+  select(Food, everything())
+t2carbs</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   Food  Freq  Total         `1`           `3`           `5`          
+##   &lt;chr&gt; &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
+## 1 Carbs Never 61 (0.96%)    38 (1.83%)    11 (0.53%)    12 (0.53%)   
+## 2 Carbs 1x    86 (1.35%)    35 (1.69%)    18 (0.88%)    33 (1.46%)   
+## 3 Carbs 2-3x  537 (8.41%)   190 (9.17%)   179 (8.7%)    168 (7.45%)  
+## 4 Carbs 4-7x  1909 (29.91%) 655 (31.63%)  603 (29.31%)  651 (28.88%) 
+## 5 Carbs 8+x   3789 (59.37%) 1153 (55.67%) 1246 (60.57%) 1390 (61.67%)</code></pre>
+<p>Veg</p>
+<pre class="r"><code>totalveg &lt;- ensab %&gt;%
+  group_by(veg) %&gt;%
+  summarise(Total = n(), .groups = &quot;drop&quot;) %&gt;%
+  mutate(Percent = Total / sum(Total)) %&gt;%
+  mutate(Total = paste0(round(Total, 3), &quot; (&quot;, round(Percent * 100, 2), &quot;%)&quot;)) %&gt;%
+  select(Freq = veg, Total)
+totalveg</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Freq  Total        
+##   &lt;fct&gt; &lt;chr&gt;        
+## 1 Never 908 (14.23%) 
+## 2 1x    557 (8.73%)  
+## 3 2-3x  1568 (24.57%)
+## 4 4-7x  2081 (32.61%)
+## 5 8+x   1268 (19.87%)</code></pre>
+<pre class="r"><code>ageveg &lt;- ensab %&gt;%
+  group_by(age, veg) %&gt;%
+  summarise(Total = n()) %&gt;%
+  mutate(Percent = Total/sum(Total)) %&gt;%
+  mutate(Percent_complete = paste0(round(Total, 3), &quot; (&quot;, round(Percent*100, 2), &quot;%)&quot;)) %&gt;%
+  select(age, Freq = veg, Percent_complete) %&gt;%
+  pivot_wider(names_from = &quot;age&quot;, values_from = Percent_complete)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<pre class="r"><code>ageveg</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Freq  `1`          `3`          `5`         
+##   &lt;fct&gt; &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;       
+## 1 Never 289 (13.95%) 274 (13.32%) 345 (15.31%)
+## 2 1x    163 (7.87%)  186 (9.04%)  208 (9.23%) 
+## 3 2-3x  503 (24.29%) 476 (23.14%) 589 (26.13%)
+## 4 4-7x  682 (32.93%) 685 (33.3%)  714 (31.68%)
+## 5 8+x   434 (20.96%) 436 (21.2%)  398 (17.66%)</code></pre>
+<pre class="r"><code>t2veg &lt;- left_join(totalveg, ageveg, by = &quot;Freq&quot;) %&gt;%
+  mutate(Food = &quot;Veg&quot;) %&gt;%
+  select(Food, everything())</code></pre>
+<p>Fruit</p>
+<pre class="r"><code>totalfruit &lt;- ensab %&gt;%
+  group_by(fruit) %&gt;%
+  summarise(Total = n(), .groups = &quot;drop&quot;) %&gt;%
+  mutate(Percent = Total / sum(Total)) %&gt;%
+  mutate(Total = paste0(round(Total, 3), &quot; (&quot;, round(Percent * 100, 2), &quot;%)&quot;)) %&gt;%
+  select(Freq = fruit, Total)
+
+totalfruit</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Freq  Total        
+##   &lt;fct&gt; &lt;chr&gt;        
+## 1 Never 638 (10%)    
+## 2 1x    421 (6.6%)   
+## 3 2-3x  1324 (20.75%)
+## 4 4-7x  2098 (32.87%)
+## 5 8+x   1901 (29.79%)</code></pre>
+<pre class="r"><code>agefruit &lt;- ensab %&gt;%
+  group_by(age, fruit) %&gt;%
+  summarise(Total = n()) %&gt;%
+  mutate(Percent = Total/sum(Total)) %&gt;%
+  mutate(Percent_complete = paste0(round(Total, 3), &quot; (&quot;, round(Percent*100, 2), &quot;%)&quot;)) %&gt;%
+  select(age, Freq = fruit, Percent_complete) %&gt;%
+  pivot_wider(names_from = &quot;age&quot;, values_from = Percent_complete)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<pre class="r"><code>agefruit</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Freq  `1`          `3`          `5`         
+##   &lt;fct&gt; &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;       
+## 1 Never 231 (11.15%) 179 (8.7%)   228 (10.12%)
+## 2 1x    155 (7.48%)  116 (5.64%)  150 (6.65%) 
+## 3 2-3x  427 (20.62%) 399 (19.4%)  498 (22.09%)
+## 4 4-7x  673 (32.5%)  697 (33.88%) 728 (32.3%) 
+## 5 8+x   585 (28.25%) 666 (32.38%) 650 (28.84%)</code></pre>
+<pre class="r"><code>t2fruit &lt;- left_join(totalfruit, agefruit, by = &quot;Freq&quot;) %&gt;%
+  mutate(Food = &quot;Fruit&quot;) %&gt;%
+  select(Food, everything())
+t2fruit</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   Food  Freq  Total         `1`          `3`          `5`         
+##   &lt;chr&gt; &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;       
+## 1 Fruit Never 638 (10%)     231 (11.15%) 179 (8.7%)   228 (10.12%)
+## 2 Fruit 1x    421 (6.6%)    155 (7.48%)  116 (5.64%)  150 (6.65%) 
+## 3 Fruit 2-3x  1324 (20.75%) 427 (20.62%) 399 (19.4%)  498 (22.09%)
+## 4 Fruit 4-7x  2098 (32.87%) 673 (32.5%)  697 (33.88%) 728 (32.3%) 
+## 5 Fruit 8+x   1901 (29.79%) 585 (28.25%) 666 (32.38%) 650 (28.84%)</code></pre>
+<p>Protein</p>
+<pre class="r"><code>totalprot &lt;- ensab %&gt;%
+  group_by(prot) %&gt;%
+  summarise(Total = n(), .groups = &quot;drop&quot;) %&gt;%
+  mutate(Percent = Total / sum(Total)) %&gt;%
+  mutate(Total = paste0(round(Total, 3), &quot; (&quot;, round(Percent * 100, 2), &quot;%)&quot;)) %&gt;%
+  select(Freq = prot, Total)
+
+totalprot</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Freq  Total        
+##   &lt;fct&gt; &lt;chr&gt;        
+## 1 Never 37 (0.58%)   
+## 2 1x    93 (1.46%)   
+## 3 2-3x  747 (11.7%)  
+## 4 4-7x  2063 (32.33%)
+## 5 8+x   3442 (53.93%)</code></pre>
+<pre class="r"><code>ageprot &lt;- ensab %&gt;%
+  group_by(age, prot) %&gt;%
+  summarise(Total = n()) %&gt;%
+  mutate(Percent = Total/sum(Total)) %&gt;%
+  mutate(Percent_complete = paste0(round(Total, 3), &quot; (&quot;, round(Percent*100, 2), &quot;%)&quot;)) %&gt;%
+  select(age, Freq = prot, Percent_complete) %&gt;%
+  pivot_wider(names_from = &quot;age&quot;, values_from = Percent_complete)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<pre class="r"><code>ageprot</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Freq  `1`           `3`          `5`         
+##   &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;        &lt;chr&gt;       
+## 1 Never 25 (1.21%)    6 (0.29%)    6 (0.27%)   
+## 2 1x    42 (2.03%)    15 (0.73%)   36 (1.6%)   
+## 3 2-3x  303 (14.63%)  236 (11.47%) 208 (9.23%) 
+## 4 4-7x  681 (32.88%)  683 (33.2%)  699 (31.01%)
+## 5 8+x   1020 (49.25%) 1117 (54.3%) 1305 (57.9%)</code></pre>
+<pre class="r"><code>t2prot &lt;- left_join(totalprot, ageprot, by = &quot;Freq&quot;) %&gt;%
+  mutate(Food = &quot;Protein&quot;) %&gt;%
+  select(Food, everything())
+t2prot</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   Food    Freq  Total         `1`           `3`          `5`         
+##   &lt;chr&gt;   &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        &lt;chr&gt;       
+## 1 Protein Never 37 (0.58%)    25 (1.21%)    6 (0.29%)    6 (0.27%)   
+## 2 Protein 1x    93 (1.46%)    42 (2.03%)    15 (0.73%)   36 (1.6%)   
+## 3 Protein 2-3x  747 (11.7%)   303 (14.63%)  236 (11.47%) 208 (9.23%) 
+## 4 Protein 4-7x  2063 (32.33%) 681 (32.88%)  683 (33.2%)  699 (31.01%)
+## 5 Protein 8+x   3442 (53.93%) 1020 (49.25%) 1117 (54.3%) 1305 (57.9%)</code></pre>
+<p>Dairy</p>
+<pre class="r"><code>totaldairy &lt;- ensab %&gt;%
+  group_by(dairy) %&gt;%
+  summarise(Total = n(), .groups = &quot;drop&quot;) %&gt;%
+  mutate(Percent = Total / sum(Total)) %&gt;%
+  mutate(Total = paste0(round(Total, 3), &quot; (&quot;, round(Percent * 100, 2), &quot;%)&quot;)) %&gt;%
+  select(Freq = dairy, Total)
+
+totaldairy</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Freq  Total        
+##   &lt;fct&gt; &lt;chr&gt;        
+## 1 Never 407 (6.38%)  
+## 2 1x    229 (3.59%)  
+## 3 2-3x  770 (12.07%) 
+## 4 4-7x  1701 (26.65%)
+## 5 8+x   3275 (51.32%)</code></pre>
+<pre class="r"><code>agedairy &lt;- ensab %&gt;%
+  group_by(age, dairy) %&gt;%
+  summarise(Total = n()) %&gt;%
+  mutate(Percent = Total/sum(Total)) %&gt;%
+  mutate(Percent_complete = paste0(round(Total, 3), &quot; (&quot;, round(Percent*100, 2), &quot;%)&quot;)) %&gt;%
+  select(age, Freq = dairy, Percent_complete) %&gt;%
+  pivot_wider(names_from = &quot;age&quot;, values_from = Percent_complete)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<pre class="r"><code>agedairy</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Freq  `1`           `3`           `5`          
+##   &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
+## 1 Never 138 (6.66%)   101 (4.91%)   168 (7.45%)  
+## 2 1x    83 (4.01%)    72 (3.5%)     74 (3.28%)   
+## 3 2-3x  215 (10.38%)  238 (11.57%)  317 (14.06%) 
+## 4 4-7x  460 (22.21%)  571 (27.76%)  670 (29.72%) 
+## 5 8+x   1175 (56.74%) 1075 (52.26%) 1025 (45.47%)</code></pre>
+<pre class="r"><code>t2dairy &lt;- left_join(totaldairy, agedairy, by = &quot;Freq&quot;) %&gt;%
+  mutate(Food = &quot;Dairy&quot;) %&gt;%
+  select(Food, everything())
+t2dairy</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   Food  Freq  Total         `1`           `3`           `5`          
+##   &lt;chr&gt; &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
+## 1 Dairy Never 407 (6.38%)   138 (6.66%)   101 (4.91%)   168 (7.45%)  
+## 2 Dairy 1x    229 (3.59%)   83 (4.01%)    72 (3.5%)     74 (3.28%)   
+## 3 Dairy 2-3x  770 (12.07%)  215 (10.38%)  238 (11.57%)  317 (14.06%) 
+## 4 Dairy 4-7x  1701 (26.65%) 460 (22.21%)  571 (27.76%)  670 (29.72%) 
+## 5 Dairy 8+x   3275 (51.32%) 1175 (56.74%) 1075 (52.26%) 1025 (45.47%)</code></pre>
+<p>Fats</p>
+<pre class="r"><code>totalfats &lt;- ensab %&gt;%
+  group_by(fats) %&gt;%
+  summarise(Total = n(), .groups = &quot;drop&quot;) %&gt;%
+  mutate(Percent = Total / sum(Total)) %&gt;%
+  mutate(Total = paste0(round(Total, 3), &quot; (&quot;, round(Percent * 100, 2), &quot;%)&quot;)) %&gt;%
+  select(Freq = fats, Total)
+
+totalfats</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Freq  Total        
+##   &lt;fct&gt; &lt;chr&gt;        
+## 1 Never 944 (14.79%) 
+## 2 1x    811 (12.71%) 
+## 3 2-3x  1720 (26.95%)
+## 4 4-7x  1689 (26.47%)
+## 5 8+x   1218 (19.08%)</code></pre>
+<pre class="r"><code>agefats &lt;- ensab %&gt;%
+  group_by(age, fats) %&gt;%
+  summarise(Total = n()) %&gt;%
+  mutate(Percent = Total/sum(Total)) %&gt;%
+  mutate(Percent_complete = paste0(round(Total, 3), &quot; (&quot;, round(Percent*100, 2), &quot;%)&quot;)) %&gt;%
+  select(age, Freq = fats, Percent_complete) %&gt;%
+  pivot_wider(names_from = &quot;age&quot;, values_from = Percent_complete)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<pre class="r"><code>agefats</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Freq  `1`          `3`          `5`         
+##   &lt;fct&gt; &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;       
+## 1 Never 492 (23.76%) 219 (10.65%) 233 (10.34%)
+## 2 1x    277 (13.38%) 250 (12.15%) 284 (12.6%) 
+## 3 2-3x  517 (24.96%) 591 (28.73%) 612 (27.15%)
+## 4 4-7x  485 (23.42%) 584 (28.39%) 620 (27.51%)
+## 5 8+x   300 (14.49%) 413 (20.08%) 505 (22.4%)</code></pre>
+<pre class="r"><code>t2fats &lt;- left_join(totalfats, agefats, by = &quot;Freq&quot;) %&gt;%
+  mutate(Food = &quot;Fats&quot;) %&gt;%
+  select(Food, everything())
+t2fats</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   Food  Freq  Total         `1`          `3`          `5`         
+##   &lt;chr&gt; &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;       
+## 1 Fats  Never 944 (14.79%)  492 (23.76%) 219 (10.65%) 233 (10.34%)
+## 2 Fats  1x    811 (12.71%)  277 (13.38%) 250 (12.15%) 284 (12.6%) 
+## 3 Fats  2-3x  1720 (26.95%) 517 (24.96%) 591 (28.73%) 612 (27.15%)
+## 4 Fats  4-7x  1689 (26.47%) 485 (23.42%) 584 (28.39%) 620 (27.51%)
+## 5 Fats  8+x   1218 (19.08%) 300 (14.49%) 413 (20.08%) 505 (22.4%)</code></pre>
+<p>Sugars</p>
+<pre class="r"><code>totalsugar &lt;- ensab %&gt;%
+  group_by(sugar) %&gt;%
+  summarise(Total = n(), .groups = &quot;drop&quot;) %&gt;%
+  mutate(Percent = Total / sum(Total)) %&gt;%
+  mutate(Total = paste0(round(Total, 3), &quot; (&quot;, round(Percent * 100, 2), &quot;%)&quot;)) %&gt;%
+  select(Freq = sugar, Total)
+totalsugar</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Freq  Total        
+##   &lt;fct&gt; &lt;chr&gt;        
+## 1 Never 664 (10.4%)  
+## 2 1x    643 (10.08%) 
+## 3 2-3x  1317 (20.64%)
+## 4 4-7x  1700 (26.64%)
+## 5 8+x   2058 (32.25%)</code></pre>
+<pre class="r"><code>agesugar &lt;- ensab %&gt;%
+  group_by(age, sugar) %&gt;%
+  summarise(Total = n()) %&gt;%
+  mutate(Percent = Total/sum(Total)) %&gt;%
+  mutate(Percent_complete = paste0(round(Total, 3), &quot; (&quot;, round(Percent*100, 2), &quot;%)&quot;)) %&gt;%
+  select(age, Freq = sugar, Percent_complete) %&gt;%
+  pivot_wider(names_from = &quot;age&quot;, values_from = Percent_complete)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<pre class="r"><code>agesugar</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Freq  `1`          `3`          `5`         
+##   &lt;fct&gt; &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;       
+## 1 Never 313 (15.11%) 171 (8.31%)  180 (7.99%) 
+## 2 1x    302 (14.58%) 167 (8.12%)  174 (7.72%) 
+## 3 2-3x  473 (22.84%) 437 (21.24%) 407 (18.06%)
+## 4 4-7x  479 (23.13%) 604 (29.36%) 617 (27.37%)
+## 5 8+x   504 (24.34%) 678 (32.96%) 876 (38.86%)</code></pre>
+<pre class="r"><code>t2sugar &lt;- left_join(totalsugar, agesugar, by = &quot;Freq&quot;) %&gt;%
+  mutate(Food = &quot;Sugars&quot;) %&gt;%
+  select(Food, everything())
+t2sugar</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   Food   Freq  Total         `1`          `3`          `5`         
+##   &lt;chr&gt;  &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;       
+## 1 Sugars Never 664 (10.4%)   313 (15.11%) 171 (8.31%)  180 (7.99%) 
+## 2 Sugars 1x    643 (10.08%)  302 (14.58%) 167 (8.12%)  174 (7.72%) 
+## 3 Sugars 2-3x  1317 (20.64%) 473 (22.84%) 437 (21.24%) 407 (18.06%)
+## 4 Sugars 4-7x  1700 (26.64%) 479 (23.13%) 604 (29.36%) 617 (27.37%)
+## 5 Sugars 8+x   2058 (32.25%) 504 (24.34%) 678 (32.96%) 876 (38.86%)</code></pre>
+<p>Soda</p>
+<pre class="r"><code>totalsoda &lt;- ensab %&gt;%
+  group_by(soda) %&gt;%
+  summarise(Total = n(), .groups = &quot;drop&quot;) %&gt;%
+  mutate(Percent = Total / sum(Total)) %&gt;%
+  mutate(Total = paste0(round(Total, 3), &quot; (&quot;, round(Percent * 100, 2), &quot;%)&quot;)) %&gt;%
+  select(Freq = soda, Total)
+
+totalsoda</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Freq  Total        
+##   &lt;fct&gt; &lt;chr&gt;        
+## 1 Never 2807 (43.98%)
+## 2 1x    1384 (21.69%)
+## 3 2-3x  1237 (19.38%)
+## 4 4-7x  669 (10.48%) 
+## 5 8+x   285 (4.47%)</code></pre>
+<pre class="r"><code>agesoda &lt;- ensab %&gt;%
+  group_by(age, soda) %&gt;%
+  summarise(Total = n()) %&gt;%
+  mutate(Percent = Total/sum(Total)) %&gt;%
+  mutate(Percent_complete = paste0(round(Total, 3), &quot; (&quot;, round(Percent*100, 2), &quot;%)&quot;)) %&gt;%
+  select(age, Freq = soda, Percent_complete) %&gt;%
+  pivot_wider(names_from = &quot;age&quot;, values_from = Percent_complete)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<pre class="r"><code>agesoda</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Freq  `1`           `3`          `5`         
+##   &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;        &lt;chr&gt;       
+## 1 Never 1080 (52.15%) 835 (40.59%) 892 (39.57%)
+## 2 1x    453 (21.87%)  453 (22.02%) 478 (21.21%)
+## 3 2-3x  312 (15.07%)  442 (21.49%) 483 (21.43%)
+## 4 4-7x  171 (8.26%)   225 (10.94%) 273 (12.11%)
+## 5 8+x   55 (2.66%)    102 (4.96%)  128 (5.68%)</code></pre>
+<pre class="r"><code>t2soda &lt;- left_join(totalsoda, agesoda, by = &quot;Freq&quot;) %&gt;%
+  mutate(Food = &quot;Soda&quot;) %&gt;%
+  select(Food, everything())
+t2soda</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   Food  Freq  Total         `1`           `3`          `5`         
+##   &lt;chr&gt; &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        &lt;chr&gt;       
+## 1 Soda  Never 2807 (43.98%) 1080 (52.15%) 835 (40.59%) 892 (39.57%)
+## 2 Soda  1x    1384 (21.69%) 453 (21.87%)  453 (22.02%) 478 (21.21%)
+## 3 Soda  2-3x  1237 (19.38%) 312 (15.07%)  442 (21.49%) 483 (21.43%)
+## 4 Soda  4-7x  669 (10.48%)  171 (8.26%)   225 (10.94%) 273 (12.11%)
+## 5 Soda  8+x   285 (4.47%)   55 (2.66%)    102 (4.96%)  128 (5.68%)</code></pre>
+<p>Juice</p>
+<pre class="r"><code>totaljuice &lt;- ensab %&gt;%
+  group_by(juice) %&gt;%
+  summarise(Total = n(), .groups = &quot;drop&quot;) %&gt;%
+  mutate(Percent = Total / sum(Total)) %&gt;%
+  mutate(Total = paste0(round(Total, 3), &quot; (&quot;, round(Percent * 100, 2), &quot;%)&quot;)) %&gt;%
+  select(Freq = juice, Total)
+totaljuice</code></pre>
+<pre><code>## # A tibble: 5 × 2
+##   Freq  Total        
+##   &lt;fct&gt; &lt;chr&gt;        
+## 1 Never 275 (4.31%)  
+## 2 1x    169 (2.65%)  
+## 3 2-3x  595 (9.32%)  
+## 4 4-7x  1422 (22.28%)
+## 5 8+x   3921 (61.44%)</code></pre>
+<pre class="r"><code>agejuice &lt;- ensab %&gt;%
+  group_by(age, juice) %&gt;%
+  summarise(Total = n()) %&gt;%
+  mutate(Percent = Total/sum(Total)) %&gt;%
+  mutate(Percent_complete = paste0(round(Total, 3), &quot; (&quot;, round(Percent*100, 2), &quot;%)&quot;)) %&gt;%
+  select(age, Freq = juice, Percent_complete) %&gt;%
+  pivot_wider(names_from = &quot;age&quot;, values_from = Percent_complete)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;age&#39;. You can override using the `.groups`
+## argument.</code></pre>
+<pre class="r"><code>agejuice</code></pre>
+<pre><code>## # A tibble: 5 × 4
+##   Freq  `1`           `3`           `5`          
+##   &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
+## 1 Never 113 (5.46%)   73 (3.55%)    89 (3.95%)   
+## 2 1x    68 (3.28%)    41 (1.99%)    60 (2.66%)   
+## 3 2-3x  208 (10.04%)  193 (9.38%)   194 (8.61%)  
+## 4 4-7x  493 (23.8%)   458 (22.27%)  471 (20.9%)  
+## 5 8+x   1189 (57.41%) 1292 (62.81%) 1440 (63.89%)</code></pre>
+<pre class="r"><code>t2juice &lt;- left_join(totaljuice, agejuice, by = &quot;Freq&quot;) %&gt;%
+  mutate(Food = &quot;Juice&quot;) %&gt;%
+  select(Food, everything())
+t2juice</code></pre>
+<pre><code>## # A tibble: 5 × 6
+##   Food  Freq  Total         `1`           `3`           `5`          
+##   &lt;chr&gt; &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
+## 1 Juice Never 275 (4.31%)   113 (5.46%)   73 (3.55%)    89 (3.95%)   
+## 2 Juice 1x    169 (2.65%)   68 (3.28%)    41 (1.99%)    60 (2.66%)   
+## 3 Juice 2-3x  595 (9.32%)   208 (10.04%)  193 (9.38%)   194 (8.61%)  
+## 4 Juice 4-7x  1422 (22.28%) 493 (23.8%)   458 (22.27%)  471 (20.9%)  
+## 5 Juice 8+x   3921 (61.44%) 1189 (57.41%) 1292 (62.81%) 1440 (63.89%)</code></pre>
+<p>Append all tables</p>
+<pre class="r"><code>t2 &lt;- bind_rows(t2carbs, t2veg, t2fruit, t2prot, t2dairy, t2fats, t2sugar, t2soda, t2juice) 
+t2</code></pre>
+<pre><code>## # A tibble: 45 × 6
+##    Food  Freq  Total         `1`           `3`           `5`          
+##    &lt;chr&gt; &lt;fct&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
+##  1 Carbs Never 61 (0.96%)    38 (1.83%)    11 (0.53%)    12 (0.53%)   
+##  2 Carbs 1x    86 (1.35%)    35 (1.69%)    18 (0.88%)    33 (1.46%)   
+##  3 Carbs 2-3x  537 (8.41%)   190 (9.17%)   179 (8.7%)    168 (7.45%)  
+##  4 Carbs 4-7x  1909 (29.91%) 655 (31.63%)  603 (29.31%)  651 (28.88%) 
+##  5 Carbs 8+x   3789 (59.37%) 1153 (55.67%) 1246 (60.57%) 1390 (61.67%)
+##  6 Veg   Never 908 (14.23%)  289 (13.95%)  274 (13.32%)  345 (15.31%) 
+##  7 Veg   1x    557 (8.73%)   163 (7.87%)   186 (9.04%)   208 (9.23%)  
+##  8 Veg   2-3x  1568 (24.57%) 503 (24.29%)  476 (23.14%)  589 (26.13%) 
+##  9 Veg   4-7x  2081 (32.61%) 682 (32.93%)  685 (33.3%)   714 (31.68%) 
+## 10 Veg   8+x   1268 (19.87%) 434 (20.96%)  436 (21.2%)   398 (17.66%) 
+## # ℹ 35 more rows</code></pre>
+<pre class="r"><code>#export as csv
+write.csv(t2, &quot;t2_foodgroups.csv&quot;, row.names = FALSE)</code></pre>
+</div>
+</div>
+<div id="collapsing-categories-with-few-numbers-of-observations" class="section level1">
+<h1>Collapsing categories with few numbers of observations</h1>
 <p>Socioeconomic status: Collapse “Middle low” into “Middle to high</p>
 <pre class="r"><code>summary(ensab$ses)</code></pre>
 <pre><code>##        Low low            Low     Middle low Middle to high 
@@ -4083,6 +4613,17 @@ week)</p>
 summary(ensab$dairy)</code></pre>
 <pre><code>##  &lt;2x 2-3x 4-7x  8+x 
 ##  636  770 1701 3275</code></pre>
+<p>Sodas and soft drinks</p>
+<pre class="r"><code>summary(ensab$soda)</code></pre>
+<pre><code>## Never    1x  2-3x  4-7x   8+x 
+##  2807  1384  1237   669   285</code></pre>
+<pre class="r"><code>ensab &lt;- ensab %&gt;%
+  mutate(soda = dplyr::recode(soda,
+                              &quot;4-7x&quot; = &quot;4+x&quot;,
+                              &quot;8+x&quot; = &quot;4+x&quot;,))
+summary(ensab$soda)</code></pre>
+<pre><code>## Never    1x  2-3x   4+x 
+##  2807  1384  1237   954</code></pre>
 <p>Juice: Collapse Never and Once a week into &lt;2x (less than twice a
 week)</p>
 <pre class="r"><code>summary(ensab$juice)</code></pre>
@@ -4096,123 +4637,16 @@ summary(ensab$juice)</code></pre>
 <pre><code>##  &lt;2x 2-3x 4-7x  8+x 
 ##  444  595 1422 3921</code></pre>
 </div>
-<div id="table-3-proportions-for-each" class="section level2">
-<h2>Table 3: Proportions for each</h2>
-<p>carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice</p>
-<div id="carbs-proportions" class="section level3">
-<h3>Carbs proportions</h3>
-<pre class="r"><code>carbs_total &lt;- prop.table(svytable(~carbs, design = survensab))
-carbs_total &lt;- round(carbs_total * 100, 2)
-carbs_total</code></pre>
-<pre><code>## carbs
-## Never    1x  2-3x  4-7x   8+x 
-##  0.92  1.16  7.49 28.01 62.43</code></pre>
-<pre class="r"><code>prop.table(svymean(~carbs, design = survensab_rep))</code></pre>
-<pre><code>##                 mean     SE
-## carbsNever 0.0091565 0.0023
-## carbs1x    0.0115600 0.0023
-## carbs2-3x  0.0748628 0.0073
-## carbs4-7x  0.2800780 0.0180
-## carbs8+x   0.6243427 0.0214</code></pre>
-</div>
-<div id="vegetables-proportions" class="section level3">
-<h3>Vegetables proportions</h3>
-<pre class="r"><code>veg_total &lt;- prop.table(svytable(~veg, design = survensab))
-veg_total &lt;- round(veg_total * 100, 2)
-veg_total</code></pre>
-<pre><code>## veg
-## Never    1x  2-3x  4-7x   8+x 
-## 16.10  9.25 23.69 29.65 21.32</code></pre>
-</div>
-<div id="fruits-proportions" class="section level3">
-<h3>Fruits proportions</h3>
-<pre class="r"><code>fruit_total &lt;- prop.table(svytable(~fruit, design = survensab))
-fruit_total &lt;- round(fruit_total * 100, 2)
-fruit_total</code></pre>
-<pre><code>## fruit
-## Never    1x  2-3x  4-7x   8+x 
-## 12.01  6.81 19.96 33.93 27.29</code></pre>
-</div>
-<div id="protein-proportions" class="section level3">
-<h3>Protein proportions</h3>
-<pre class="r"><code>prot_total &lt;- prop.table(svytable(~prot, design = survensab))
-prot_total &lt;- round(prot_total * 100, 2)
-prot_total</code></pre>
-<pre><code>## prot
-## Never    1x  2-3x  4-7x   8+x 
-##  0.46  1.37 11.80 30.63 55.73</code></pre>
-</div>
-<div id="dairy-proportions" class="section level3">
-<h3>Dairy proportions</h3>
-<pre class="r"><code>dairy_total &lt;- prop.table(svytable(~dairy, design = survensab))
-dairy_total &lt;- round(dairy_total * 100, 2)
-dairy_total</code></pre>
-<pre><code>## dairy
-## Never    1x  2-3x  4-7x   8+x 
-##  6.31  3.42 12.13 25.37 52.77</code></pre>
-</div>
-<div id="fats-proportions" class="section level3">
-<h3>Fats proportions</h3>
-<pre class="r"><code>fats_total &lt;- prop.table(svytable(~fats, design = survensab))
-fats_total &lt;- round(fats_total * 100, 2)
-fats_total</code></pre>
-<pre><code>## fats
-## Never    1x  2-3x  4-7x   8+x 
-## 15.09 12.62 26.38 27.13 18.78</code></pre>
-</div>
-<div id="sugars" class="section level3">
-<h3>Sugars</h3>
-<pre class="r"><code>sugar_total &lt;- prop.table(svytable(~sugar, design = survensab))
-sugar_total &lt;- round(sugar_total * 100, 2)
-sugar_total</code></pre>
-<pre><code>## sugar
-## Never    1x  2-3x  4-7x   8+x 
-## 10.69 10.37 19.54 26.59 32.81</code></pre>
-</div>
-<div id="soda" class="section level3">
-<h3>Soda</h3>
-<pre class="r"><code>soda_total &lt;- prop.table(svytable(~soda, design = survensab))
-soda_total &lt;- round(soda_total * 100, 2)
-soda_total</code></pre>
-<pre><code>## soda
-## Never    1x  2-3x  4-7x   8+x 
-## 44.03 20.56 20.47 10.51  4.43</code></pre>
-</div>
-<div id="juice" class="section level3">
-<h3>Juice</h3>
-<pre class="r"><code>juice_total &lt;- prop.table(svytable(~juice, design = survensab))
-juice_total &lt;- round(juice_total * 100, 2)
-juice_total</code></pre>
-<pre><code>## juice
-## Never    1x  2-3x  4-7x   8+x 
-##  4.18  2.37  9.21 23.11 61.13</code></pre>
-</div>
-<div id="no-survey-design" class="section level3">
-<h3>No survey design</h3>
-<p>Carbs</p>
-<pre class="r"><code>carbs_total &lt;- prop.table(table(ensab$carbs))
-carbs_total &lt;- round(carbs_total * 100, 2)
-carbs_total</code></pre>
-<pre><code>## 
-##   &lt;4x  4-7x   8+x 
-## 10.72 29.91 59.37</code></pre>
-</div>
-</div>
-</div>
 <div id="table-4-association-between-nutrition-and-caries" class="section level1">
 <h1>Table 4: Association between nutrition and caries</h1>
 <p>Steps of multivariable analysis: 1. DAG 2. Fit different models 4.
 Check for multi-collinearity with VIF 5. Check model fit with likelihood
 ratio test (chi squared): nested models. Backwards or forwards
 selection</p>
-<div id="nested-random-intercepts-logistic-regression" class="section level2">
-<h2>Nested Random intercepts logistic regression</h2>
-<p>To get OR Random intercept model (rim)</p>
-<p>Add every confounder one by one</p>
-<div id="carbs" class="section level3">
-<h3>Carbs</h3>
-<pre class="r"><code>library(MASS) #for stepAIC, but it doesn&#39;t work with glmer
-library(car) #for vif</code></pre>
+<div id="no-survey-design-1" class="section level2">
+<h2>No survey design</h2>
+<p>Setup</p>
+<pre class="r"><code>library(car) #for vif</code></pre>
 <pre><code>## Loading required package: carData</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;car&#39;</code></pre>
@@ -4225,68 +4659,44 @@ library(car) #for vif</code></pre>
 <pre><code>## The following object is masked from &#39;package:purrr&#39;:
 ## 
 ##     some</code></pre>
-<pre class="r"><code># Fit the full model (starting model)
-#rimfull_carbs &lt;- glmer(cariesexp ~ carbs + (1|Region:Subreg), data = ensab, family = binomial)
+<pre class="r"><code>if(!require(&quot;logbin&quot;)) install.packages(&quot;logbin&quot;)</code></pre>
+<pre><code>## Loading required package: logbin</code></pre>
+<pre><code>## Warning: package &#39;logbin&#39; was built under R version 4.4.3</code></pre>
+<pre class="r"><code>library(logbin) #for log binomial regression
+library(sandwich) #for robust variance
+library(lmtest) #for coeftest</code></pre>
+<pre><code>## Warning: package &#39;lmtest&#39; was built under R version 4.4.2</code></pre>
+<pre><code>## Loading required package: zoo</code></pre>
+<pre><code>## 
+## Attaching package: &#39;zoo&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric</code></pre>
+<pre class="r"><code>library(MASS) #for stepAIC, but it doesn&#39;t work with glmer. stepAIC can&#39;t be used when there is missing data.
 
-# Add one predictor at a time and compare AIC
-# rim_age_carbs &lt;- update(rimfull_carbs, . ~ . + age)
-# rim_sex_carbs &lt;- update(rim_age_carbs, . ~ . + sex)
-# rim_ses_carbs &lt;- update(rim_sex_carbs, . ~ . + ses)
-# rim_inc_carbs &lt;- update(rim_ses_carbs, . ~ . + income)
-# rim_loc_carbs &lt;- update(rim_inc_carbs, . ~ . + location)
-# rim_ins_carbs &lt;- update(rim_loc_carbs, . ~ . + insurance)
-
-# Store models in a list
-# models_carbs &lt;- list(
-#   &quot;Full Model&quot;     = rimfull_carbs,
-#   &quot;Age&quot;            = rim_age_carbs,
-#   &quot;Sex&quot;            = rim_sex_carbs,
-#   &quot;SES&quot;            = rim_ses_carbs,
-#   &quot;Income&quot;         = rim_inc_carbs,
-#   &quot;Location&quot;       = rim_loc_carbs,
-#   &quot;Insurance&quot;      = rim_ins_carbs
-# )
-
-# # Compare AIC values
-# aic_carbs &lt;- sapply(models_carbs, AIC)
-# aic_carbs &lt;- sort(aic_carbs)
-# 
-# # Print sorted AIC values
-# print(aic_carbs)
-# 
-# summary(rim_ins_carbs)
-# exp(fixef(rim_ins_carbs))
-# #confint(rim_ins_carbs)
-# 
-# #check multicollinearity with VIF
-# vif(rim_ins_carbs) #it&#39;s low</code></pre>
-</div>
-</div>
-<div id="logistic-regression-no-survey-design" class="section level2">
-<h2>Logistic regression (no survey design)</h2>
-<div id="carbs-1" class="section level3">
+#Create a binary version of cariesexp so poission can work
+ensab &lt;- ensab %&gt;%
+  mutate(cariesexp_num = ifelse(cariesexp == &quot;Caries&quot;, 1, 0))
+summary(ensab$cariesexp_num)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.0000  0.0000  1.0000  0.6775  1.0000  1.0000</code></pre>
+<p>carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice</p>
+<div id="carbs" class="section level3">
 <h3>Carbs</h3>
-<p>Simple logistic regression</p>
-<pre class="r"><code>#logistic regression
+<pre class="r"><code># Fit log binomial regression
 
-library(car) #for VIF
-if(!require(&quot;rcompanion&quot;)) install.packages(&quot;rcompanion&quot;)</code></pre>
-<pre><code>## Loading required package: rcompanion</code></pre>
-<pre><code>## Warning: package &#39;rcompanion&#39; was built under R version 4.4.3</code></pre>
-<pre class="r"><code>library(rcompanion) #for cramers V
-
-#mcarbs &lt;- svyglm(cariesexp ~ carbs, design = survensab, family = &quot;binomial&quot;)
-mcarbs_svyno &lt;- glm(cariesexp ~ carbs, data = ensab, family = &quot;binomial&quot;)
-summary(mcarbs_svyno)</code></pre>
+m1carbs &lt;- glm(cariesexp_num ~ carbs, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+summary(m1carbs)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ carbs, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ carbs, family = binomial(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  0.53272    0.07920   6.726 1.74e-11 ***
-## carbs4-7x    0.13773    0.09280   1.484 0.137790    
-## carbs8+x     0.28671    0.08669   3.307 0.000943 ***
+## (Intercept) -0.46185    0.02929 -15.766  &lt; 2e-16 ***
+## carbs4-7x    0.04876    0.03356   1.453  0.14622    
+## carbs8+x     0.09673    0.03122   3.099  0.00194 ** 
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -4296,96 +4706,158 @@ summary(mcarbs_svyno)</code></pre>
 ## Residual deviance: 8011.1  on 6379  degrees of freedom
 ## AIC: 8017.1
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>mcarbs2_svyno &lt;- glm(cariesexp ~ carbs + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;)
-summary(mcarbs2_svyno)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code># mcarbs &lt;- glm(cariesexp_num ~ carbs + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+
+#failed to converge so will try logbin package
+
+# mcarbs &lt;- logbin(cariesexp_num ~ carbs + age + sex + ses + income + insurance + region + location,
+#   data = ensab)
+
+#also failed to converge so will use poisson regression with robust SEs
+
+m2carbs &lt;- glm(cariesexp_num ~ carbs + age + sex + region + ses + income + insurance + location,
+  family = poisson(link = &quot;log&quot;), data = ensab)
+summary(m2carbs)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ carbs + age + sex + ses + income + 
-##     insurance + region + location, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ carbs + age + sex + region + ses + 
+##     income + insurance + location, family = poisson(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
-##                            Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)                -0.54688    0.19473  -2.808 0.004980 ** 
-## carbs4-7x                   0.06601    0.11316   0.583 0.559697    
-## carbs8+x                    0.08974    0.10654   0.842 0.399627    
-## age3                        2.44931    0.07900  31.004  &lt; 2e-16 ***
-## age5                        2.76793    0.08236  33.610  &lt; 2e-16 ***
-## sexFeminine                -0.21892    0.06507  -3.364 0.000767 ***
-## sesLow                      0.06998    0.08043   0.870 0.384283    
-## sesMiddle to high          -0.29768    0.10545  -2.823 0.004758 ** 
-## incomeHalf - 1 NMW         -0.09969    0.09738  -1.024 0.305961    
-## income1-2 NMW              -0.03512    0.10632  -0.330 0.741142    
-## incomeMore than 2 NMW      -0.07889    0.14013  -0.563 0.573473    
-## insuranceContributory      -0.35262    0.13688  -2.576 0.009990 ** 
-## insuranceSubsidized        -0.05077    0.13225  -0.384 0.701051    
-## insuranceOther             -0.33972    0.20255  -1.677 0.093499 .  
-## regionEastern               0.07129    0.11713   0.609 0.542769    
-## regionCentral               0.01184    0.11835   0.100 0.920286    
-## regionPacific              -0.85841    0.11464  -7.488 7.00e-14 ***
-## regionBogota                0.45725    0.11870   3.852 0.000117 ***
-## regionOrinoquia - Amazonia -0.05849    0.11389  -0.514 0.607517    
-## locationRural               0.42019    0.09627   4.365 1.27e-05 ***
+##                             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                -1.068116   0.098348 -10.861  &lt; 2e-16 ***
+## carbs4-7x                   0.014156   0.056528   0.250 0.802261    
+## carbs8+x                    0.017371   0.053013   0.328 0.743157    
+## age3                        0.948581   0.046078  20.586  &lt; 2e-16 ***
+## age5                        0.995143   0.045325  21.956  &lt; 2e-16 ***
+## sexFeminine                -0.047553   0.030732  -1.547 0.121778    
+## regionEastern               0.016404   0.054683   0.300 0.764193    
+## regionCentral               0.001471   0.054877   0.027 0.978619    
+## regionPacific              -0.223999   0.058032  -3.860 0.000113 ***
+## regionBogota                0.099419   0.054266   1.832 0.066944 .  
+## regionOrinoquia - Amazonia -0.015877   0.053018  -0.299 0.764577    
+## sesLow                      0.010553   0.037871   0.279 0.780504    
+## sesMiddle to high          -0.075253   0.052331  -1.438 0.150424    
+## incomeHalf - 1 NMW         -0.022236   0.044705  -0.497 0.618917    
+## income1-2 NMW              -0.009247   0.049235  -0.188 0.851029    
+## incomeMore than 2 NMW      -0.014407   0.068120  -0.211 0.832501    
+## insuranceContributory      -0.085452   0.066019  -1.294 0.195542    
+## insuranceSubsidized        -0.017908   0.063530  -0.282 0.778034    
+## insuranceOther             -0.078676   0.098200  -0.801 0.423025    
+## locationRural               0.089608   0.042870   2.090 0.036597 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 7893.8  on 6287  degrees of freedom
-## Residual deviance: 5932.8  on 6268  degrees of freedom
+##     Null deviance: 3306.5  on 6287  degrees of freedom
+## Residual deviance: 2610.0  on 6268  degrees of freedom
 ##   (94 observations deleted due to missingness)
-## AIC: 5972.8
+## AIC: 11188
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>#checking multicollinearity and correlation between suspected variables
-
-vif(mcarbs2_svyno) #check for multi-collinearity</code></pre>
-<pre><code>##               GVIF Df GVIF^(1/(2*Df))
-## carbs     1.038873  2        1.009580
-## age       1.079789  2        1.019377
-## sex       1.005900  1        1.002946
-## ses       1.462419  2        1.099684
-## income    1.363305  3        1.053009
-## insurance 1.418526  3        1.060001
-## region    1.373195  5        1.032222
-## location  1.237552  1        1.112453</code></pre>
-<pre class="r"><code>chisq.test(table(as.numeric(ensab$ses), as.numeric(ensab$income))) #they are associated</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>coeftest(m2carbs, vcov = sandwich)# Robust standard errors</code></pre>
 <pre><code>## 
-##  Pearson&#39;s Chi-squared test
+## z test of coefficients:
 ## 
-## data:  table(as.numeric(ensab$ses), as.numeric(ensab$income))
-## X-squared = 629.63, df = 6, p-value &lt; 2.2e-16</code></pre>
-<pre class="r"><code>cramerV(table(ensab$ses, ensab$income)) #Cramer V of 0.2, weak association</code></pre>
-<pre><code>## Cramer V 
-##   0.2238</code></pre>
-<pre class="r"><code>cramerV(table(ensab$ses, ensab$insurance)) #Cramer V of 0.2, weak association</code></pre>
-<pre><code>## Cramer V 
-##   0.2437</code></pre>
-<pre class="r"><code>#create a correlation matrix between all the predictors
+##                              Estimate Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept)                -1.0681162  0.0536622 -19.9045 &lt; 2.2e-16 ***
+## carbs4-7x                   0.0141559  0.0278795   0.5078  0.611627    
+## carbs8+x                    0.0173710  0.0260095   0.6679  0.504217    
+## age3                        0.9485814  0.0332784  28.5044 &lt; 2.2e-16 ***
+## age5                        0.9951426  0.0328101  30.3304 &lt; 2.2e-16 ***
+## sexFeminine                -0.0475526  0.0145986  -3.2573  0.001125 ** 
+## regionEastern               0.0164037  0.0250095   0.6559  0.511889    
+## regionCentral               0.0014708  0.0257390   0.0571  0.954433    
+## regionPacific              -0.2239993  0.0303845  -7.3722 1.679e-13 ***
+## regionBogota                0.0994189  0.0252083   3.9439 8.017e-05 ***
+## regionOrinoquia - Amazonia -0.0158775  0.0258176  -0.6150  0.538564    
+## sesLow                      0.0105531  0.0179855   0.5868  0.557367    
+## sesMiddle to high          -0.0752534  0.0258507  -2.9111  0.003602 ** 
+## incomeHalf - 1 NMW         -0.0222355  0.0205453  -1.0823  0.279133    
+## income1-2 NMW              -0.0092466  0.0231405  -0.3996  0.689463    
+## incomeMore than 2 NMW      -0.0144070  0.0335731  -0.4291  0.667833    
+## insuranceContributory      -0.0854521  0.0328888  -2.5982  0.009371 ** 
+## insuranceSubsidized        -0.0179079  0.0311954  -0.5741  0.565931    
+## insuranceOther             -0.0786761  0.0486890  -1.6159  0.106118    
+## locationRural               0.0896080  0.0191372   4.6824 2.835e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(m2carbs$coefficients) #PR</code></pre>
+<pre><code>##                (Intercept)                  carbs4-7x 
+##                  0.3436553                  1.0142566 
+##                   carbs8+x                       age3 
+##                  1.0175227                  2.5820441 
+##                       age5                sexFeminine 
+##                  2.7051101                  0.9535603 
+##              regionEastern              regionCentral 
+##                  1.0165390                  1.0014718 
+##              regionPacific               regionBogota 
+##                  0.7993157                  1.1045289 
+## regionOrinoquia - Amazonia                     sesLow 
+##                  0.9842479                  1.0106090 
+##          sesMiddle to high         incomeHalf - 1 NMW 
+##                  0.9275084                  0.9780099 
+##              income1-2 NMW      incomeMore than 2 NMW 
+##                  0.9907960                  0.9856962 
+##      insuranceContributory        insuranceSubsidized 
+##                  0.9180971                  0.9822515 
+##             insuranceOther              locationRural 
+##                  0.9243392                  1.0937454</code></pre>
+<pre class="r"><code>#exp(confint(m2carbs)) # NOT CORRECT because doesn&#39;t use robust standard errors
 
-cor_matrix &lt;- cor(
-  sapply(ensab[, c(&quot;carbs&quot;, &quot;age&quot;, &quot;sex&quot;, &quot;ses&quot;, &quot;income&quot;, &quot;insurance&quot;, &quot;region&quot;, &quot;location&quot;)], 
-         function(x) as.numeric(as.factor(x))),
-  use = &quot;complete.obs&quot;, 
-  method = &quot;spearman&quot;
-)
+robust_se &lt;- coeftest(m2carbs, vcov = sandwich)[, 2]  # Extract robust standard errors
+pvalue &lt;- coeftest(m2carbs, vcov = sandwich)[, 4]  # Extract p-values
 
-image(cor_matrix, axes = FALSE, main = &quot;Correlation matrix&quot;)</code></pre>
-<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABUAAAAPACAMAAADDuCPrAAAAvVBMVEUAAAAAADoAAGYAOjoAOmYAOpAAZrY6AAA6OgA6Ojo6OmY6ZmY6ZpA6ZrY6kNtmAABmOgBmOjpmZpBmkLZmkNtmtttmtv99ACWQOgCQZjqQZmaQkGaQkLaQttuQ2/+2ZgC2Zjq2kDq2kGa2ttu225C229u22/+2///bkDrbkGbbtmbbtpDbtrbb25Db27bb2//b/7bb///1oQD3ujz40HT75Jr/tmb/25D/27b/29v/9Lf//7b//8j//9v///+LUR3EAAAACXBIWXMAAB2HAAAdhwGP5fFlAAAgAElEQVR4nO3dfYOfZ3FfcbkQG0NCm1LchpSY0kIFtFCaYkwT6/2/rFpaSd/ZlbQ79zD0XD9xPn/FiiytZuY66NnPXkiSRp7RH4Ak3SoDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDqqav//HzZ9/6zt/+9C/xpf/Lv/32y/7knx7/TL/+Dxc+81/Smw/kAfzj0v9vBlQtv/l3z9765Mf7X36jPd9+CD9sf+a/pHwgDxjQvzoGVA3f/OzZPX/3++2v4cn2fP0P336GEwJaP5AHDOhfHQOqp33zn5498DfbBX2yPV8+OySg9QN5wID+1TGgetqXdz9y/9HvXrz4088/e/bhgsxdCijqmA9EBzCgetJX977T+fXL1D37N/999+swoLpFBlRP+ZcHxfzjZ3+BhBhQ3SIDqqfcfQf0i3zCl/d/FvS3//C9B7+96fldY3717ad/50e/f/iPd//Oywp//vInBe7cD+iffv7qt0x98v3Xn/2r8tOvX7xb23c/gq9eV+7V1/PJ3/7y3W/Vl3dfxDevvqbv3/2bv/n7Vx9U+fndJz6QB9+ytx/X3f/mvP4In/9Ffs5DRzCgesqXD3/I/tUnP/jPv3hTmT/m9zd9903A7rryszedefCPL158nV+UevPr+fea+KvP3v7/P3n1Oy4fDej7PoK7gH799v/zbr7uAvr2a/r2fw/efu6k+akP5MG3LB9X+VmPu++wr/+qm45gQPWEu+9NffqB/+/zZ9UPyyd+fvdJ35b3wT++TkrK9fZrufddtvplPhbQ934Er/6FH3z2zqfHq4B+Xj6O/5nP/eZ/LZ78QB58y8rH9eWbf+XudzD4S/MfKQOqJzz6U541KPlsz+9/yoN/vCvyW3dpLu2519e7mj0S0Pd/BA8/9d1f9Pry4ed49wt5+gN537fs7uO66+a3/8pX5QvUR8eA6gnv/BRo8frn+l7+BOGvX9Xmrh6lKy8/4cE/vkrXJz/+/Zvfnv/F2y+pfOftu7988frH1K9D+YHfB/qBj+B16F7+kP43n733G/A6oH/3uxff/JfXH9x3f/HmC7n7bvHTH8iDb1kN+119P737+PwB/MfKgOoJjwX0yxKWkorXXXnz85v3//GdH6x/ev9T3/m+6Bf5qt4N6Ac+gvo7r97/DXj7Y+y3//fd537++nuOrQ/kwTf0PT+18L3y8enjY0D1hEcCelesH9bP+KoVz0uQ3vnHr95G8/UX8LBW3/yPn3xeflz/aEA/9BHUD/r+53mj/tLY8/K5v8qnP/2BPPiG3gto+eNb/gD+o2VA9YRHAlpi8+JNMV7G4vn9f+X+P9YAvfpXHn6/M54O6Ic+gqS0fmpVfy/W8/KlvPrOZvcDefANffC7A8qv8OsjZUD1hEcC+vx+Hr58833L5/d/3HrvH9/9c/Wvvux3A/rNb//xe+Wrfn9AP/QR1LA+EtBPyzfxgwF95AN58A198I14/QN8fwD/ETOgesIjvwr/vESo/mP9Ht3Df3xPQF9+2ffb8/XP/z6/Av5kQN/zEdz7nul7/+zQOwF9neH7AX3iA3nwDX0Q0NffVH8A/xEzoHrCu78P9I/f/2n5oe+HAprvF977x0ZAf33/tw+NA/rmqxwH9MkP5ME39EFAX/8Y3u+BfsQMqJ7w9nc0vvUyG6/+dOSjP4R/NKDvfK+stOdnd7n6/N//1//15M+BPvpD+D83oE9/II8G9O3/VPhzoB8vA6qnPPiVklLU9/0SzhcvHg/oB/4yjge/LvTJT99+4uVfRPrixU5AGx/IowHNbxL1B/EfLQOqpzz825juwvDpiw//JqJHA/rg/1m/klf/cgnUn/nbmP7MgDY+kMcCWv4ckz+I/2gZUD3p/u92/GP5Az/v/jb2T9/+Cx8KaP1Fqa8++cGP7v5akrftqT/Er9/3bf9G+lcfwUJAOx/IIwF9/f30/+ZfJfJRM6B62pu/kf7bDPzpZ8+eJT2vY/reP8r5oYC+/tL+7vcvvvlV6vIgoC//u3VvvqrSrb/55Yvf/u49f0bo/X+UcyOgj38gjwT0TXP9y+w+agZUT/vwfxPp+YNP/yKf+sGAPvg7Oh7+WfiHX+TDv6Dkh+8L1cOPYOOH8I0P5MMBff1H4f3bmD5yBlQND/+rnA/i+CAxTwT0xVefvfvvPPxpzTuff/bs/nd23w3oI3+d3Z8Z0MYH8sGAlt+64N8H+jEzoGr54H8Xvvw/vvtPrz/tiYDmry7Ol1W/8/b2Lzb+cf6s/NvfVPQyY/d/tft9H8HKb2N6+gP5YEDrX1XiD+I/YgZUTb/9yau/Ofjz8h/OuPP1T+7+gxq/ePspTwX0zX+E45M3vyP/wa+//Prl1/Tqv/5R2/fqP7jxnR/89N0/9/nuR7DzG+mf/EA+FNB7/xm+1z8B8v6/z0q3zYBK0pABlaQhAypJQwZUkoYMqCQNGVBJGjKgkjRkQCVpyIBK0pABlaQhAypJQwZUkoYMqCQNGVBJGjKgkjRkQCVpyIBK0pABlaQhAypJQwZUkoYMqCQNGVBJGjKgkjRkQCVpyIBK0pABlaQhAypJQwZUkoYMqCQNGVBJGjKgkjRkQCVpyIBK0pABlaQhAypJQwZUkoYMqCQNGVBJGjKgkjRkQCVpyIBK0pABlaQhAypJQwZUkoYMqCQNGVBJGjKgkjRkQCVpyIBK0pABlaQhAypJQwZUkoYMqCQNGVBJGjKgkjRkQCVpyIBK0pABlaQhAypJQwZUkoYMqCQNGVBJGjKgkjRkQCVp6OyA/h+d7F/1jn8+xh/O8R+PsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ4oA6oxOlYnorMZdDULOpuxnigDqjE6Vieisxl0NQs6m7GeKAOqMTpWJ6KzGXQ1CzqbsZ6oswNKLz7oVkkX0a0q6Ncb64kyoD30a5AuoqtZ0K831hNlQHvo1yBdRFezoF9vrCfKgPbQr0G6iK5mQb/eWE+UAe2hX4N0EV3Ngn69sZ4oA9pDvwbpIrqaBf16Yz1RBrSHfg3SRXQ1C/r1xnqiDGgP/Rqki+hqFvTrjfVEGdAe+jVIF9HVLOjXG+uJMqA99GuQLqKrWdCvN9YTZUB76NcgXURXs6Bfb6wnyoD20K9BuoiuZkG/3lhPlAHtoV+DdBFdzYJ+vbGeKAPaQ78G6SK6mgX9emM9UQa0h34N0kV0NQv69cZ6ogxoD/0apIvoahb06431RBnQHvo1SBfR1Szo1xvriTKgPfRrkC6iq1nQrzfWE2VAe+jXIF1EV7OgX2+sJ8qA9tCvQbqIrmZBv95YT5QB7aFfg3QRXc2Cfr2xnigD2kO/BukiupoF/XpjPVEGtId+DdJFdDUL+vXGeqIMaA/9GqSL6GoW9OuN9UQZ0B76NUgX0dUs6Ncb64kyoD30a5AuoqtZ0K831hNlQHvo1yBdRFezoF9vrCfKgPbQr0G6iK5mQb/eWE+UAe2hX4N0EV3Ngn69sZ4oA9pDvwbpIrqaBf16Yz1RBrSHfg3SRXQ1C/r1xnqiDGgP/Rqki+hqFvTrjfVEGdAe+jVIF9HVLOjXG+uJMqA99GuQLqKrWdCvN9YTZUB76NcgXURXs6Bfb6wnyoD20K9BuoiuZkG/3lhPlAHtoV+DdBFdzYJ+vbGeKAPaQ78G6SK6mgX9emM9UQa0h34N0kV0NQv69cZ6ogxoD/0apIvoahb06431RBnQHvo1SBfR1Szo1xvriTKgPfRrkC6iq1nQrzfWE2VAe+jXIF1EV7OgX2+sJ8qA9tCvQbqIrmZBv95YT5QB7aFfg3QRXc2Cfr2xnigD2kO/BukiupoF/XpjPVEGtId+DdJFdDUL+vXGeqIMaA/9GqSL6GoW9OuN9UQZ0B76NUgX0dUs6Ncb64kyoD30a5AuoqtZ0K831hNlQHvo1yBdRFezoF9vrCfKgPbQr0G6iK5mQb/eWE+UAe2hX4N0EV3Ngn69sZ4oA9pDvwbpIrqaBf16Yz1RBrSHfg3SRXQ1C/r1xnqiDGgP/Rqki+hqFvTrjfVEGdAe+jVIF9HVLOjXG+uJMqA99GuQLqKrWdCvN9YTZUB76NcgXURXs6Bfb6wnyoD20K9BuoiuZkG/3lhPlAHtoV+DdBFdzYJ+vbGeKAPaQ78G6SK6mgX9emM9UQa0h34N0kV0NQv69cZ6ogxoD/0apIvoahb06431RBnQHvo1SBfR1Szo1xvriTKgPfRrkC6iq1nQrzfWE2VAe+jXIF1EV7OgX2+sJ8qA9tCvQbqIrmZBv95YT5QB7aFfg3QRXc2Cfr2xnigD2kO/BukiupoF/XpjPVEGtId+DdJFdDUL+vXGeqIMaA/9GqSL6GoW9OuN9UQZ0B76NUgX0dUs6Ncb64kyoD30a5AuoqtZ0K831hNlQHvo1yBdRFezoF9vrCfKgPbQr0G6iK5mQb/eWE/U2QGlb1CP+tdj/N9j0K0K+jqKfz7GeqIMqMbobAadzaCzGfR1FHQ2Yz1RBlRjdDaDzmbQ2Qz6Ogo6m7GeKAOqMTqbQWcz6GwGfR0Fnc1YT5QB1RidzaCzGXQ2g76Ogs5mrCfKgGqMzmbQ2Qw6m0FfR0FnM9YTZUA1Rmcz6GwGnc2gr6OgsxnriTKgGqOzGXQ2g85m0NdR0NmM9UQZUI3R2Qw6m0FnM+jrKOhsxnqiDKjG6GwGnc2gsxn0dRR0NmM9UQZUY3Q2g85m0NkM+joKOpuxnigDqjE6m0FnM+hsBn0dBZ3NWE+UAdUYnc2gsxl0NoO+joLOZqwnyoBqjM5m0NkMOptBX0dBZzPWE2VANUZnM+hsBp3NoK+joLMZ64kyoBqjsxl0NoPOZtDXUdDZjPVEGVCN0dkMOptBZzPo6yjobMZ6ogyoxuhsBp3NoLMZ9HUUdDZjPVEGVGN0NoPOZtDZDPo6CjqbsZ4oA6oxOptBZzPobAZ9HQWdzVhPlAHVGJ3NoLMZdDaDvo6CzmasJ8qAaozOZtDZDDqbQV9HQWcz1hNlQDVGZzPobAadzaCvo6CzGeuJMqAao7MZdDaDzmbQ11HQ2Yz1RBlQjdHZDDqbQWcz6Oso6GzGeqIMqMbobAadzaCzGfR1FHQ2Yz1RBlRjdDaDzmbQ2Qz6Ogo6m7GeKAOqMTqbQWcz6GwGfR0Fnc1YT5QB1RidzaCzGXQ2g76Ogs5mrCfKgGqMzmbQ2Qw6m0FfR0FnM9YTZUA1Rmcz6GwGnc2gr6OgsxnriTKgGqOzGXQ2g85m0NdR0NmM9UQZUI3R2Qw6m0FnM+jrKOhsxnqiDKjG6GwGnc2gsxn0dRR0NmM9UQZUY3Q2g85m0NkM+joKOpuxnigDqjE6m0FnM+hsBn0dBZ3NWE+UAdUYnc2gsxl0NoO+joLOZqwnyoBqjM5m0NkMOptBX0dBZzPWE2VANUZnM+hsBp3NoK+joLMZ64kyoBqjsxl0NoPOZtDXUdDZjPVEGVCN0dkMOptBZzPo6yjobMZ6ogyoxuhsBp3NoLMZ9HUUdDZjPVEGVGN0NoPOZtDZDPo6CjqbsZ4oA6oxOptBZzPobAZ9HQWdzVhPlAHVGJ3NoLMZdDaDvo6CzmasJ8qAaozOZtDZDDqbQV9HQWcz1hNlQDVGZzPobAadzaCvo6CzGeuJMqAao7MZdDaDzmbQ11HQ2Yz1RBlQjdHZDDqbQWcz6Oso6GzGeqIMqMbobAadzaCzGfR1FHQ2Yz1RBlRjdDaDzmbQ2Qz6Ogo6m7GeKAOqMTqbQWcz6GwGfR0Fnc1YT5QB1RidzaCzGXQ2g76Ogs5mrCfKgGqMzmbQ2Qw6m0FfR0FnM9YTZUA1Rmcz6GwGnc2gr6OgsxnriTKgGqOzGXQ2g85m0NdR0NmM9UQZUI3R2Qw6m0FnM+jrKOhsxnqiDKjG6GwGnc2gsxn0dRR0NmM9UQZUY3Q2g85m0NkM+joKOpuxnigDqjE6m0FnM+hsBn0dBZ3NWE+UAdUYnc2gsxl0NoO+joLOZqwnyoBqjM5m0NkMOptBX0dBZzPWE2VANUZnM+hsBp3NoK+joLMZ64kyoBqjsxl0NoPOZtDXUdDZjPVEGVCN0dkMOptBZzPo6yjobMZ6ogyoxuhsBp3NoLMZ9HUUdDZjPVEGVGN0NoPOZtDZDPo6CjqbsZ4oA6oxOptBZzPobAZ9HQWdzVhPlAHVGJ3NoLMZdDaDvo6CzmasJ8qAaozOZtDZDDqbQV9HQWcz1hNlQDVGZzPobAadzaCvo6CzGeuJMqAao7MZdDaDzmbQ11HQ2Yz1RBlQjdHZDDqbQWcz6Oso6GzGeqIMqMbobAadzaCzGfR1FHQ2Yz1RBlRjdDaDzmbQ2Qz6Ogo6m7GeKAOqsf99DDpWQQc86Oso6P99jfVEGVCN0dkMOptBZzPo6yjobMZ6ogyoxuhsBp3NoLMZ9HUUdDZjPVEGVGN0NoPOZtDZDPo6CjqbsZ4oA6oxOptBZzPobAZ9HQWdzVhPlAHVGJ3NoLMZdDaDvo6CzmasJ8qAaozOZtDZDDqbQV9HQWcz1hNlQDVGZzPobAadzaCvo6CzGeuJMqAao7MZdDaDzmbQ11HQ2Yz1RBlQjdHZDDqbQWcz6Oso6GzGeqIMqMbobAadzaCzGfR1FHQ2Yz1RBlRjdDaDzmbQ2Qz6Ogo6m7GeKAOqMTqbQWcz6GwGfR0Fnc1YT5QB1RidzaCzGXQ2g76Ogs5mrCfKgGqMzmbQ2Qw6m0FfR0FnM9YTZUA1Rmcz6GwGnc2gr6OgsxnriTKgGqOzGXQ2g85m0NdR0NmM9UQZUI3R2Qw6m0FnM+jrKOhsxnqiDKjG6GwGnc2gsxn0dRR0NmM9UQZUY3Q2g85m0NkM+joKOpuxnigDqjE6m0FnM+hsBn0dBZ3NWE+UAdUYnc2gsxl0NoO+joLOZqwnyoBqjM5m0NkMOptBX0dBZzPWE2VANUZnM+hsBp3NoK+joLMZ64kyoBqjsxl0NoPOZtDXUdDZjPVEGVCN0dkMOptBZzPo6yjobMZ6ogyoxuhsBp3NoLMZ9HUUdDZjPVEGVGN0NoPOZtDZDPo6CjqbsZ4oA6oxOptBZzPobAZ9HQWdzVhPlAHVGJ3NoLMZdDaDvo6CzmasJ8qAaozOZtDZDDqbQV9HQWcz1hNlQDVGZzPobAadzaCvo6CzGeuJMqAao7MZdDaDzmbQ11HQ2Yz1RBlQjdHZDDqbQWcz6Oso6GzGeqIMqMbobAadzaCzGfR1FHQ2Yz1RBlRjdDaDzmbQ2Qz6Ogo6m7GeKAOqMTqbQWcz6GwGfR0Fnc1YT5QB1RidzaCzGXQ2g76Ogs5mrCfKgGqMzmbQ2Qw6m0FfR0FnM9YTZUA1Rmcz6GwGnc2gr6OgsxnriTKgGqOzGXQ2g85m0NdR0NmM9UQZUI3R2Qw6m0FnM+jrKOhsxnqiDKjG6GwGnc2gsxn0dRR0NmM9UQZUY3Q2g85m0NkM+joKOpuxnigDqjE6m0FnM+hsBn0dBZ3NWE+UAdUYnc2gsxl0NoO+joLOZqwnyoBqjM5m0NkMOptBX0dBZzPWE2VANUZnM+hsBp3NoK+joLMZ64kyoBqjsxl0NoPOZtDXUdDZjPVEGVCN0dkMOptBZzPo6yjobMZ6ogyoxuhsBp3NoLMZ9HUUdDZjPVEGVGN0NoPOZtDZDPo6CjqbsZ4oA6oxOptBZzPobAZ9HQWdzVhPlAHVGJ3NoLMZdDaDvo6CzmasJ8qAaozOZtDZDDqbQV9HQWcz1hNlQDVGZzPobAadzaCvo6CzGeuJMqAao7MZdDaDzmbQ11HQ2Yz1RBlQjdHZDDqbQWcz6Oso6GzGeqIMqMbobAadzaCzGfR1FHQ2Yz1RBlRjdDaDzmbQ2Qz6Ogo6m7GeKAOqMTqbQWcz6GwGfR0Fnc1YT5QB1RidzaCzGXQ2g76Ogs5mrCfKgGqMzmbQ2Qw6m0FfR0FnM9YTZUA1Rmcz6GwGnc2gr6OgsxnriTKgGqOzGXQ2g85m0NdR0NmM9UQZUI3R2Qw6m0FnM+jrKOhsxnqiDKjG6GwGnc2gsxn0dRR0NmM9UQZUY3Q2g85m0NkM+joKOpuxnigDqjE6m0FnM+hsBn0dBZ3NWE+UAdUYnc2gsxl0NoO+joLOZqwnyoBqjM5m0NkMOptBX0dBZzPWE2VANUZnM+hsBp3NoK+joLMZ64kyoBqjsxl0NoPOZtDXUdDZjPVEGVCN0dkMOptBZzPo6yjobMZ6ogyoxuhsBp3NoLMZ9HUUdDZjPVEGVGN0NoPOZtDZDPo6CjqbsZ6oswP6h2PQJ3gkOlZBBzzoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4JHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CR6KzGXQ2gy5E0NdR0KOI9UQZ0B76BI9EZzPobAZdiKCvo6BHEeuJMqA99Akeic5m0NkMuhBBX0dBjyLWE2VAe+gTPBKdzaCzGXQhgr6Ogh5FrCfKgPbQJ3gkOptBZzPoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4JHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CR6KzGXQ2gy5E0NdR0KOI9UQZ0B76BI9EZzPobAZdiKCvo6BHEeuJMqA99Akeic5m0NkMuhBBX0dBjyLWE2VAe+gTPBKdzaCzGXQhgr6Ogh5FrCfKgPbQJ3gkOptBZzPoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4JHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CR6KzGXQ2gy5E0NdR0KOI9UQZ0B76BI9EZzPobAZdiKCvo6BHEeuJMqA99Akeic5m0NkMuhBBX0dBjyLWE2VAe+gTPBKdzaCzGXQhgr6Ogh5FrCfKgPbQJ3gkOptBZzPoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4I8IVgEAABV/SURBVJHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CR6KzGXQ2gy5E0NdR0KOI9UQZ0B76BI9EZzPobAZdiKCvo6BHEeuJMqA99Akeic5m0NkMuhBBX0dBjyLWE2VAe+gTPBKdzaCzGXQhgr6Ogh5FrCfKgPbQJ3gkOptBZzPoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4JHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CR6KzGXQ2gy5E0NdR0KOI9UQZ0B76BI9EZzPobAZdiKCvo6BHEeuJMqA99Akeic5m0NkMuhBBX0dBjyLWE2VAe+gTPBKdzaCzGXQhgr6Ogh5FrCfKgPbQJ3gkOptBZzPoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4JHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CR6KzGXQ2gy5E0NdR0KOI9UQZ0B76BI9EZzPobAZdiKCvo6BHEeuJMqA99Akeic5m0NkMuhBBX0dBjyLWE2VAe+gTPBKdzaCzGXQhgr6Ogh5FrCfKgPbQJ3gkOptBZzPoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4JHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CR6KzGXQ2gy5E0NdR0KOI9UQZ0B76BI9EZzPobAZdiKCvo6BHEeuJMqA99Akeic5m0NkMuhBBX0dBjyLWE2VAe+gTPBKdzaCzGXQhgr6Ogh5FrCfKgPbQJ3gkOptBZzPoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4JHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CR6KzGXQ2gy5E0NdR0KOI9UQZ0B76BI9EZzPobAZdiKCvo6BHEeuJMqA99Akeic5m0NkMuhBBX0dBjyLWE2VAe+gTPBKdzaCzGXQhgr6Ogh5FrCfKgPbQJ3gkOptBZzPoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4JHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CR6KzGXQ2gy5E0NdR0KOI9UQZ0B76BI9EZzPobAZdiKCvo6BHEeuJMqA99Akeic5m0NkMuhBBX0dBjyLWE2VAe+gTPBKdzaCzGXQhgr6Ogh5FrCfKgPbQJ3gkOptBZzPoQgR9HQU9ilhPlAHtoU/wSHQ2g85m0IUI+joKehSxnigD2kOf4JHobAadzaALEfR1FPQoYj1RBrSHPsEj0dkMOptBFyLo6yjoUcR6ogxoD32CQbeqoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk+UAe2hFx90NQt6FNJF64kyoD304oOuZkGPQrpoPVEGtIdefNDVLOhRSBetJ8qA9tCLD7qaBT0K6aL1RBnQHnrxQVezoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk+UAe2hFx90NQt6FNJF64kyoD304oOuZkGPQrpoPVEGtIdefNDVLOhRSBetJ8qA9tCLD7qaBT0K6aL1RBnQHnrxQVezoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk+UAe2hFx90NQt6FNJF64kyoD304oOuZkGPQrpoPVEGtIdefNDVLOhRSBetJ8qA9tCLD7qaBT0K6aL1RBnQHnrxQVezoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk+UAe2hFx90NQt6FNJF64kyoD304oOuZkGPQrpoPVEGtIdefNDVLOhRSBetJ8qA9tCLD7qaBT0K6aL1RBnQHnrxQVezoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk+UAe2hFx90NQt6FNJF64kyoD304oOuZkGPQrpoPVEGtIdefNDVLOhRSBetJ8qA9tCLD7qaBT0K6aL1RBnQHnrxQVezoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk+UAe2hFx90NQt6FNJF64kyoD304oOuZkGPQrpoPVEGtIdefNDVLOhRSBetJ8qA9tCLD7qaBT0K6aL1RBnQHnrxQVezoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk+UAe2hFx90NQt6FNJF64kyoD304oOuZkGPQrpoPVEGtIdefNDVLOhRSBetJ8qA9tCLD7qaBT0K6aL1RBnQHnrxQVezoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk+UAe2hFx90NQt6FNJF64kyoD304oOuZkGPQrpoPVEGtIdefNDVLOhRSBetJ8qA9tCLD7qaBT0K6aL1RBnQHnrxQVezoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk+UAe2hFx90NQt6FNJF64kyoD304oOuZkGPQrpoPVEGtIdefNDVLOhRSBetJ8qA9tCLD7qaBT0K6aL1RBnQHnrxQVezoEchXbSeKAPaQy8+6GoW9Ciki9YTZUB76MUHXc2CHoV00XqiDGgPvfigq1nQo5AuWk/U2QGlxx10q4KehHS71hNlQHvobAY9Cel2rSfKgPbQ2Qx6EtLtWk+UAe2hsxn0JKTbtZ4oA9pDZzPoSUi3az1RBrSHzmbQk5Bu13qiDGgPnc2gJyHdrvVEGdAeOptBT0K6XeuJMqA9dDaDnoR0u9YTZUB76GwGPQnpdq0nyoD20NkMehLS7VpPlAHtobMZ9CSk27WeKAPaQ2cz6ElIt2s9UQa0h85m0JOQbtd6ogxoD53NoCch3a71RBnQHjqbQU9Cul3riTKgPXQ2g56EdLvWE2VAe+hsBj0J6XatJ8qA9tDZDHoS0u1aT5QB7aGzGfQkpNu1nigD2kNnM+hJSLdrPVEGtIfOZtCTkG7XeqIMaA+dzaAnId2u9UQZ0B46m0FPQrpd64kyoD10NoOehHS71hNlQHvobAY9Cel2rSfKgPbQ2Qx6EtLtWk+UAe2hsxn0JKTbtZ4oA9pDZzPoSUi3az1RBrSHzmbQk5Bu13qiDGgPnc2gJyHdrvVEGdAeOptBT0K6XeuJMqA9dDaDnoR0u9YTZUB76GwGPQnpdq0nyoD20NkMehLS7VpPlAHtobMZ9CSk27WeKAPaQ2cz6ElIt2s9UQa0h85m0JOQbtd6ogxoD53NoCch3a71RBnQHjqbQU9Cul3riTKgPXQ2g56EdLvWE2VAe+hsBj0J6XatJ8qA9tDZDHoS0u1aT5QB7aGzGfQkpNu1nigD2kNnM+hJSLdrPVEGtIfOZtCTkG7XeqIMaA+dzaAnId2u9UQZ0B46m0FPQrpd64kyoD10NoOehHS71hNlQHvobAY9Cel2rSfKgPbQ2Qx6EtLtWk+UAe2hsxn0JKTbtZ4oA9pDZzPoSUi3az1RBrSHzmbQk5Bu13qiDGgPnc2gJyHdrvVEGdAeOptBT0K6XeuJMqA9dDaDnoR0u9YTZUB76GwGPQnpdq0nyoD20NkMehLS7VpPlAHtobMZ9CSk27WeKAPaQ2cz6ElIt2s9UQa0h85m0JOQbtd6ogxoD53NoCch3a71RBnQHjqbQU9Cul3riTKgPXQ2g56EdLvWE2VAe+hsBj0J6XatJ8qA9tDZDHoS0u1aT5QB7aGzGfQkpNu1nigD2kNnM+hJSLdrPVEGtIfOZtCTkG7XeqIMaA+dzaAnId2u9UQZ0B46m0FPQrpd64kyoD10NoOehHS71hNlQHvobAY9Cel2rSfKgPbQ2Qx6EtLtWk+UAe2hsxn0JKTbtZ6oswNKxyroxccf9C56KSeid1LQo4j1RBnQHnrxQT+GI9FLORG9k4IeRawnyoD20IsP+jEciV7KieidFPQoYj1RBrSHXnzQj+FI9FJORO+koEcR64kyoD304oN+DEeil3IieicFPYpYT5QB7aEXH/RjOBK9lBPROynoUcR6ogxoD734oB/DkeilnIjeSUGPItYTZUB76MUH/RiORC/lRPROCnoUsZ4oA9pDLz7ox3AkeiknondS0KOI9UQZ0B568UE/hiPRSzkRvZOCHkWsJ8qA9tCLD/oxHIleyononRT0KGI9UQa0h1580I/hSPRSTkTvpKBHEeuJMqA99OKDfgxHopdyInonBT2KWE+UAe2hFx/0YzgSvZQT0Tsp6FHEeqIMaA+9+KAfw5HopZyI3klBjyLWE2VAe+jFB/0YjkQv5UT0Tgp6FLGeKAPaQy8+6MdwJHopJ6J3UtCjiPVEGdAeevFBP4Yj0Us5Eb2Tgh5FrCfKgPbQiw/6MRyJXsqJ6J0U9ChiPVEGtIdefNCP4Uj0Uk5E76SgRxHriTKgPfTig34MR6KXciJ6JwU9ilhPlAHtoRcf9GM4Er2UE9E7KehRxHqiDGgPvfigH8OR6KWciN5JQY8i1hNlQHvoxQf9GI5EL+VE9E4KehSxnigD2kMvPujHcCR6KSeid1LQo4j1RBnQHnrxQT+GI9FLORG9k4IeRawnyoD20IsP+jEciV7KieidFPQoYj1RBrSHXnzQj+FI9FJORO+koEcR64kyoD304oN+DEeil3IieicFPYpYT5QB7aEXH/RjOBK9lBPROynoUcR6ogxoD734oB/DkeilnIjeSUGPItYTZUB76MUH/RiORC/lRPROCnoUsZ4oA9pDLz7ox3AkeiknondS0KOI9UQZ0B568UE/hiPRSzkRvZOCHkWsJ8qA9tCLD/oxHIleyononRT0KGI9UQa0h1580I/hSPRSTkTvpKBHEeuJMqA99OKDfgxHopdyInonBT2KWE+UAe2hFx/0YzgSvZQT0Tsp6FHEeqIMaA+9+KAfw5HopZyI3klBjyLWE2VAe+jFB/0YjkQv5UT0Tgp6FLGeKAPaQy8+6MdwJHopJ6J3UtCjiPVEGdAeevFBP4Yj0Us5Eb2Tgh5FrCfKgPbQiw/6MRyJXsqJ6J0U9ChiPVEGtIdefNCP4Uj0Uk5E76SgRxHriTKgPfTig34MR6KXciJ6JwU9ilhPlAHtoRcf9GM4Er2UE9E7KehRxHqiDGgPvfigH8OR6KWciN5JQY8i1hNlQHvoxQf9GI5EL+VE9E4KehSxnigD2kMvPujHcCR6KSeid1LQo4j1RBnQHnrxQT+GI9FLORG9k4IeRawnyoD20IsP+jEciV7KieidFPQoYj1RBrSHXnzQj+FI9FJORO+koEcR64kyoD304oN+DEeil3IieicFPYpYT5QB7aEXH/RjOBK9lBPROynoUcR6ogxoD734oB/DkeilnIjeSUGPItYTZUB76MUH/RiORC/lRPROCnoUsZ4oA9pDLz7ox3AkeiknondS0KOI9UQZ0B568UE/hiPRSzkRvZOCHkWsJ8qA9tCLD/oxHIleyononRT0KGI9UQa0h1580I/hSPRSTkTvpKBHEeuJMqA99OKDfgxHopdyInonBT2KWE+UAe2hFx/0YzgSvZQT0Tsp6FHEeqIMaA+9+KAfw5HopZyI3klBjyLWE2VAe+jFB/0YjkQv5UT0Tgp6FLGeKAPaQy8+6MdwJHopJ6J3UtCjiPVEGdAeevFBP4Yj0Us5Eb2Tgh5FrCfKgPbQiw/6MRyJXsqJ6J0U9ChiPVEGtIdefNCP4Uj0Uk5E76SgRxHriTKgPfTig34MR6KXciJ6JwU9ilhPlAHtoRcf9GM4Er2UE9E7KehRxHqiDGgPvfigH8OR6KWciN5JQY8i1hNlQHvoxQf9GI5EL+VE9E4KehSxnigD2kMvPujHcCR6KSeid1LQo4j1RBnQHnrxQT+GI9FLORG9k4IeRawnyoD20IsP+jEciV7KieidFPQoYj1RBrSHXnzQj+FI9FJORO+koEcR64k6O6CSdDADKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA0ZUEkaMqCSNGRAJWnIgErSkAGVpCEDKklDBlSShgyoJA39Pzz37Fs2QcL8AAAAAElFTkSuQmCC" width="672" /></p>
-<p>Veg</p>
-<pre class="r"><code>mveg_svyno &lt;- glm(cariesexp ~ veg, data = ensab, family = &quot;binomial&quot;)
-summary(mveg_svyno)</code></pre>
+# Compute confidence intervals
+carbs_ci &lt;- data.frame(
+  Estimate = round(exp(coef(m2carbs)), 3),  # PR (Prevalence Ratio)
+  Lower_CI = round(exp(coef(m2carbs) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2carbs) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+)  %&gt;%
+  mutate(
+    PR = paste0(Estimate, &quot; (&quot;, Lower_CI, &quot;, &quot;, Upper_CI, &quot;)&quot;),
+    Food = &quot;Carbs&quot;
+  ) %&gt;%
+  rownames_to_column() %&gt;%
+  filter(grepl(&quot;^carbs&quot;, rowname)) %&gt;%
+  mutate(rowname = str_remove(rowname, &quot;^carbs&quot;)) %&gt;%
+  rename(Freq = rowname) %&gt;%
+  dplyr::select(Food, Freq, PR, P_value)
+carbs_ci</code></pre>
+<pre><code>##    Food Freq                   PR P_value
+## 1 Carbs 4-7x  1.014 (0.96, 1.071)  0.6116
+## 2 Carbs  8+x 1.018 (0.967, 1.071)  0.5042</code></pre>
+<pre class="r"><code>vif(m2carbs) #checking multicollinearity</code></pre>
+<pre><code>##               GVIF Df GVIF^(1/(2*Df))
+## carbs     1.042791  2        1.010530
+## age       1.009305  2        1.002318
+## sex       1.003949  1        1.001972
+## region    1.371506  5        1.032095
+## ses       1.488725  2        1.104596
+## income    1.383527  3        1.055597
+## insurance 1.418502  3        1.059998
+## location  1.245588  1        1.116059</code></pre>
+<p>Take this code and replace “carbs” with every single variable name
+listed:</p>
+<p>carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice ### Veg</p>
+<pre class="r"><code>m1veg &lt;- glm(cariesexp_num ~ veg, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+summary(m1veg)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ veg, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ veg, family = binomial(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  0.96223    0.07420  12.968  &lt; 2e-16 ***
-## veg1x       -0.02701    0.11990  -0.225 0.821750    
-## veg2-3x     -0.27004    0.09152  -2.951 0.003170 ** 
-## veg4-7x     -0.26114    0.08760  -2.981 0.002873 ** 
-## veg8+x      -0.31953    0.09486  -3.369 0.000756 ***
+## (Intercept) -0.32356    0.02051 -15.774  &lt; 2e-16 ***
+## veg1x       -0.00754    0.03355  -0.225 0.822160    
+## veg2-3x     -0.08222    0.02720  -3.023 0.002505 ** 
+## veg4-7x     -0.07927    0.02567  -3.087 0.002019 ** 
+## veg8+x      -0.09901    0.02891  -3.425 0.000614 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -4395,85 +4867,153 @@ summary(mveg_svyno)</code></pre>
 ## Residual deviance: 8007.1  on 6377  degrees of freedom
 ## AIC: 8017.1
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>mveg2_svyno &lt;- glm(cariesexp ~ veg + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;)
-summary(mveg2_svyno)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>m2veg &lt;- glm(cariesexp_num ~ veg + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = &quot;log&quot;), data = ensab)
+summary(m2veg)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ veg + age + sex + ses + income + insurance + 
-##     region + location, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ veg + age + sex + region + ses + 
+##     income + insurance + location, family = poisson(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##                             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)                -0.285922   0.182587  -1.566 0.117361    
-## veg1x                      -0.086591   0.144301  -0.600 0.548455    
-## veg2-3x                    -0.331249   0.112075  -2.956 0.003120 ** 
-## veg4-7x                    -0.274486   0.107713  -2.548 0.010825 *  
-## veg8+x                     -0.287719   0.117027  -2.459 0.013949 *  
-## age3                        2.455913   0.079077  31.057  &lt; 2e-16 ***
-## age5                        2.771720   0.082458  33.614  &lt; 2e-16 ***
-## sexFeminine                -0.219143   0.065165  -3.363 0.000771 ***
-## sesLow                      0.069248   0.080411   0.861 0.389138    
-## sesMiddle to high          -0.295202   0.105649  -2.794 0.005203 ** 
-## incomeHalf - 1 NMW         -0.082906   0.097594  -0.849 0.395606    
-## income1-2 NMW              -0.007447   0.106637  -0.070 0.944322    
-## incomeMore than 2 NMW      -0.046563   0.140289  -0.332 0.739957    
-## insuranceContributory      -0.336306   0.137184  -2.451 0.014227 *  
-## insuranceSubsidized        -0.040138   0.132559  -0.303 0.762048    
-## insuranceOther             -0.323039   0.202895  -1.592 0.111351    
-## regionEastern               0.097660   0.117290   0.833 0.405053    
-## regionCentral               0.044966   0.119471   0.376 0.706635    
-## regionPacific              -0.846693   0.114365  -7.403 1.33e-13 ***
-## regionBogota                0.483762   0.119097   4.062 4.87e-05 ***
-## regionOrinoquia - Amazonia -0.045846   0.113535  -0.404 0.686358    
-## locationRural               0.401711   0.096530   4.162 3.16e-05 ***
+## (Intercept)                -1.015128   0.090583 -11.207  &lt; 2e-16 ***
+## veg1x                      -0.015717   0.063985  -0.246 0.805968    
+## veg2-3x                    -0.069152   0.050716  -1.364 0.172724    
+## veg4-7x                    -0.057901   0.048567  -1.192 0.233192    
+## veg8+x                     -0.060865   0.053901  -1.129 0.258813    
+## age3                        0.948603   0.046047  20.601  &lt; 2e-16 ***
+## age5                        0.994624   0.045301  21.956  &lt; 2e-16 ***
+## sexFeminine                -0.047677   0.030736  -1.551 0.120856    
+## regionEastern               0.021925   0.054628   0.401 0.688166    
+## regionCentral               0.008336   0.055250   0.151 0.880072    
+## regionPacific              -0.221069   0.057824  -3.823 0.000132 ***
+## regionBogota                0.105466   0.054458   1.937 0.052787 .  
+## regionOrinoquia - Amazonia -0.012709   0.052722  -0.241 0.809517    
+## sesLow                      0.010294   0.037869   0.272 0.785743    
+## sesMiddle to high          -0.074528   0.052397  -1.422 0.154921    
+## incomeHalf - 1 NMW         -0.018384   0.044778  -0.411 0.681391    
+## income1-2 NMW              -0.003459   0.049392  -0.070 0.944173    
+## incomeMore than 2 NMW      -0.006783   0.068257  -0.099 0.920838    
+## insuranceContributory      -0.081134   0.066089  -1.228 0.219579    
+## insuranceSubsidized        -0.015208   0.063567  -0.239 0.810922    
+## insuranceOther             -0.074382   0.098242  -0.757 0.448972    
+## locationRural               0.086268   0.042964   2.008 0.044654 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 7893.8  on 6287  degrees of freedom
-## Residual deviance: 5922.0  on 6266  degrees of freedom
+##     Null deviance: 3306.5  on 6287  degrees of freedom
+## Residual deviance: 2607.6  on 6266  degrees of freedom
 ##   (94 observations deleted due to missingness)
-## AIC: 5966
+## AIC: 11190
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>exp(mveg2_svyno$coefficients)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>coeftest(m2veg, vcov = sandwich)# Robust standard errors</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                              Estimate Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept)                -1.0151284  0.0501312 -20.2494 &lt; 2.2e-16 ***
+## veg1x                      -0.0157167  0.0299555  -0.5247  0.599815    
+## veg2-3x                    -0.0691516  0.0233441  -2.9623  0.003054 ** 
+## veg4-7x                    -0.0579009  0.0218035  -2.6556  0.007917 ** 
+## veg8+x                     -0.0608653  0.0251856  -2.4167  0.015663 *  
+## age3                        0.9486034  0.0332409  28.5372 &lt; 2.2e-16 ***
+## age5                        0.9946244  0.0327689  30.3527 &lt; 2.2e-16 ***
+## sexFeminine                -0.0476773  0.0145844  -3.2691  0.001079 ** 
+## regionEastern               0.0219245  0.0249390   0.8791  0.379333    
+## regionCentral               0.0083360  0.0258804   0.3221  0.747381    
+## regionPacific              -0.2210687  0.0303570  -7.2823 3.282e-13 ***
+## regionBogota                0.1054659  0.0252395   4.1786 2.933e-05 ***
+## regionOrinoquia - Amazonia -0.0127086  0.0255897  -0.4966  0.619451    
+## sesLow                      0.0102944  0.0179711   0.5728  0.566760    
+## sesMiddle to high          -0.0745279  0.0258677  -2.8811  0.003963 ** 
+## incomeHalf - 1 NMW         -0.0183843  0.0205063  -0.8965  0.369975    
+## income1-2 NMW              -0.0034587  0.0231946  -0.1491  0.881462    
+## incomeMore than 2 NMW      -0.0067833  0.0336011  -0.2019  0.840014    
+## insuranceContributory      -0.0811345  0.0329094  -2.4654  0.013687 *  
+## insuranceSubsidized        -0.0152076  0.0312052  -0.4873  0.626015    
+## insuranceOther             -0.0743822  0.0488646  -1.5222  0.127956    
+## locationRural               0.0862682  0.0191432   4.5065 6.592e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(m2veg$coefficients) #PR</code></pre>
 <pre><code>##                (Intercept)                      veg1x 
-##                  0.7513215                  0.9170518 
+##                  0.3623559                  0.9844062 
 ##                    veg2-3x                    veg4-7x 
-##                  0.7180261                  0.7599624 
+##                  0.9331852                  0.9437435 
 ##                     veg8+x                       age3 
-##                  0.7499721                 11.6570771 
+##                  0.9409500                  2.5821009 
 ##                       age5                sexFeminine 
-##                 15.9860985                  0.8032065 
-##                     sesLow          sesMiddle to high 
-##                  1.0717022                  0.7443814 
-##         incomeHalf - 1 NMW              income1-2 NMW 
-##                  0.9204381                  0.9925803 
-##      incomeMore than 2 NMW      insuranceContributory 
-##                  0.9545040                  0.7144043 
-##        insuranceSubsidized             insuranceOther 
-##                  0.9606571                  0.7239454 
+##                  2.7037086                  0.9534414 
 ##              regionEastern              regionCentral 
-##                  1.1025875                  1.0459925 
+##                  1.0221666                  1.0083708 
 ##              regionPacific               regionBogota 
-##                  0.4288309                  1.6221663 
-## regionOrinoquia - Amazonia              locationRural 
-##                  0.9551894                  1.4943791</code></pre>
-<p>Fruit</p>
-<pre class="r"><code>mfruit_svyno &lt;- glm(cariesexp ~ fruit, data = ensab, family = &quot;binomial&quot;)
-summary(mfruit_svyno)</code></pre>
+##                  0.8016616                  1.1112283 
+## regionOrinoquia - Amazonia                     sesLow 
+##                  0.9873719                  1.0103476 
+##          sesMiddle to high         incomeHalf - 1 NMW 
+##                  0.9281816                  0.9817836 
+##              income1-2 NMW      incomeMore than 2 NMW 
+##                  0.9965473                  0.9932397 
+##      insuranceContributory        insuranceSubsidized 
+##                  0.9220697                  0.9849074 
+##             insuranceOther              locationRural 
+##                  0.9283168                  1.0900987</code></pre>
+<pre class="r"><code>robust_se &lt;- coeftest(m2veg, vcov = sandwich)[, 2]  # Extract robust standard errors
+pvalue &lt;- coeftest(m2veg, vcov = sandwich)[, 4]
+
+veg_ci &lt;- data.frame(
+  Estimate = round(exp(coef(m2veg)), 3),
+  Lower_CI = round(exp(coef(m2veg) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2veg) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %&gt;%
+  mutate(
+    PR = paste0(Estimate, &quot; (&quot;, Lower_CI, &quot;, &quot;, Upper_CI, &quot;)&quot;),
+    Food = &quot;Veg&quot;
+  ) %&gt;%
+  rownames_to_column() %&gt;%
+  filter(grepl(&quot;^veg&quot;, rowname)) %&gt;%
+  mutate(rowname = str_remove(rowname, &quot;^veg&quot;)) %&gt;%
+  rename(Freq = rowname) %&gt;%
+  dplyr::select(Food, Freq, PR, P_value)
+veg_ci</code></pre>
+<pre><code>##   Food Freq                   PR P_value
+## 1  Veg   1x 0.984 (0.928, 1.044)  0.5998
+## 2  Veg 2-3x 0.933 (0.891, 0.977)  0.0031
+## 3  Veg 4-7x 0.944 (0.904, 0.985)  0.0079
+## 4  Veg  8+x 0.941 (0.896, 0.989)  0.0157</code></pre>
+<pre class="r"><code>vif(m2veg) #checking multicollinearity</code></pre>
+<pre><code>##               GVIF Df GVIF^(1/(2*Df))
+## veg       1.092326  4        1.011100
+## age       1.009965  2        1.002482
+## sex       1.004233  1        1.002114
+## region    1.379515  5        1.032696
+## ses       1.491232  2        1.105061
+## income    1.395171  3        1.057072
+## insurance 1.423108  3        1.060571
+## location  1.251083  1        1.118518</code></pre>
+</div>
+<div id="fruits" class="section level3">
+<h3>Fruits</h3>
+<pre class="r"><code>m1fruit &lt;- glm(cariesexp_num ~ fruit, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+summary(m1fruit)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ fruit, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ fruit, family = binomial(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  0.68043    0.06505  10.460   &lt;2e-16 ***
-## fruit2-3x    0.09313    0.08791   1.059    0.289    
-## fruit4-7x    0.03281    0.07994   0.410    0.682    
-## fruit8+x     0.10818    0.08173   1.324    0.186    
+## (Intercept) -0.40972    0.02187 -18.737   &lt;2e-16 ***
+## fruit2-3x    0.03035    0.02875   1.056    0.291    
+## fruit4-7x    0.01091    0.02668   0.409    0.683    
+## fruit8+x     0.03508    0.02678   1.310    0.190    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -4483,83 +5023,147 @@ summary(mfruit_svyno)</code></pre>
 ## Residual deviance: 8022.5  on 6378  degrees of freedom
 ## AIC: 8030.5
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>mfruit2_svyno &lt;- glm(cariesexp ~ fruit + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;)
-summary(mfruit2_svyno)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>m2fruit &lt;- glm(cariesexp_num ~ fruit + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = &quot;log&quot;), data = ensab)
+summary(m2fruit)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ fruit + age + sex + ses + income + 
-##     insurance + region + location, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ fruit + age + sex + region + ses + 
+##     income + insurance + location, family = poisson(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
-##                             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)                -0.460292   0.178345  -2.581 0.009854 ** 
-## fruit2-3x                   0.022924   0.107102   0.214 0.830519    
-## fruit4-7x                  -0.065921   0.098930  -0.666 0.505195    
-## fruit8+x                    0.036082   0.102557   0.352 0.724970    
-## age3                        2.452463   0.079077  31.014  &lt; 2e-16 ***
-## age5                        2.771444   0.082324  33.665  &lt; 2e-16 ***
-## sexFeminine                -0.220661   0.065036  -3.393 0.000692 ***
-## sesLow                      0.068409   0.080402   0.851 0.394863    
-## sesMiddle to high          -0.299315   0.105628  -2.834 0.004602 ** 
-## incomeHalf - 1 NMW         -0.099675   0.097476  -1.023 0.306514    
-## income1-2 NMW              -0.034797   0.106555  -0.327 0.743999    
-## incomeMore than 2 NMW      -0.074676   0.140460  -0.532 0.594965    
-## insuranceContributory      -0.351820   0.136985  -2.568 0.010219 *  
-## insuranceSubsidized        -0.051275   0.132296  -0.388 0.698327    
-## insuranceOther             -0.343823   0.202544  -1.698 0.089598 .  
-## regionEastern               0.063348   0.117107   0.541 0.588545    
-## regionCentral               0.006672   0.118354   0.056 0.955048    
-## regionPacific              -0.871323   0.114602  -7.603 2.89e-14 ***
-## regionBogota                0.446747   0.119918   3.725 0.000195 ***
-## regionOrinoquia - Amazonia -0.071702   0.113253  -0.633 0.526659    
-## locationRural               0.421240   0.096295   4.374 1.22e-05 ***
+##                              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                -1.0506752  0.0899003 -11.687  &lt; 2e-16 ***
+## fruit2-3x                   0.0075349  0.0508452   0.148   0.8822    
+## fruit4-7x                  -0.0145517  0.0474461  -0.307   0.7591    
+## fruit8+x                    0.0064434  0.0486733   0.132   0.8947    
+## age3                        0.9491664  0.0460820  20.597  &lt; 2e-16 ***
+## age5                        0.9956410  0.0452762  21.990  &lt; 2e-16 ***
+## sexFeminine                -0.0477056  0.0307060  -1.554   0.1203    
+## regionEastern               0.0149275  0.0545468   0.274   0.7843    
+## regionCentral               0.0002616  0.0548613   0.005   0.9962    
+## regionPacific              -0.2266039  0.0578330  -3.918 8.92e-05 ***
+## regionBogota                0.0973750  0.0546441   1.782   0.0748 .  
+## regionOrinoquia - Amazonia -0.0187008  0.0525887  -0.356   0.7221    
+## sesLow                      0.0105508  0.0379162   0.278   0.7808    
+## sesMiddle to high          -0.0753532  0.0524677  -1.436   0.1510    
+## incomeHalf - 1 NMW         -0.0223056  0.0447813  -0.498   0.6184    
+## income1-2 NMW              -0.0093722  0.0493496  -0.190   0.8494    
+## incomeMore than 2 NMW      -0.0137762  0.0683345  -0.202   0.8402    
+## insuranceContributory      -0.0853981  0.0661113  -1.292   0.1964    
+## insuranceSubsidized        -0.0182813  0.0635639  -0.288   0.7736    
+## insuranceOther             -0.0793025  0.0982258  -0.807   0.4195    
+## locationRural               0.0896960  0.0429081   2.090   0.0366 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 7893.8  on 6287  degrees of freedom
-## Residual deviance: 5931.7  on 6267  degrees of freedom
+##     Null deviance: 3306.5  on 6287  degrees of freedom
+## Residual deviance: 2609.7  on 6267  degrees of freedom
 ##   (94 observations deleted due to missingness)
-## AIC: 5973.7
+## AIC: 11190
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>exp(mfruit2_svyno$coefficients)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>coeftest(m2fruit, vcov = sandwich)# Robust standard errors</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                               Estimate  Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept)                -1.05067516  0.05024008 -20.9131 &lt; 2.2e-16 ***
+## fruit2-3x                   0.00753490  0.02525605   0.2983 0.7654432    
+## fruit4-7x                  -0.01455169  0.02350143  -0.6192 0.5357957    
+## fruit8+x                    0.00644338  0.02363873   0.2726 0.7851783    
+## age3                        0.94916635  0.03326243  28.5357 &lt; 2.2e-16 ***
+## age5                        0.99564104  0.03277784  30.3754 &lt; 2.2e-16 ***
+## sexFeminine                -0.04770565  0.01458293  -3.2713 0.0010704 ** 
+## regionEastern               0.01492750  0.02494135   0.5985 0.5495036    
+## regionCentral               0.00026156  0.02573471   0.0102 0.9918908    
+## regionPacific              -0.22660385  0.03034284  -7.4681 8.135e-14 ***
+## regionBogota                0.09737500  0.02515840   3.8705 0.0001086 ***
+## regionOrinoquia - Amazonia -0.01870082  0.02554595  -0.7320 0.4641403    
+## sesLow                      0.01055080  0.01802172   0.5854 0.5582458    
+## sesMiddle to high          -0.07535319  0.02593056  -2.9060 0.0036613 ** 
+## incomeHalf - 1 NMW         -0.02230556  0.02058516  -1.0836 0.2785533    
+## income1-2 NMW              -0.00937223  0.02317920  -0.4043 0.6859643    
+## incomeMore than 2 NMW      -0.01377624  0.03367912  -0.4090 0.6825074    
+## insuranceContributory      -0.08539812  0.03302419  -2.5859 0.0097118 ** 
+## insuranceSubsidized        -0.01828128  0.03128535  -0.5843 0.5589916    
+## insuranceOther             -0.07930245  0.04879424  -1.6252 0.1041110    
+## locationRural               0.08969599  0.01917540   4.6777 2.902e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(m2fruit$coefficients) #PR</code></pre>
 <pre><code>##                (Intercept)                  fruit2-3x 
-##                  0.6310994                  1.0231885 
+##                  0.3497016                  1.0075634 
 ##                  fruit4-7x                   fruit8+x 
-##                  0.9362049                  1.0367408 
+##                  0.9855537                  1.0064642 
 ##                       age3                       age5 
-##                 11.6169190                 15.9816872 
-##                sexFeminine                     sesLow 
-##                  0.8019887                  1.0708027 
-##          sesMiddle to high         incomeHalf - 1 NMW 
-##                  0.7413257                  0.9051311 
-##              income1-2 NMW      incomeMore than 2 NMW 
-##                  0.9658016                  0.9280438 
-##      insuranceContributory        insuranceSubsidized 
-##                  0.7034070                  0.9500174 
-##             insuranceOther              regionEastern 
-##                  0.7090541                  1.0653979 
+##                  2.5835550                  2.7064587 
+##                sexFeminine              regionEastern 
+##                  0.9534144                  1.0150395 
 ##              regionCentral              regionPacific 
-##                  1.0066938                  0.4183976 
+##                  1.0002616                  0.7972365 
 ##               regionBogota regionOrinoquia - Amazonia 
-##                  1.5632193                  0.9308081 
+##                  1.1022736                  0.9814730 
+##                     sesLow          sesMiddle to high 
+##                  1.0106067                  0.9274159 
+##         incomeHalf - 1 NMW              income1-2 NMW 
+##                  0.9779414                  0.9906716 
+##      incomeMore than 2 NMW      insuranceContributory 
+##                  0.9863182                  0.9181467 
+##        insuranceSubsidized             insuranceOther 
+##                  0.9818848                  0.9237605 
 ##              locationRural 
-##                  1.5238495</code></pre>
+##                  1.0938417</code></pre>
+<pre class="r"><code>robust_se &lt;- coeftest(m2fruit, vcov = sandwich)[, 2]  # Extract robust standard errors
+pvalue &lt;- coeftest(m2fruit, vcov = sandwich)[, 4]
+
+fruit_ci &lt;- data.frame(
+  Estimate = round(exp(coef(m2fruit)), 3),
+  Lower_CI = round(exp(coef(m2fruit) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2fruit) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %&gt;%
+  mutate(
+    PR = paste0(Estimate, &quot; (&quot;, Lower_CI, &quot;, &quot;, Upper_CI, &quot;)&quot;),
+    Food = &quot;Fruit&quot;
+  ) %&gt;%
+  rownames_to_column() %&gt;%
+  filter(grepl(&quot;^fruit&quot;, rowname)) %&gt;%
+  mutate(rowname = str_remove(rowname, &quot;^fruit&quot;)) %&gt;%
+  rename(Freq = rowname) %&gt;%
+  dplyr::select(Food, Freq, PR, P_value)
+fruit_ci</code></pre>
+<pre><code>##    Food Freq                   PR P_value
+## 1 Fruit 2-3x 1.008 (0.959, 1.059)  0.7654
+## 2 Fruit 4-7x 0.986 (0.941, 1.032)  0.5358
+## 3 Fruit  8+x 1.006 (0.961, 1.054)  0.7852</code></pre>
+<pre class="r"><code>vif(m2fruit) #checking multicollinearity</code></pre>
+<pre><code>##               GVIF Df GVIF^(1/(2*Df))
+## fruit     1.089165  3        1.014337
+## age       1.009737  2        1.002426
+## sex       1.002276  1        1.001137
+## region    1.371507  5        1.032095
+## ses       1.496647  2        1.106063
+## income    1.394735  3        1.057017
+## insurance 1.422882  3        1.060543
+## location  1.247803  1        1.117051</code></pre>
 <p>Protein</p>
-<pre class="r"><code>mprot_svyno &lt;- glm(cariesexp ~ prot, data = ensab, family = &quot;binomial&quot;)
-summary(mprot_svyno)</code></pre>
+<pre class="r"><code>m1prot &lt;- glm(cariesexp_num ~ prot, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+summary(m1prot)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ prot, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ prot, family = binomial(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  0.47149    0.06942   6.792 1.11e-11 ***
-## prot4-7x     0.28487    0.08396   3.393 0.000691 ***
-## prot8+x      0.33546    0.07862   4.267 1.98e-05 ***
+## (Intercept) -0.48494    0.02668 -18.179  &lt; 2e-16 ***
+## prot4-7x     0.10010    0.03065   3.266  0.00109 ** 
+## prot8+x      0.11599    0.02900   3.999 6.36e-05 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -4569,81 +5173,146 @@ summary(mprot_svyno)</code></pre>
 ## Residual deviance: 8006.9  on 6379  degrees of freedom
 ## AIC: 8012.9
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>mprot2_svyno &lt;- glm(cariesexp ~ prot + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;)
-summary(mprot2_svyno)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>m2prot &lt;- glm(cariesexp_num ~ prot + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = &quot;log&quot;), data = ensab)
+summary(m2prot)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ prot + age + sex + ses + income + insurance + 
-##     region + location, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ prot + age + sex + region + ses + 
+##     income + insurance + location, family = poisson(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##                             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)                -0.533048   0.183723  -2.901 0.003715 ** 
-## prot4-7x                    0.104466   0.102135   1.023 0.306392    
-## prot8+x                     0.063236   0.096852   0.653 0.513814    
-## age3                        2.449008   0.079058  30.977  &lt; 2e-16 ***
-## age5                        2.768023   0.082549  33.532  &lt; 2e-16 ***
-## sexFeminine                -0.222017   0.065078  -3.412 0.000646 ***
-## sesLow                      0.066590   0.080341   0.829 0.407194    
-## sesMiddle to high          -0.299887   0.105537  -2.842 0.004490 ** 
-## incomeHalf - 1 NMW         -0.099203   0.097463  -1.018 0.308749    
-## income1-2 NMW              -0.036386   0.106540  -0.342 0.732711    
-## incomeMore than 2 NMW      -0.077691   0.140266  -0.554 0.579657    
-## insuranceContributory      -0.351743   0.136878  -2.570 0.010177 *  
-## insuranceSubsidized        -0.049369   0.132250  -0.373 0.708923    
-## insuranceOther             -0.341188   0.202645  -1.684 0.092244 .  
-## regionEastern               0.059507   0.116609   0.510 0.609830    
-## regionCentral               0.009499   0.118559   0.080 0.936141    
-## regionPacific              -0.866116   0.114019  -7.596 3.05e-14 ***
-## regionBogota                0.454265   0.118837   3.823 0.000132 ***
-## regionOrinoquia - Amazonia -0.069896   0.113115  -0.618 0.536631    
-## locationRural               0.418919   0.096242   4.353 1.34e-05 ***
+## (Intercept)                -1.067722   0.093071 -11.472  &lt; 2e-16 ***
+## prot4-7x                    0.025845   0.051023   0.507   0.6125    
+## prot8+x                     0.013587   0.048521   0.280   0.7795    
+## age3                        0.948425   0.046107  20.570  &lt; 2e-16 ***
+## age5                        0.995123   0.045398  21.920  &lt; 2e-16 ***
+## sexFeminine                -0.048046   0.030715  -1.564   0.1178    
+## regionEastern               0.014277   0.054430   0.262   0.7931    
+## regionCentral               0.001425   0.055000   0.026   0.9793    
+## regionPacific              -0.225278   0.057700  -3.904 9.45e-05 ***
+## regionBogota                0.099015   0.054291   1.824   0.0682 .  
+## regionOrinoquia - Amazonia -0.017960   0.052558  -0.342   0.7326    
+## sesLow                      0.009835   0.037848   0.260   0.7950    
+## sesMiddle to high          -0.075568   0.052375  -1.443   0.1491    
+## incomeHalf - 1 NMW         -0.022171   0.044730  -0.496   0.6201    
+## income1-2 NMW              -0.009251   0.049313  -0.188   0.8512    
+## incomeMore than 2 NMW      -0.014387   0.068130  -0.211   0.8328    
+## insuranceContributory      -0.085431   0.066017  -1.294   0.1956    
+## insuranceSubsidized        -0.017754   0.063532  -0.279   0.7799    
+## insuranceOther             -0.079549   0.098187  -0.810   0.4178    
+## locationRural               0.089778   0.042875   2.094   0.0363 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 7893.8  on 6287  degrees of freedom
-## Residual deviance: 5932.5  on 6268  degrees of freedom
+##     Null deviance: 3306.5  on 6287  degrees of freedom
+## Residual deviance: 2609.9  on 6268  degrees of freedom
 ##   (94 observations deleted due to missingness)
-## AIC: 5972.5
+## AIC: 11188
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>exp(mprot2_svyno$coefficients)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>coeftest(m2prot, vcov = sandwich)# Robust standard errors</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                              Estimate Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept)                -1.0677215  0.0520116 -20.5285 &lt; 2.2e-16 ***
+## prot4-7x                    0.0258449  0.0255392   1.0120 0.3115524    
+## prot8+x                     0.0135872  0.0241234   0.5632 0.5732732    
+## age3                        0.9484251  0.0333072  28.4751 &lt; 2.2e-16 ***
+## age5                        0.9951234  0.0328284  30.3128 &lt; 2.2e-16 ***
+## sexFeminine                -0.0480461  0.0145770  -3.2960 0.0009806 ***
+## regionEastern               0.0142775  0.0249414   0.5724 0.5670236    
+## regionCentral               0.0014253  0.0257460   0.0554 0.9558511    
+## regionPacific              -0.2252782  0.0304021  -7.4100 1.263e-13 ***
+## regionBogota                0.0990153  0.0250919   3.9461 7.943e-05 ***
+## regionOrinoquia - Amazonia -0.0179595  0.0255203  -0.7037 0.4815967    
+## sesLow                      0.0098347  0.0179676   0.5474 0.5841344    
+## sesMiddle to high          -0.0755677  0.0258657  -2.9215 0.0034831 ** 
+## incomeHalf - 1 NMW         -0.0221707  0.0205531  -1.0787 0.2807207    
+## income1-2 NMW              -0.0092509  0.0231847  -0.3990 0.6898871    
+## incomeMore than 2 NMW      -0.0143872  0.0335440  -0.4289 0.6679923    
+## insuranceContributory      -0.0854311  0.0328830  -2.5980 0.0093759 ** 
+## insuranceSubsidized        -0.0177536  0.0311893  -0.5692 0.5692057    
+## insuranceOther             -0.0795490  0.0487437  -1.6320 0.1026826    
+## locationRural               0.0897779  0.0191692   4.6835 2.821e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(m2prot$coefficients) #PR</code></pre>
 <pre><code>##                (Intercept)                   prot4-7x 
-##                  0.5868135                  1.1101176 
+##                  0.3437909                  1.0261818 
 ##                    prot8+x                       age3 
-##                  1.0652780                 11.5768532 
+##                  1.0136799                  2.5816406 
 ##                       age5                sexFeminine 
-##                 15.9271186                  0.8009021 
-##                     sesLow          sesMiddle to high 
-##                  1.0688573                  0.7409018 
-##         incomeHalf - 1 NMW              income1-2 NMW 
-##                  0.9055588                  0.9642684 
-##      incomeMore than 2 NMW      insuranceContributory 
-##                  0.9252499                  0.7034612 
-##        insuranceSubsidized             insuranceOther 
-##                  0.9518296                  0.7109252 
+##                  2.7050582                  0.9530898 
 ##              regionEastern              regionCentral 
-##                  1.0613136                  1.0095443 
+##                  1.0143799                  1.0014263 
 ##              regionPacific               regionBogota 
-##                  0.4205817                  1.5750147 
-## regionOrinoquia - Amazonia              locationRural 
-##                  0.9324911                  1.5203168</code></pre>
-<p>Dairy</p>
-<pre class="r"><code>mdairy_svyno &lt;- glm(cariesexp ~ dairy, data = ensab, family = &quot;binomial&quot;)
-summary(mdairy_svyno)</code></pre>
+##                  0.7982941                  1.1040832 
+## regionOrinoquia - Amazonia                     sesLow 
+##                  0.9822008                  1.0098832 
+##          sesMiddle to high         incomeHalf - 1 NMW 
+##                  0.9272169                  0.9780733 
+##              income1-2 NMW      incomeMore than 2 NMW 
+##                  0.9907918                  0.9857158 
+##      insuranceContributory        insuranceSubsidized 
+##                  0.9181164                  0.9824030 
+##             insuranceOther              locationRural 
+##                  0.9235327                  1.0939312</code></pre>
+<pre class="r"><code>robust_se &lt;- coeftest(m2prot, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue &lt;- coeftest(m2prot, vcov = sandwich)[, 4]
+
+prot_ci &lt;- data.frame(
+  Estimate = round(exp(coef(m2prot)), 3),
+  Lower_CI = round(exp(coef(m2prot) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2prot) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %&gt;%
+  mutate(
+    PR = paste0(Estimate, &quot; (&quot;, Lower_CI, &quot;, &quot;, Upper_CI, &quot;)&quot;),
+    Food = &quot;Prot&quot;
+  ) %&gt;%
+  rownames_to_column() %&gt;%
+  filter(grepl(&quot;^prot&quot;, rowname)) %&gt;%
+  mutate(rowname = str_remove(rowname, &quot;^prot&quot;)) %&gt;%
+  rename(Freq = rowname) %&gt;%
+  dplyr::select(Food, Freq, PR, P_value)
+prot_ci</code></pre>
+<pre><code>##   Food Freq                   PR P_value
+## 1 Prot 4-7x 1.026 (0.976, 1.079)  0.3116
+## 2 Prot  8+x 1.014 (0.967, 1.063)  0.5733</code></pre>
+<pre class="r"><code>vif(m2prot) #checking multicollinearity</code></pre>
+<pre><code>##               GVIF Df GVIF^(1/(2*Df))
+## prot      1.046717  2        1.011480
+## age       1.012698  2        1.003160
+## sex       1.002860  1        1.001429
+## region    1.358895  5        1.031142
+## ses       1.489332  2        1.104709
+## income    1.387237  3        1.056068
+## insurance 1.418279  3        1.059970
+## location  1.245868  1        1.116185</code></pre>
+</div>
+<div id="dairy" class="section level3">
+<h3>Dairy</h3>
+<pre class="r"><code>m1dairy &lt;- glm(cariesexp_num ~ dairy, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+summary(m1dairy)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ dairy, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ dairy, family = binomial(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  0.67199    0.08382   8.017 1.09e-15 ***
-## dairy2-3x    0.25706    0.11587   2.219   0.0265 *  
-## dairy4-7x    0.24430    0.09953   2.454   0.0141 *  
-## dairy8+x    -0.04321    0.09150  -0.472   0.6368    
+## (Intercept) -0.41257    0.02834 -14.559   &lt;2e-16 ***
+## dairy2-3x    0.07972    0.03627   2.198   0.0280 *  
+## dairy4-7x    0.07609    0.03222   2.362   0.0182 *  
+## dairy8+x    -0.01482    0.03108  -0.477   0.6335    
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -4653,85 +5322,152 @@ summary(mdairy_svyno)</code></pre>
 ## Residual deviance: 7998.4  on 6378  degrees of freedom
 ## AIC: 8006.4
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>mdairy2_svyno &lt;- glm(cariesexp ~ dairy + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;)
-summary(mdairy2_svyno)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>m2dairy &lt;- glm(cariesexp_num ~ dairy + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = &quot;log&quot;), data = ensab)
+summary(m2dairy)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ dairy + age + sex + ses + income + 
-##     insurance + region + location, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ dairy + age + sex + region + ses + 
+##     income + insurance + location, family = poisson(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
-##                            Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)                -0.53353    0.19371  -2.754 0.005882 ** 
-## dairy2-3x                   0.19283    0.14256   1.353 0.176196    
-## dairy4-7x                   0.13227    0.12439   1.063 0.287638    
-## dairy8+x                    0.01560    0.11638   0.134 0.893369    
-## age3                        2.44619    0.07904  30.950  &lt; 2e-16 ***
-## age5                        2.75737    0.08252  33.413  &lt; 2e-16 ***
-## sexFeminine                -0.22272    0.06508  -3.422 0.000621 ***
-## sesLow                      0.06272    0.08052   0.779 0.435987    
-## sesMiddle to high          -0.29544    0.10558  -2.798 0.005139 ** 
-## incomeHalf - 1 NMW         -0.09470    0.09766  -0.970 0.332174    
-## income1-2 NMW              -0.01824    0.10707  -0.170 0.864753    
-## incomeMore than 2 NMW      -0.06252    0.14045  -0.445 0.656217    
-## insuranceContributory      -0.35087    0.13707  -2.560 0.010475 *  
-## insuranceSubsidized        -0.04863    0.13238  -0.367 0.713331    
-## insuranceOther             -0.33566    0.20255  -1.657 0.097485 .  
-## regionEastern               0.05497    0.11677   0.471 0.637822    
-## regionCentral               0.01508    0.11855   0.127 0.898748    
-## regionPacific              -0.87809    0.11449  -7.670 1.72e-14 ***
-## regionBogota                0.44943    0.11857   3.790 0.000150 ***
-## regionOrinoquia - Amazonia -0.07723    0.11381  -0.679 0.497405    
-## locationRural               0.43155    0.09682   4.457 8.31e-06 ***
+##                             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                -1.069929   0.095994 -11.146  &lt; 2e-16 ***
+## dairy2-3x                   0.044723   0.065928   0.678   0.4975    
+## dairy4-7x                   0.030766   0.058637   0.525   0.5998    
+## dairy8+x                    0.008067   0.056195   0.144   0.8859    
+## age3                        0.947153   0.046101  20.545  &lt; 2e-16 ***
+## age5                        0.992764   0.045429  21.853  &lt; 2e-16 ***
+## sexFeminine                -0.048479   0.030712  -1.579   0.1144    
+## regionEastern               0.013874   0.054448   0.255   0.7989    
+## regionCentral               0.002201   0.054897   0.040   0.9680    
+## regionPacific              -0.226908   0.057795  -3.926 8.63e-05 ***
+## regionBogota                0.098811   0.054180   1.824   0.0682 .  
+## regionOrinoquia - Amazonia -0.017839   0.052821  -0.338   0.7356    
+## sesLow                      0.009656   0.037918   0.255   0.7990    
+## sesMiddle to high          -0.074107   0.052396  -1.414   0.1573    
+## incomeHalf - 1 NMW         -0.022187   0.044865  -0.495   0.6209    
+## income1-2 NMW              -0.006707   0.049652  -0.135   0.8925    
+## incomeMore than 2 NMW      -0.011391   0.068417  -0.166   0.8678    
+## insuranceContributory      -0.085466   0.066100  -1.293   0.1960    
+## insuranceSubsidized        -0.017700   0.063569  -0.278   0.7807    
+## insuranceOther             -0.078451   0.098211  -0.799   0.4244    
+## locationRural               0.091914   0.043073   2.134   0.0328 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 7893.8  on 6287  degrees of freedom
-## Residual deviance: 5929.1  on 6267  degrees of freedom
+##     Null deviance: 3306.5  on 6287  degrees of freedom
+## Residual deviance: 2609.2  on 6267  degrees of freedom
 ##   (94 observations deleted due to missingness)
-## AIC: 5971.1
+## AIC: 11189
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>exp(mdairy2_svyno$coefficients)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>coeftest(m2dairy, vcov = sandwich)# Robust standard errors</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                              Estimate Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept)                -1.0699288  0.0522462 -20.4786 &lt; 2.2e-16 ***
+## dairy2-3x                   0.0447227  0.0303991   1.4712 0.1412412    
+## dairy4-7x                   0.0307665  0.0274151   1.1222 0.2617583    
+## dairy8+x                    0.0080669  0.0266422   0.3028 0.7620517    
+## age3                        0.9471527  0.0333007  28.4424 &lt; 2.2e-16 ***
+## age5                        0.9927643  0.0328343  30.2355 &lt; 2.2e-16 ***
+## sexFeminine                -0.0484792  0.0145848  -3.3240 0.0008875 ***
+## regionEastern               0.0138736  0.0249131   0.5569 0.5776101    
+## regionCentral               0.0022011  0.0257539   0.0855 0.9318907    
+## regionPacific              -0.2269081  0.0303754  -7.4701 8.012e-14 ***
+## regionBogota                0.0988111  0.0251485   3.9291 8.526e-05 ***
+## regionOrinoquia - Amazonia -0.0178388  0.0255854  -0.6972 0.4856627    
+## sesLow                      0.0096563  0.0180100   0.5362 0.5918457    
+## sesMiddle to high          -0.0741072  0.0258660  -2.8650 0.0041696 ** 
+## incomeHalf - 1 NMW         -0.0221867  0.0205397  -1.0802 0.2800594    
+## income1-2 NMW              -0.0067073  0.0233149  -0.2877 0.7735900    
+## incomeMore than 2 NMW      -0.0113910  0.0336740  -0.3383 0.7351566    
+## insuranceContributory      -0.0854659  0.0329627  -2.5928 0.0095196 ** 
+## insuranceSubsidized        -0.0176995  0.0312568  -0.5663 0.5712154    
+## insuranceOther             -0.0784512  0.0487507  -1.6092 0.1075660    
+## locationRural               0.0919140  0.0191127   4.8091 1.516e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(m2dairy$coefficients) #PR</code></pre>
 <pre><code>##                (Intercept)                  dairy2-3x 
-##                  0.5865308                  1.2126713 
+##                  0.3430329                  1.0457378 
 ##                  dairy4-7x                   dairy8+x 
-##                  1.1414119                  1.0157224 
+##                  1.0312446                  1.0080996 
 ##                       age3                       age5 
-##                 11.5442246                 15.7583332 
-##                sexFeminine                     sesLow 
-##                  0.8003370                  1.0647322 
-##          sesMiddle to high         incomeHalf - 1 NMW 
-##                  0.7442036                  0.9096442 
-##              income1-2 NMW      incomeMore than 2 NMW 
-##                  0.9819282                  0.9393926 
-##      insuranceContributory        insuranceSubsidized 
-##                  0.7040767                  0.9525293 
-##             insuranceOther              regionEastern 
-##                  0.7148629                  1.0565066 
+##                  2.5783578                  2.6986842 
+##                sexFeminine              regionEastern 
+##                  0.9526771                  1.0139703 
 ##              regionCentral              regionPacific 
-##                  1.0151985                  0.4155761 
+##                  1.0022035                  0.7969940 
 ##               regionBogota regionOrinoquia - Amazonia 
-##                  1.5674211                  0.9256805 
+##                  1.1038578                  0.9823194 
+##                     sesLow          sesMiddle to high 
+##                  1.0097031                  0.9285722 
+##         incomeHalf - 1 NMW              income1-2 NMW 
+##                  0.9780576                  0.9933152 
+##      incomeMore than 2 NMW      insuranceContributory 
+##                  0.9886736                  0.9180844 
+##        insuranceSubsidized             insuranceOther 
+##                  0.9824562                  0.9245472 
 ##              locationRural 
-##                  1.5396427</code></pre>
-<p>Fats</p>
-<pre class="r"><code>mfats_svyno &lt;- glm(cariesexp ~ fats, data = ensab, family = &quot;binomial&quot;)
-summary(mfats_svyno)</code></pre>
+##                  1.0962706</code></pre>
+<pre class="r"><code>robust_se &lt;- coeftest(m2dairy, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue &lt;- coeftest(m2dairy, vcov = sandwich)[, 4]
+
+dairy_ci &lt;- data.frame(
+  Estimate = round(exp(coef(m2dairy)), 3),
+  Lower_CI = round(exp(coef(m2dairy) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2dairy) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %&gt;%
+  mutate(
+    PR = paste0(Estimate, &quot; (&quot;, Lower_CI, &quot;, &quot;, Upper_CI, &quot;)&quot;),
+    Food = &quot;Dairy&quot;
+  ) %&gt;%
+  rownames_to_column() %&gt;%
+  filter(grepl(&quot;^dairy&quot;, rowname)) %&gt;%
+  mutate(rowname = str_remove(rowname, &quot;^dairy&quot;)) %&gt;%
+  rename(Freq = rowname) %&gt;%
+  dplyr::select(Food, Freq, PR, P_value)
+dairy_ci</code></pre>
+<pre><code>##    Food Freq                   PR P_value
+## 1 Dairy 2-3x  1.046 (0.985, 1.11)  0.1412
+## 2 Dairy 4-7x 1.031 (0.977, 1.088)  0.2618
+## 3 Dairy  8+x 1.008 (0.957, 1.062)  0.7621</code></pre>
+<pre class="r"><code>vif(m2dairy) #checking multicollinearity</code></pre>
+<pre><code>##               GVIF Df GVIF^(1/(2*Df))
+## dairy     1.130783  3        1.020696
+## age       1.016477  2        1.004094
+## sex       1.002655  1        1.001327
+## region    1.363952  5        1.031525
+## ses       1.495055  2        1.105769
+## income    1.411537  3        1.059129
+## insurance 1.423141  3        1.060575
+## location  1.257391  1        1.121334</code></pre>
+</div>
+<div id="fats" class="section level3">
+<h3>Fats</h3>
+<pre class="r"><code>m1fats &lt;- glm(cariesexp_num ~ fats, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+summary(m1fats)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ fats, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ fats, family = binomial(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  0.15710    0.06530   2.406   0.0161 *  
-## fats1x       0.52681    0.09897   5.323 1.02e-07 ***
-## fats2-3x     0.61651    0.08339   7.393 1.44e-13 ***
-## fats4-7x     0.78126    0.08481   9.212  &lt; 2e-16 ***
-## fats8+x      0.82034    0.09163   8.953  &lt; 2e-16 ***
+## (Intercept) -0.61768    0.03009 -20.529  &lt; 2e-16 ***
+## fats1x       0.20913    0.03908   5.351 8.76e-08 ***
+## fats2-3x     0.23832    0.03426   6.957 3.48e-12 ***
+## fats4-7x     0.28746    0.03372   8.525  &lt; 2e-16 ***
+## fats8+x      0.29830    0.03485   8.561  &lt; 2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -4741,86 +5477,155 @@ summary(mfats_svyno)</code></pre>
 ## Residual deviance: 7918.6  on 6377  degrees of freedom
 ## AIC: 7928.6
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>mfats2_svyno &lt;- glm(cariesexp ~ fats + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;)
-summary(mfats2_svyno)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>m2fats &lt;- glm(cariesexp_num ~ fats + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = &quot;log&quot;), data = ensab)
+summary(m2fats)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ fats + age + sex + ses + income + insurance + 
-##     region + location, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ fats + age + sex + region + ses + 
+##     income + insurance + location, family = poisson(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
-##                             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)                -0.549019   0.181785  -3.020 0.002526 ** 
-## fats1x                      0.135665   0.121166   1.120 0.262858    
-## fats2-3x                    0.046759   0.103035   0.454 0.649961    
-## fats4-7x                    0.208470   0.104523   1.994 0.046099 *  
-## fats8+x                     0.007012   0.114251   0.061 0.951060    
-## age3                        2.445999   0.079815  30.646  &lt; 2e-16 ***
-## age5                        2.766082   0.083282  33.213  &lt; 2e-16 ***
-## sexFeminine                -0.218539   0.065125  -3.356 0.000792 ***
-## sesLow                      0.067360   0.080385   0.838 0.402049    
-## sesMiddle to high          -0.295312   0.105553  -2.798 0.005146 ** 
-## incomeHalf - 1 NMW         -0.104190   0.097480  -1.069 0.285146    
-## income1-2 NMW              -0.036544   0.106419  -0.343 0.731297    
-## incomeMore than 2 NMW      -0.087040   0.140180  -0.621 0.534655    
-## insuranceContributory      -0.355221   0.137141  -2.590 0.009593 ** 
-## insuranceSubsidized        -0.048951   0.132472  -0.370 0.711738    
-## insuranceOther             -0.348231   0.202844  -1.717 0.086025 .  
-## regionEastern               0.064107   0.116740   0.549 0.582907    
-## regionCentral               0.005375   0.118503   0.045 0.963820    
-## regionPacific              -0.865456   0.115084  -7.520 5.47e-14 ***
-## regionBogota                0.454690   0.118670   3.832 0.000127 ***
-## regionOrinoquia - Amazonia -0.067781   0.113121  -0.599 0.549043    
-## locationRural               0.421296   0.096301   4.375 1.22e-05 ***
+##                              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                -1.0823109  0.0931128 -11.624  &lt; 2e-16 ***
+## fats1x                      0.0461862  0.0626561   0.737 0.461038    
+## fats2-3x                    0.0271872  0.0542513   0.501 0.616277    
+## fats4-7x                    0.0598934  0.0541928   1.105 0.269076    
+## fats8+x                     0.0150153  0.0575599   0.261 0.794198    
+## age3                        0.9452626  0.0464509  20.350  &lt; 2e-16 ***
+## age5                        0.9924245  0.0457349  21.700  &lt; 2e-16 ***
+## sexFeminine                -0.0477659  0.0307298  -1.554 0.120093    
+## regionEastern               0.0148891  0.0544854   0.273 0.784648    
+## regionCentral              -0.0005052  0.0549143  -0.009 0.992660    
+## regionPacific              -0.2241876  0.0581341  -3.856 0.000115 ***
+## regionBogota                0.0985972  0.0542444   1.818 0.069118 .  
+## regionOrinoquia - Amazonia -0.0171824  0.0525749  -0.327 0.743806    
+## sesLow                      0.0111671  0.0378533   0.295 0.767987    
+## sesMiddle to high          -0.0739362  0.0523487  -1.412 0.157839    
+## incomeHalf - 1 NMW         -0.0232458  0.0447275  -0.520 0.603258    
+## income1-2 NMW              -0.0092989  0.0492560  -0.189 0.850259    
+## incomeMore than 2 NMW      -0.0159591  0.0681165  -0.234 0.814758    
+## insuranceContributory      -0.0866212  0.0660895  -1.311 0.189971    
+## insuranceSubsidized        -0.0178850  0.0635610  -0.281 0.778416    
+## insuranceOther             -0.0809913  0.0981927  -0.825 0.409474    
+## locationRural               0.0910435  0.0429163   2.121 0.033886 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 7893.8  on 6287  degrees of freedom
-## Residual deviance: 5927.0  on 6266  degrees of freedom
+##     Null deviance: 3306.5  on 6287  degrees of freedom
+## Residual deviance: 2608.3  on 6266  degrees of freedom
 ##   (94 observations deleted due to missingness)
-## AIC: 5971
+## AIC: 11190
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>exp(mfats2_svyno$coefficients)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>coeftest(m2fats, vcov = sandwich)# Robust standard errors</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                              Estimate Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept)                -1.0823109  0.0513028 -21.0965 &lt; 2.2e-16 ***
+## fats1x                      0.0461862  0.0320086   1.4429  0.149040    
+## fats2-3x                    0.0271872  0.0277541   0.9796  0.327296    
+## fats4-7x                    0.0598935  0.0276293   2.1678  0.030178 *  
+## fats8+x                     0.0150153  0.0286163   0.5247  0.599784    
+## age3                        0.9452626  0.0334783  28.2351 &lt; 2.2e-16 ***
+## age5                        0.9924245  0.0329711  30.0999 &lt; 2.2e-16 ***
+## sexFeminine                -0.0477659  0.0145969  -3.2723  0.001067 ** 
+## regionEastern               0.0148891  0.0249749   0.5962  0.551068    
+## regionCentral              -0.0005052  0.0257976  -0.0196  0.984376    
+## regionPacific              -0.2241876  0.0305281  -7.3436 2.079e-13 ***
+## regionBogota                0.0985972  0.0251816   3.9154 9.024e-05 ***
+## regionOrinoquia - Amazonia -0.0171824  0.0255726  -0.6719  0.501644    
+## sesLow                      0.0111671  0.0179656   0.6216  0.534219    
+## sesMiddle to high          -0.0739362  0.0258825  -2.8566  0.004282 ** 
+## incomeHalf - 1 NMW         -0.0232458  0.0205439  -1.1315  0.257837    
+## income1-2 NMW              -0.0092989  0.0231507  -0.4017  0.687928    
+## incomeMore than 2 NMW      -0.0159591  0.0335827  -0.4752  0.634631    
+## insuranceContributory      -0.0866212  0.0329425  -2.6295  0.008552 ** 
+## insuranceSubsidized        -0.0178850  0.0312196  -0.5729  0.566727    
+## insuranceOther             -0.0809913  0.0487550  -1.6612  0.096675 .  
+## locationRural               0.0910435  0.0191795   4.7469 2.065e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(m2fats$coefficients) #PR</code></pre>
 <pre><code>##                (Intercept)                     fats1x 
-##                  0.5775158                  1.1452977 
+##                  0.3388116                  1.0472694 
 ##                   fats2-3x                   fats4-7x 
-##                  1.0478696                  1.2317923 
+##                  1.0275601                  1.0617234 
 ##                    fats8+x                       age3 
-##                  1.0070369                 11.5420780 
+##                  1.0151286                  2.5734890 
 ##                       age5                sexFeminine 
-##                 15.8962328                  0.8036918 
-##                     sesLow          sesMiddle to high 
-##                  1.0696807                  0.7442996 
-##         incomeHalf - 1 NMW              income1-2 NMW 
-##                  0.9010542                  0.9641153 
-##      incomeMore than 2 NMW      insuranceContributory 
-##                  0.9166405                  0.7010186 
-##        insuranceSubsidized             insuranceOther 
-##                  0.9522274                  0.7059357 
+##                  2.6977673                  0.9533569 
 ##              regionEastern              regionCentral 
-##                  1.0662067                  1.0053898 
+##                  1.0150005                  0.9994949 
 ##              regionPacific               regionBogota 
-##                  0.4208597                  1.5756844 
-## regionOrinoquia - Amazonia              locationRural 
-##                  0.9344647                  1.5239358</code></pre>
-<p>Sugar</p>
-<pre class="r"><code>msugar_svyno &lt;- glm(cariesexp ~ sugar, data = ensab, family = &quot;binomial&quot;)
-summary(msugar_svyno)</code></pre>
+##                  0.7991652                  1.1036217 
+## regionOrinoquia - Amazonia                     sesLow 
+##                  0.9829644                  1.0112296 
+##          sesMiddle to high         incomeHalf - 1 NMW 
+##                  0.9287310                  0.9770223 
+##              income1-2 NMW      incomeMore than 2 NMW 
+##                  0.9907442                  0.9841675 
+##      insuranceContributory        insuranceSubsidized 
+##                  0.9170244                  0.9822740 
+##             insuranceOther              locationRural 
+##                  0.9222017                  1.0953166</code></pre>
+<pre class="r"><code>robust_se &lt;- coeftest(m2fats, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue &lt;- coeftest(m2fats, vcov = sandwich)[, 4]
+
+fats_ci &lt;- data.frame(
+  Estimate = round(exp(coef(m2fats)), 3),
+  Lower_CI = round(exp(coef(m2fats) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2fats) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %&gt;%
+  mutate(
+    PR = paste0(Estimate, &quot; (&quot;, Lower_CI, &quot;, &quot;, Upper_CI, &quot;)&quot;),
+    Food = &quot;Fats&quot;
+  ) %&gt;%
+  rownames_to_column() %&gt;%
+  filter(grepl(&quot;^fats&quot;, rowname)) %&gt;%
+  mutate(rowname = str_remove(rowname, &quot;^fats&quot;)) %&gt;%
+  rename(Freq = rowname) %&gt;%
+  dplyr::select(Food, Freq, PR, P_value)
+fats_ci</code></pre>
+<pre><code>##   Food Freq                   PR P_value
+## 1 Fats   1x 1.047 (0.984, 1.115)  0.1490
+## 2 Fats 2-3x 1.028 (0.973, 1.085)  0.3273
+## 3 Fats 4-7x 1.062 (1.006, 1.121)  0.0302
+## 4 Fats  8+x  1.015 (0.96, 1.074)  0.5998</code></pre>
+<pre class="r"><code>vif(m2fats) #checking multicollinearity</code></pre>
+<pre><code>##               GVIF Df GVIF^(1/(2*Df))
+## fats      1.077280  4        1.009348
+## age       1.030329  2        1.007497
+## sex       1.003833  1        1.001915
+## region    1.384729  5        1.033086
+## ses       1.487727  2        1.104411
+## income    1.385255  3        1.055816
+## insurance 1.422741  3        1.060525
+## location  1.248278  1        1.117264</code></pre>
+</div>
+<div id="sugars-1" class="section level3">
+<h3>Sugars</h3>
+<pre class="r"><code>m1sugar &lt;- glm(cariesexp_num ~ sugar, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+summary(m1sugar)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ sugar, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ sugar, family = binomial(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  0.36546    0.07891   4.631 3.64e-06 ***
-## sugar1x     -0.08684    0.11212  -0.775  0.43858    
-## sugar2-3x    0.30726    0.09809   3.132  0.00173 ** 
-## sugar4-7x    0.53278    0.09533   5.589 2.29e-08 ***
-## sugar8+x     0.58924    0.09300   6.336 2.36e-10 ***
+## (Intercept) -0.52702    0.03233 -16.303  &lt; 2e-16 ***
+## sugar1x     -0.03649    0.04714  -0.774  0.43885    
+## sugar2-3x    0.11470    0.03785   3.030  0.00244 ** 
+## sugar4-7x    0.18536    0.03584   5.172 2.32e-07 ***
+## sugar8+x     0.20137    0.03510   5.737 9.63e-09 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -4830,174 +5635,308 @@ summary(msugar_svyno)</code></pre>
 ## Residual deviance: 7940.6  on 6377  degrees of freedom
 ## AIC: 7950.6
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>msugar2_svyno &lt;- glm(cariesexp ~ sugar + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;)
-summary(msugar2_svyno)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>m2sugar &lt;- glm(cariesexp_num ~ sugar + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = &quot;log&quot;), data = ensab)
+summary(m2sugar)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ sugar + age + sex + ses + income + 
-##     insurance + region + location, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ sugar + age + sex + region + ses + 
+##     income + insurance + location, family = poisson(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
-##                            Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)                -0.54318    0.19052  -2.851 0.004356 ** 
-## sugar1x                    -0.08719    0.13909  -0.627 0.530754    
-## sugar2-3x                   0.09516    0.12109   0.786 0.431965    
-## sugar4-7x                   0.13938    0.11800   1.181 0.237551    
-## sugar8+x                    0.10382    0.11603   0.895 0.370896    
-## age3                        2.43315    0.07953  30.594  &lt; 2e-16 ***
-## age5                        2.75066    0.08330  33.023  &lt; 2e-16 ***
-## sexFeminine                -0.21849    0.06507  -3.358 0.000786 ***
-## sesLow                      0.06927    0.08038   0.862 0.388818    
-## sesMiddle to high          -0.30220    0.10553  -2.864 0.004188 ** 
-## incomeHalf - 1 NMW         -0.10675    0.09753  -1.095 0.273696    
-## income1-2 NMW              -0.04433    0.10659  -0.416 0.677511    
-## incomeMore than 2 NMW      -0.08305    0.14037  -0.592 0.554082    
-## insuranceContributory      -0.34775    0.13690  -2.540 0.011080 *  
-## insuranceSubsidized        -0.04942    0.13224  -0.374 0.708612    
-## insuranceOther             -0.34252    0.20255  -1.691 0.090825 .  
-## regionEastern               0.06347    0.11668   0.544 0.586433    
-## regionCentral               0.02053    0.11866   0.173 0.862649    
-## regionPacific              -0.85179    0.11442  -7.444 9.75e-14 ***
-## regionBogota                0.46220    0.11887   3.888 0.000101 ***
-## regionOrinoquia - Amazonia -0.06532    0.11316  -0.577 0.563758    
-## locationRural               0.43511    0.09665   4.502 6.74e-06 ***
+##                             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                -1.076864   0.097382 -11.058  &lt; 2e-16 ***
+## sugar1x                    -0.021168   0.073507  -0.288 0.773367    
+## sugar2-3x                   0.033212   0.061641   0.539 0.590027    
+## sugar4-7x                   0.044215   0.059337   0.745 0.456179    
+## sugar8+x                    0.034744   0.058100   0.598 0.549845    
+## age3                        0.942931   0.046370  20.335  &lt; 2e-16 ***
+## age5                        0.989341   0.045754  21.623  &lt; 2e-16 ***
+## sexFeminine                -0.048205   0.030712  -1.570 0.116517    
+## regionEastern               0.014757   0.054526   0.271 0.786668    
+## regionCentral               0.002994   0.054954   0.054 0.956547    
+## regionPacific              -0.222323   0.057865  -3.842 0.000122 ***
+## regionBogota                0.100571   0.054318   1.852 0.064095 .  
+## regionOrinoquia - Amazonia -0.017570   0.052605  -0.334 0.738376    
+## sesLow                      0.010513   0.037868   0.278 0.781306    
+## sesMiddle to high          -0.076190   0.052336  -1.456 0.145451    
+## incomeHalf - 1 NMW         -0.024079   0.044751  -0.538 0.590522    
+## income1-2 NMW              -0.012031   0.049330  -0.244 0.807318    
+## incomeMore than 2 NMW      -0.016762   0.068192  -0.246 0.805831    
+## insuranceContributory      -0.084710   0.066032  -1.283 0.199539    
+## insuranceSubsidized        -0.017302   0.063542  -0.272 0.785395    
+## insuranceOther             -0.078834   0.098216  -0.803 0.422175    
+## locationRural               0.094263   0.043086   2.188 0.028684 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 7893.8  on 6287  degrees of freedom
-## Residual deviance: 5929.1  on 6266  degrees of freedom
+##     Null deviance: 3306.5  on 6287  degrees of freedom
+## Residual deviance: 2608.6  on 6266  degrees of freedom
 ##   (94 observations deleted due to missingness)
-## AIC: 5973.1
+## AIC: 11191
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>exp(msugar2_svyno$coefficients)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>coeftest(m2sugar, vcov = sandwich)# Robust standard errors</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                              Estimate Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept)                -1.0768639  0.0542866 -19.8366 &lt; 2.2e-16 ***
+## sugar1x                    -0.0211680  0.0388878  -0.5443 0.5862113    
+## sugar2-3x                   0.0332118  0.0319399   1.0398 0.2984230    
+## sugar4-7x                   0.0442148  0.0305468   1.4474 0.1477733    
+## sugar8+x                    0.0347435  0.0295685   1.1750 0.2399868    
+## age3                        0.9429309  0.0334027  28.2292 &lt; 2.2e-16 ***
+## age5                        0.9893408  0.0329486  30.0268 &lt; 2.2e-16 ***
+## sexFeminine                -0.0482052  0.0145943  -3.3030 0.0009565 ***
+## regionEastern               0.0147568  0.0250155   0.5899 0.5552536    
+## regionCentral               0.0029943  0.0257845   0.1161 0.9075527    
+## regionPacific              -0.2223231  0.0304253  -7.3072 2.728e-13 ***
+## regionBogota                0.1005707  0.0251836   3.9935 6.511e-05 ***
+## regionOrinoquia - Amazonia -0.0175703  0.0255472  -0.6878 0.4916052    
+## sesLow                      0.0105129  0.0179791   0.5847 0.5587293    
+## sesMiddle to high          -0.0761900  0.0258359  -2.9490 0.0031881 ** 
+## incomeHalf - 1 NMW         -0.0240795  0.0205712  -1.1705 0.2417840    
+## income1-2 NMW              -0.0120311  0.0231999  -0.5186 0.6040517    
+## incomeMore than 2 NMW      -0.0167621  0.0336157  -0.4986 0.6180336    
+## insuranceContributory      -0.0847099  0.0328447  -2.5791 0.0099058 ** 
+## insuranceSubsidized        -0.0173021  0.0311408  -0.5556 0.5784791    
+## insuranceOther             -0.0788339  0.0486950  -1.6189 0.1054621    
+## locationRural               0.0942630  0.0192490   4.8970 9.730e-07 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(m2sugar$coefficients) #PR</code></pre>
 <pre><code>##                (Intercept)                    sugar1x 
-##                  0.5808969                  0.9165050 
+##                  0.3406622                  0.9790545 
 ##                  sugar2-3x                  sugar4-7x 
-##                  1.0998342                  1.1495583 
+##                  1.0337695                  1.0452068 
 ##                   sugar8+x                       age3 
-##                  1.1093997                 11.3947632 
+##                  1.0353542                  2.5674955 
 ##                       age5                sexFeminine 
-##                 15.6529053                  0.8037332 
-##                     sesLow          sesMiddle to high 
-##                  1.0717242                  0.7391916 
-##         incomeHalf - 1 NMW              income1-2 NMW 
-##                  0.8987468                  0.9566424 
-##      incomeMore than 2 NMW      insuranceContributory 
-##                  0.9203025                  0.7062740 
-##        insuranceSubsidized             insuranceOther 
-##                  0.9517797                  0.7099798 
+##                  2.6894610                  0.9529383 
 ##              regionEastern              regionCentral 
-##                  1.0655317                  1.0207401 
+##                  1.0148662                  1.0029987 
 ##              regionPacific               regionBogota 
-##                  0.4266520                  1.5875660 
-## regionOrinoquia - Amazonia              locationRural 
-##                  0.9367651                  1.5451404</code></pre>
-<p>Soda</p>
-<pre class="r"><code>msoda_svyno &lt;- glm(cariesexp ~ soda, data = ensab, family = &quot;binomial&quot;)
-summary(msoda_svyno)</code></pre>
+##                  0.8006566                  1.1058018 
+## regionOrinoquia - Amazonia                     sesLow 
+##                  0.9825832                  1.0105684 
+##          sesMiddle to high         incomeHalf - 1 NMW 
+##                  0.9266401                  0.9762081 
+##              income1-2 NMW      incomeMore than 2 NMW 
+##                  0.9880410                  0.9833776 
+##      insuranceContributory        insuranceSubsidized 
+##                  0.9187788                  0.9828468 
+##             insuranceOther              locationRural 
+##                  0.9241935                  1.0988487</code></pre>
+<pre class="r"><code>robust_se &lt;- coeftest(m2sugar, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue &lt;- coeftest(m2sugar, vcov = sandwich)[, 4]
+
+sugar_ci &lt;- data.frame(
+  Estimate = round(exp(coef(m2sugar)), 3),
+  Lower_CI = round(exp(coef(m2sugar) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2sugar) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %&gt;%
+  mutate(
+    PR = paste0(Estimate, &quot; (&quot;, Lower_CI, &quot;, &quot;, Upper_CI, &quot;)&quot;),
+    Food = &quot;Sugar&quot;
+  ) %&gt;%
+  rownames_to_column() %&gt;%
+  filter(grepl(&quot;^sugar&quot;, rowname)) %&gt;%
+  mutate(rowname = str_remove(rowname, &quot;^sugar&quot;)) %&gt;%
+  rename(Freq = rowname) %&gt;%
+  dplyr::select(Food, Freq, PR, P_value)
+sugar_ci</code></pre>
+<pre><code>##    Food Freq                   PR P_value
+## 1 Sugar   1x 0.979 (0.907, 1.057)  0.5862
+## 2 Sugar 2-3x 1.034 (0.971, 1.101)  0.2984
+## 3 Sugar 4-7x  1.045 (0.984, 1.11)  0.1478
+## 4 Sugar  8+x 1.035 (0.977, 1.097)  0.2400</code></pre>
+<pre class="r"><code>vif(m2sugar) #checking multicollinearity</code></pre>
+<pre><code>##               GVIF Df GVIF^(1/(2*Df))
+## sugar     1.072617  4        1.008801
+## age       1.030683  2        1.007584
+## sex       1.002701  1        1.001350
+## region    1.356979  5        1.030997
+## ses       1.489047  2        1.104656
+## income    1.388823  3        1.056269
+## insurance 1.420348  3        1.060228
+## location  1.258148  1        1.121672</code></pre>
+</div>
+<div id="soda-1" class="section level3">
+<h3>Soda</h3>
+<pre class="r"><code>m1soda &lt;- glm(cariesexp_num ~ soda, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+summary(m1soda)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ soda, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ soda, family = binomial(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  0.52854    0.03908  13.526  &lt; 2e-16 ***
-## soda1x       0.23149    0.06968   3.322 0.000893 ***
-## soda2-3x     0.46605    0.07502   6.212 5.23e-10 ***
-## soda4-7x     0.45572    0.09526   4.784 1.72e-06 ***
-## soda8+x      0.79322    0.15046   5.272 1.35e-07 ***
+## (Intercept) -0.46340    0.01449 -31.978  &lt; 2e-16 ***
+## soda1x       0.07973    0.02341   3.406 0.000658 ***
+## soda2-3x     0.14868    0.02256   6.590 4.40e-11 ***
+## soda4+x      0.17081    0.02380   7.178 7.07e-13 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
 ##     Null deviance: 8024.9  on 6381  degrees of freedom
-## Residual deviance: 7953.7  on 6377  degrees of freedom
-## AIC: 7963.7
+## Residual deviance: 7957.8  on 6378  degrees of freedom
+## AIC: 7965.8
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>msoda2_svyno &lt;- glm(cariesexp ~ soda + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;)
-summary(msoda2_svyno)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>m2soda &lt;- glm(cariesexp_num ~ soda + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = &quot;log&quot;), data = ensab)
+summary(m2soda)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ soda + age + sex + ses + income + insurance + 
-##     region + location, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ soda + age + sex + region + ses + 
+##     income + insurance + location, family = poisson(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
-##                            Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)                -0.57451    0.17414  -3.299 0.000970 ***
-## soda1x                      0.13491    0.08477   1.591 0.111517    
-## soda2-3x                    0.17078    0.09062   1.884 0.059500 .  
-## soda4-7x                    0.17252    0.11491   1.501 0.133260    
-## soda8+x                     0.35527    0.17724   2.004 0.045023 *  
-## age3                        2.43220    0.07924  30.693  &lt; 2e-16 ***
-## age5                        2.74778    0.08268  33.236  &lt; 2e-16 ***
-## sexFeminine                -0.21666    0.06509  -3.329 0.000872 ***
-## sesLow                      0.06778    0.08033   0.844 0.398832    
-## sesMiddle to high          -0.30389    0.10566  -2.876 0.004025 ** 
-## incomeHalf - 1 NMW         -0.10239    0.09742  -1.051 0.293259    
-## income1-2 NMW              -0.04174    0.10648  -0.392 0.695053    
-## incomeMore than 2 NMW      -0.07883    0.14019  -0.562 0.573909    
-## insuranceContributory      -0.34304    0.13718  -2.501 0.012397 *  
-## insuranceSubsidized        -0.04749    0.13235  -0.359 0.719750    
-## insuranceOther             -0.33603    0.20289  -1.656 0.097674 .  
-## regionEastern               0.06832    0.11664   0.586 0.558043    
-## regionCentral               0.03427    0.11883   0.288 0.773062    
-## regionPacific              -0.83226    0.11483  -7.248 4.24e-13 ***
-## regionBogota                0.47628    0.11903   4.001 6.29e-05 ***
-## regionOrinoquia - Amazonia -0.04676    0.11336  -0.412 0.679973    
-## locationRural               0.44542    0.09672   4.605 4.12e-06 ***
+##                             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                -1.076884   0.087741 -12.273  &lt; 2e-16 ***
+## soda1x                      0.032613   0.040804   0.799 0.424134    
+## soda2-3x                    0.042459   0.041799   1.016 0.309727    
+## soda4+x                     0.049569   0.045367   1.093 0.274555    
+## age3                        0.943922   0.046218  20.423  &lt; 2e-16 ***
+## age5                        0.989907   0.045510  21.751  &lt; 2e-16 ***
+## sexFeminine                -0.046921   0.030712  -1.528 0.126575    
+## regionEastern               0.015983   0.054416   0.294 0.768968    
+## regionCentral               0.005992   0.054977   0.109 0.913210    
+## regionPacific              -0.217918   0.058044  -3.754 0.000174 ***
+## regionBogota                0.103761   0.054329   1.910 0.056150 .  
+## regionOrinoquia - Amazonia -0.012724   0.052680  -0.242 0.809142    
+## sesLow                      0.009817   0.037846   0.259 0.795333    
+## sesMiddle to high          -0.077046   0.052363  -1.471 0.141190    
+## incomeHalf - 1 NMW         -0.023019   0.044695  -0.515 0.606536    
+## income1-2 NMW              -0.011454   0.049227  -0.233 0.816016    
+## incomeMore than 2 NMW      -0.014873   0.068059  -0.219 0.827010    
+## insuranceContributory      -0.083702   0.066109  -1.266 0.205469    
+## insuranceSubsidized        -0.016827   0.063566  -0.265 0.791233    
+## insuranceOther             -0.077728   0.098254  -0.791 0.428892    
+## locationRural               0.095190   0.043063   2.210 0.027074 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 7893.8  on 6287  degrees of freedom
-## Residual deviance: 5925.6  on 6266  degrees of freedom
+##     Null deviance: 3306.5  on 6287  degrees of freedom
+## Residual deviance: 2608.4  on 6267  degrees of freedom
 ##   (94 observations deleted due to missingness)
-## AIC: 5969.6
+## AIC: 11188
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>exp(msoda2_svyno$coefficients)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>coeftest(m2soda, vcov = sandwich)# Robust standard errors</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                              Estimate Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept)                -1.0768839  0.0491393 -21.9149 &lt; 2.2e-16 ***
+## soda1x                      0.0326135  0.0197467   1.6516  0.098617 .  
+## soda2-3x                    0.0424593  0.0195312   2.1739  0.029710 *  
+## soda4+x                     0.0495691  0.0204333   2.4259  0.015271 *  
+## age3                        0.9439218  0.0333391  28.3128 &lt; 2.2e-16 ***
+## age5                        0.9899067  0.0328765  30.1099 &lt; 2.2e-16 ***
+## sexFeminine                -0.0469205  0.0145818  -3.2178  0.001292 ** 
+## regionEastern               0.0159834  0.0249510   0.6406  0.521790    
+## regionCentral               0.0059920  0.0257746   0.2325  0.816168    
+## regionPacific              -0.2179182  0.0305415  -7.1352 9.668e-13 ***
+## regionBogota                0.1037608  0.0251918   4.1188 3.808e-05 ***
+## regionOrinoquia - Amazonia -0.0127240  0.0255683  -0.4976  0.618731    
+## sesLow                      0.0098168  0.0179511   0.5469  0.584472    
+## sesMiddle to high          -0.0770461  0.0258645  -2.9788  0.002893 ** 
+## incomeHalf - 1 NMW         -0.0230189  0.0205332  -1.1211  0.262263    
+## income1-2 NMW              -0.0114539  0.0231084  -0.4957  0.620136    
+## incomeMore than 2 NMW      -0.0148735  0.0335108  -0.4438  0.657157    
+## insuranceContributory      -0.0837021  0.0328735  -2.5462  0.010891 *  
+## insuranceSubsidized        -0.0168265  0.0311644  -0.5399  0.589247    
+## insuranceOther             -0.0777279  0.0488614  -1.5908  0.111658    
+## locationRural               0.0951896  0.0192317   4.9496 7.436e-07 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(m2soda$coefficients) #PR</code></pre>
 <pre><code>##                (Intercept)                     soda1x 
-##                  0.5629825                  1.1444327 
-##                   soda2-3x                   soda4-7x 
-##                  1.1862239                  1.1882938 
-##                    soda8+x                       age3 
-##                  1.4265602                 11.3838521 
-##                       age5                sexFeminine 
-##                 15.6079090                  0.8052026 
+##                  0.3406554                  1.0331511 
+##                   soda2-3x                    soda4+x 
+##                  1.0433736                  1.0508182 
+##                       age3                       age5 
+##                  2.5700410                  2.6909834 
+##                sexFeminine              regionEastern 
+##                  0.9541632                  1.0161118 
+##              regionCentral              regionPacific 
+##                  1.0060100                  0.8041912 
+##               regionBogota regionOrinoquia - Amazonia 
+##                  1.1093351                  0.9873566 
 ##                     sesLow          sesMiddle to high 
-##                  1.0701290                  0.7379422 
+##                  1.0098652                  0.9258472 
 ##         incomeHalf - 1 NMW              income1-2 NMW 
-##                  0.9026752                  0.9591190 
+##                  0.9772440                  0.9886115 
 ##      incomeMore than 2 NMW      insuranceContributory 
-##                  0.9241975                  0.7096126 
+##                  0.9852366                  0.9197052 
 ##        insuranceSubsidized             insuranceOther 
-##                  0.9536231                  0.7146003 
-##              regionEastern              regionCentral 
-##                  1.0707095                  1.0348618 
-##              regionPacific               regionBogota 
-##                  0.4350649                  1.6100702 
-## regionOrinoquia - Amazonia              locationRural 
-##                  0.9543170                  1.5611530</code></pre>
-<p>Juice</p>
-<pre class="r"><code>mjuice_svyno &lt;- glm(cariesexp ~ juice, data = ensab, family = &quot;binomial&quot;)
-summary(mjuice_svyno)</code></pre>
+##                  0.9833143                  0.9252162 
+##              locationRural 
+##                  1.0998674</code></pre>
+<pre class="r"><code>robust_se &lt;- coeftest(m2soda, vcov = sandwich)[, 2]  # Extract robust standard errors
+pvalue &lt;- coeftest(m2soda, vcov = sandwich)[, 4]
+
+#CI
+soda_ci &lt;- data.frame(
+  Estimate = round(exp(coef(m2soda)), 3),
+  Lower_CI = round(exp(coef(m2soda) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2soda) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %&gt;%
+  mutate(
+    PR = paste0(Estimate, &quot; (&quot;, Lower_CI, &quot;, &quot;, Upper_CI, &quot;)&quot;),
+    Food = &quot;Soda&quot;
+  ) %&gt;%
+  rownames_to_column() %&gt;%
+  filter(grepl(&quot;^soda&quot;, rowname)) %&gt;%
+  mutate(rowname = str_remove(rowname, &quot;^soda&quot;)) %&gt;%
+  rename(Freq = rowname) %&gt;%
+  dplyr::select(Food, Freq, PR, P_value)
+soda_ci</code></pre>
+<pre><code>##   Food Freq                   PR P_value
+## 1 Soda   1x 1.033 (0.994, 1.074)  0.0986
+## 2 Soda 2-3x 1.043 (1.004, 1.084)  0.0297
+## 3 Soda  4+x  1.051 (1.01, 1.094)  0.0153</code></pre>
+<pre class="r"><code>vif(m2soda) #checking multicollinearity</code></pre>
+<pre><code>##               GVIF Df GVIF^(1/(2*Df))
+## soda      1.054112  3        1.008822
+## age       1.018067  2        1.004486
+## sex       1.002681  1        1.001340
+## region    1.355872  5        1.030913
+## ses       1.488401  2        1.104536
+## income    1.382015  3        1.055404
+## insurance 1.421603  3        1.060384
+## location  1.256858  1        1.121097</code></pre>
+</div>
+<div id="juice-1" class="section level3">
+<h3>Juice</h3>
+<pre class="r"><code>m1juice &lt;- glm(cariesexp_num ~ juice, data = ensab, family = &quot;binomial&quot;(link = &quot;log&quot;))
+summary(m1juice)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ juice, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ juice, family = binomial(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
-##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  0.36434    0.09650   3.776 0.000160 ***
-## juice2-3x    0.01319    0.12758   0.103 0.917640    
-## juice4-7x    0.39603    0.11203   3.535 0.000408 ***
-## juice8+x     0.47726    0.10258   4.652 3.28e-06 ***
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -0.527480   0.039554 -13.336  &lt; 2e-16 ***
+## juice2-3x    0.005387   0.052122   0.103 0.917687    
+## juice4-7x    0.143925   0.043512   3.308 0.000941 ***
+## juice8+x     0.169091   0.040920   4.132 3.59e-05 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -5007,83 +5946,175 @@ summary(mjuice_svyno)</code></pre>
 ## Residual deviance: 7983.1  on 6378  degrees of freedom
 ## AIC: 7991.1
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>mjuice2_svyno &lt;- glm(cariesexp ~ juice + age + sex + ses + income + insurance + region + location, data = ensab, family = &quot;binomial&quot;)
-summary(mjuice2_svyno)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>m2juice &lt;- glm(cariesexp_num ~ juice + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = &quot;log&quot;), data = ensab)
+summary(m2juice)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = cariesexp ~ juice + age + sex + ses + income + 
-##     insurance + region + location, family = &quot;binomial&quot;, data = ensab)
+## glm(formula = cariesexp_num ~ juice + age + sex + region + ses + 
+##     income + insurance + location, family = poisson(link = &quot;log&quot;), 
+##     data = ensab)
 ## 
 ## Coefficients:
-##                            Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)                -0.61901    0.20263  -3.055 0.002251 ** 
-## juice2-3x                  -0.24819    0.15568  -1.594 0.110880    
-## juice4-7x                   0.26515    0.13687   1.937 0.052720 .  
-## juice8+x                    0.22981    0.12598   1.824 0.068133 .  
-## age3                        2.45527    0.07928  30.970  &lt; 2e-16 ***
-## age5                        2.77183    0.08253  33.586  &lt; 2e-16 ***
-## sexFeminine                -0.21939    0.06517  -3.366 0.000762 ***
-## sesLow                      0.07192    0.08049   0.893 0.371600    
-## sesMiddle to high          -0.30884    0.10584  -2.918 0.003522 ** 
-## incomeHalf - 1 NMW         -0.10375    0.09763  -1.063 0.287916    
-## income1-2 NMW              -0.03905    0.10656  -0.366 0.714008    
-## incomeMore than 2 NMW      -0.07905    0.14065  -0.562 0.574076    
-## insuranceContributory      -0.35702    0.13699  -2.606 0.009155 ** 
-## insuranceSubsidized        -0.05493    0.13236  -0.415 0.678134    
-## insuranceOther             -0.33905    0.20300  -1.670 0.094890 .  
-## regionEastern               0.04763    0.11701   0.407 0.683936    
-## regionCentral              -0.02855    0.11956  -0.239 0.811292    
-## regionPacific              -0.86320    0.11449  -7.539 4.73e-14 ***
-## regionBogota                0.42087    0.11914   3.533 0.000412 ***
-## regionOrinoquia - Amazonia -0.09090    0.11387  -0.798 0.424702    
-## locationRural               0.41840    0.09659   4.332 1.48e-05 ***
+##                             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)                -1.091344   0.103046 -10.591  &lt; 2e-16 ***
+## juice2-3x                  -0.060134   0.081914  -0.734  0.46288    
+## juice4-7x                   0.072563   0.070125   1.035  0.30078    
+## juice8+x                    0.059659   0.065290   0.914  0.36085    
+## age3                        0.946812   0.046093  20.541  &lt; 2e-16 ***
+## age5                        0.993491   0.045317  21.923  &lt; 2e-16 ***
+## sexFeminine                -0.047430   0.030720  -1.544  0.12260    
+## regionEastern               0.012753   0.054533   0.234  0.81510    
+## regionCentral              -0.006273   0.055371  -0.113  0.90980    
+## regionPacific              -0.222458   0.057846  -3.846  0.00012 ***
+## regionBogota                0.092679   0.054500   1.701  0.08903 .  
+## regionOrinoquia - Amazonia -0.021913   0.052818  -0.415  0.67824    
+## sesLow                      0.011477   0.037844   0.303  0.76169    
+## sesMiddle to high          -0.077993   0.052349  -1.490  0.13626    
+## incomeHalf - 1 NMW         -0.024834   0.044729  -0.555  0.57874    
+## income1-2 NMW              -0.011574   0.049262  -0.235  0.81425    
+## incomeMore than 2 NMW      -0.018419   0.068127  -0.270  0.78689    
+## insuranceContributory      -0.087868   0.066029  -1.331  0.18327    
+## insuranceSubsidized        -0.020494   0.063547  -0.322  0.74708    
+## insuranceOther             -0.080607   0.098190  -0.821  0.41169    
+## locationRural               0.087141   0.042886   2.032  0.04216 *  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
+## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 7893.8  on 6287  degrees of freedom
-## Residual deviance: 5911.0  on 6267  degrees of freedom
+##     Null deviance: 3306.5  on 6287  degrees of freedom
+## Residual deviance: 2604.4  on 6267  degrees of freedom
 ##   (94 observations deleted due to missingness)
-## AIC: 5953
+## AIC: 11184
 ## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<pre class="r"><code>exp(mjuice2_svyno$coefficients)</code></pre>
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>coeftest(m2juice, vcov = sandwich)# Robust standard errors</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                             Estimate Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept)                -1.091344   0.056141 -19.4394 &lt; 2.2e-16 ***
+## juice2-3x                  -0.060134   0.042224  -1.4242 0.1543981    
+## juice4-7x                   0.072563   0.035552   2.0410 0.0412460 *  
+## juice8+x                    0.059659   0.033389   1.7868 0.0739719 .  
+## age3                        0.946812   0.033243  28.4819 &lt; 2.2e-16 ***
+## age5                        0.993491   0.032755  30.3309 &lt; 2.2e-16 ***
+## sexFeminine                -0.047430   0.014583  -3.2523 0.0011447 ** 
+## regionEastern               0.012753   0.024844   0.5133 0.6077341    
+## regionCentral              -0.006273   0.025840  -0.2428 0.8081890    
+## regionPacific              -0.222458   0.030262  -7.3510 1.967e-13 ***
+## regionBogota                0.092679   0.025262   3.6688 0.0002437 ***
+## regionOrinoquia - Amazonia -0.021913   0.025473  -0.8602 0.3896702    
+## sesLow                      0.011477   0.017924   0.6403 0.5219780    
+## sesMiddle to high          -0.077993   0.025784  -3.0248 0.0024879 ** 
+## incomeHalf - 1 NMW         -0.024834   0.020577  -1.2069 0.2274701    
+## income1-2 NMW              -0.011574   0.023126  -0.5005 0.6167431    
+## incomeMore than 2 NMW      -0.018419   0.033512  -0.5496 0.5825841    
+## insuranceContributory      -0.087868   0.032850  -2.6748 0.0074767 ** 
+## insuranceSubsidized        -0.020494   0.031165  -0.6576 0.5108002    
+## insuranceOther             -0.080606   0.048791  -1.6521 0.0985170 .  
+## locationRural               0.087141   0.019154   4.5496 5.374e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(m2juice$coefficients) #PR</code></pre>
 <pre><code>##                (Intercept)                  juice2-3x 
-##                  0.5384759                  0.7802106 
+##                  0.3357651                  0.9416381 
 ##                  juice4-7x                   juice8+x 
-##                  1.3036258                  1.2583619 
+##                  1.0752601                  1.0614743 
 ##                       age3                       age5 
-##                 11.6496148                 15.9878402 
-##                sexFeminine                     sesLow 
-##                  0.8030073                  1.0745648 
-##          sesMiddle to high         incomeHalf - 1 NMW 
-##                  0.7342952                  0.9014481 
-##              income1-2 NMW      incomeMore than 2 NMW 
-##                  0.9616996                  0.9239905 
-##      insuranceContributory        insuranceSubsidized 
-##                  0.6997614                  0.9465522 
-##             insuranceOther              regionEastern 
-##                  0.7124488                  1.0487861 
+##                  2.5774802                  2.7006471 
+##                sexFeminine              regionEastern 
+##                  0.9536774                  1.0128346 
 ##              regionCentral              regionPacific 
-##                  0.9718564                  0.4218109 
+##                  0.9937467                  0.8005489 
 ##               regionBogota regionOrinoquia - Amazonia 
-##                  1.5232836                  0.9131047 
+##                  1.0971099                  0.9783258 
+##                     sesLow          sesMiddle to high 
+##                  1.0115429                  0.9249706 
+##         incomeHalf - 1 NMW              income1-2 NMW 
+##                  0.9754714                  0.9884930 
+##      incomeMore than 2 NMW      insuranceContributory 
+##                  0.9817500                  0.9158816 
+##        insuranceSubsidized             insuranceOther 
+##                  0.9797149                  0.9225566 
 ##              locationRural 
-##                  1.5195308</code></pre>
+##                  1.0910507</code></pre>
+<pre class="r"><code>robust_se &lt;- coeftest(m2juice, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue &lt;- coeftest(m2juice, vcov = sandwich)[, 4]
+
+juice_ci &lt;- data.frame(
+  Estimate = round(exp(coef(m2juice)), 3),
+  Lower_CI = round(exp(coef(m2juice) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2juice) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %&gt;%
+  mutate(
+    PR = paste0(Estimate, &quot; (&quot;, Lower_CI, &quot;, &quot;, Upper_CI, &quot;)&quot;),
+    Food = &quot;Juice&quot;
+  ) %&gt;%
+  rownames_to_column() %&gt;%
+  filter(grepl(&quot;^juice&quot;, rowname)) %&gt;%
+  mutate(rowname = str_remove(rowname, &quot;^juice&quot;)) %&gt;%
+  rename(Freq = rowname) %&gt;%
+  dplyr::select(Food, Freq, PR, P_value)
+juice_ci</code></pre>
+<pre><code>##    Food Freq                   PR P_value
+## 1 Juice 2-3x 0.942 (0.867, 1.023)  0.1544
+## 2 Juice 4-7x 1.075 (1.003, 1.153)  0.0412
+## 3 Juice  8+x 1.061 (0.994, 1.133)  0.0740</code></pre>
+<pre class="r"><code>vif(m2juice) #checking multicollinearity</code></pre>
+<pre><code>##               GVIF Df GVIF^(1/(2*Df))
+## juice     1.048511  3        1.007926
+## age       1.010112  2        1.002518
+## sex       1.003196  1        1.001597
+## region    1.372405  5        1.032163
+## ses       1.489297  2        1.104702
+## income    1.385149  3        1.055803
+## insurance 1.418024  3        1.059938
+## location  1.246514  1        1.116474</code></pre>
 </div>
+<div id="append-all-tables" class="section level3">
+<h3>Append all tables</h3>
+<pre class="r"><code># Combine all the CI data frames into one
+tfoodcariesexp &lt;- bind_rows(carbs_ci, veg_ci, fruit_ci, prot_ci, dairy_ci, fats_ci, sugar_ci, soda_ci, juice_ci)
+tfoodcariesexp</code></pre>
+<pre><code>##     Food Freq                   PR P_value
+## 1  Carbs 4-7x  1.014 (0.96, 1.071)  0.6116
+## 2  Carbs  8+x 1.018 (0.967, 1.071)  0.5042
+## 3    Veg   1x 0.984 (0.928, 1.044)  0.5998
+## 4    Veg 2-3x 0.933 (0.891, 0.977)  0.0031
+## 5    Veg 4-7x 0.944 (0.904, 0.985)  0.0079
+## 6    Veg  8+x 0.941 (0.896, 0.989)  0.0157
+## 7  Fruit 2-3x 1.008 (0.959, 1.059)  0.7654
+## 8  Fruit 4-7x 0.986 (0.941, 1.032)  0.5358
+## 9  Fruit  8+x 1.006 (0.961, 1.054)  0.7852
+## 10  Prot 4-7x 1.026 (0.976, 1.079)  0.3116
+## 11  Prot  8+x 1.014 (0.967, 1.063)  0.5733
+## 12 Dairy 2-3x  1.046 (0.985, 1.11)  0.1412
+## 13 Dairy 4-7x 1.031 (0.977, 1.088)  0.2618
+## 14 Dairy  8+x 1.008 (0.957, 1.062)  0.7621
+## 15  Fats   1x 1.047 (0.984, 1.115)  0.1490
+## 16  Fats 2-3x 1.028 (0.973, 1.085)  0.3273
+## 17  Fats 4-7x 1.062 (1.006, 1.121)  0.0302
+## 18  Fats  8+x  1.015 (0.96, 1.074)  0.5998
+## 19 Sugar   1x 0.979 (0.907, 1.057)  0.5862
+## 20 Sugar 2-3x 1.034 (0.971, 1.101)  0.2984
+## 21 Sugar 4-7x  1.045 (0.984, 1.11)  0.1478
+## 22 Sugar  8+x 1.035 (0.977, 1.097)  0.2400
+## 23  Soda   1x 1.033 (0.994, 1.074)  0.0986
+## 24  Soda 2-3x 1.043 (1.004, 1.084)  0.0297
+## 25  Soda  4+x  1.051 (1.01, 1.094)  0.0153
+## 26 Juice 2-3x 0.942 (0.867, 1.023)  0.1544
+## 27 Juice 4-7x 1.075 (1.003, 1.153)  0.0412
+## 28 Juice  8+x 1.061 (0.994, 1.133)  0.0740</code></pre>
+<pre class="r"><code>#export as csv
+write.csv(tfoodcariesexp, &quot;tfoodcariesexp.csv&quot;, row.names = FALSE)</code></pre>
+<p>chisq.test(table(as.numeric(ensab<span class="math inline">\(ses),
+as.numeric(ensab\)</span>income))) #they are associated</p>
 </div>
-<div id="exploring-the-relationship-between-age-of-first-appointment-and-caries-dmft" class="section level2">
-<h2>Exploring the relationship between age of first appointment and
-caries (dmft)</h2>
-<p>The hypothesis is that the older the child was at it’s first
-appointment, the higher the dmft index.</p>
-<p>ensab %&gt;% filter(!is.na(agefdv)) %&gt;% ggplot(aes(x=agefdv,
-y=dmft)) + geom_boxplot() + facet_wrap(~age) + labs(x = “Age of first
-dental visit”, y = “dmft Index score”, title = “dmft Index score by age
-of first dental visit”)</p>
-<pre class="r"><code># Boxplot</code></pre>
 </div>
 </div>
 

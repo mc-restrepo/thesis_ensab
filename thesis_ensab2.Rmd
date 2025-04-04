@@ -2114,102 +2114,11 @@ ggplot(ensab, aes(x = age, fill = cariessev3)) +
 ```
 
 
-#Table 3: multiple regression
+#Table 3: Frequency of consumption of food groups by age
 
 Multi-level logistic regression to account for clustering by subregion and region
 
-## Collapsing categories with few numbers of observations
-
-Socioeconomic status: Collapse "Middle low" into "Middle to high
-
-```{r}
-  
-summary(ensab$ses)
-
-ensab <- ensab %>%
-  mutate(ses = dplyr::recode(ses,
-                      "Middle low" = "Middle to high"))
-
-summary(ensab$ses) #middle to high is now 999+94
-```
-
-Income: Collapse Unemployed with Less than half NMW and collapse 2-3 NWM, 3-4 NMW and More than 4 NMW
-
-```{r}
-summary(ensab$income)
-ensab <- ensab %>%
-  mutate(income = dplyr::recode(income,
-                                "Unemployed" = "Less than half NMW",
-                                "2-3 NMW" = "More than 2 NMW",
-                                "3-4 NMW" = "More than 2 NMW",
-                                "More than 4 NMW" = "More than 2 NMW"))
-summary(ensab$income)
-summary(as.numeric(ensab$income))
-```
-
-Carbs: Collapse Never and Once a week with 2-3 times a week, to <4x (less than four times a week)
-
-```{r}
-summary(ensab$carbs)
-summary(as.numeric(ensab$carbs))
-
-ensab <- ensab %>%
-  mutate(carbs = dplyr::recode(carbs,
-                               "Never" = "<4x",
-                               "1x" = "<4x",
-                               "2-3x" = "<4x"))
-
-summary(ensab$carbs)
-summary(as.numeric(ensab$carbs))
-```
-
-Fruits: Collapse Never and Once a week into <2x (less than twice a week)
-
-```{r}
-summary(ensab$fruit)
-ensab <- ensab %>%
-  mutate(fruit = dplyr::recode(fruit,
-                               "Never" = "<2x",
-                               "1x" = "<2x"))
-summary(ensab$fruit)
-```
-
-Protein:  Collapse Never and Once a week with 2-3 times a week, to <4x (less than four times a week)
-
-```{r}
-summary(ensab$prot)
-ensab <- ensab %>%
-  mutate(prot = dplyr::recode(prot,
-                               "Never" = "<4x",
-                               "1x" = "<4x",
-                               "2-3x" = "<4x"))
-summary(ensab$prot)
-```
-
-Dairy: Collapse Never and Once a week into <2x (less than twice a week)
-
-```{r}
-summary(ensab$dairy)
-ensab <- ensab %>%
-  mutate(dairy = dplyr::recode(dairy,
-                               "Never" = "<2x",
-                               "1x" = "<2x"))
-summary(ensab$dairy)
-```
-
-Juice: Collapse Never and Once a week into <2x (less than twice a week)
-
-```{r}
-summary(ensab$juice)
-ensab <- ensab %>%
-  mutate(juice = dplyr::recode(juice,
-                               "Never" = "<2x",
-                               "1x" = "<2x"))
-summary(ensab$juice)
-```
-
-
-## Table 3: Proportions for each
+## Taking into account survey desing
 
 carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice
 
@@ -2293,18 +2202,364 @@ juice_total <- round(juice_total * 100, 2)
 juice_total
 ```
 
-### No survey design
+## No survey design
 
 Carbs
 
 ```{r}
 
-carbs_total <- prop.table(table(ensab$carbs))
-carbs_total <- round(carbs_total * 100, 2)
-carbs_total
+totalcarbs <- ensab %>%
+  group_by(carbs) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  mutate(Percent = Total / sum(Total)) %>%
+  mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+  select(Freq = carbs, Total)
 
+totalcarbs
 
+agecarbs <- ensab %>%
+  group_by(age, carbs) %>%
+  summarise(Total = n()) %>%
+  mutate(Percent = Total/sum(Total)) %>%
+  mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent*100, 2), "%)")) %>%
+  select(age, Freq = carbs, Percent_complete) %>%
+  pivot_wider(names_from = "age", values_from = Percent_complete) 
 
+agecarbs
+
+t2carbs <- left_join(totalcarbs, agecarbs, by = "Freq") %>%
+  mutate(Food = "Carbs") %>%
+  select(Food, everything())
+t2carbs
+```
+
+Veg
+
+```{r}
+totalveg <- ensab %>%
+  group_by(veg) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  mutate(Percent = Total / sum(Total)) %>%
+  mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+  select(Freq = veg, Total)
+totalveg
+
+ageveg <- ensab %>%
+  group_by(age, veg) %>%
+  summarise(Total = n()) %>%
+  mutate(Percent = Total/sum(Total)) %>%
+  mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent*100, 2), "%)")) %>%
+  select(age, Freq = veg, Percent_complete) %>%
+  pivot_wider(names_from = "age", values_from = Percent_complete)
+ageveg
+
+t2veg <- left_join(totalveg, ageveg, by = "Freq") %>%
+  mutate(Food = "Veg") %>%
+  select(Food, everything())
+```
+
+Fruit
+
+```{r}
+totalfruit <- ensab %>%
+  group_by(fruit) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  mutate(Percent = Total / sum(Total)) %>%
+  mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+  select(Freq = fruit, Total)
+
+totalfruit
+
+agefruit <- ensab %>%
+  group_by(age, fruit) %>%
+  summarise(Total = n()) %>%
+  mutate(Percent = Total/sum(Total)) %>%
+  mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent*100, 2), "%)")) %>%
+  select(age, Freq = fruit, Percent_complete) %>%
+  pivot_wider(names_from = "age", values_from = Percent_complete)
+agefruit
+
+t2fruit <- left_join(totalfruit, agefruit, by = "Freq") %>%
+  mutate(Food = "Fruit") %>%
+  select(Food, everything())
+t2fruit
+```
+
+Protein
+
+```{r}
+totalprot <- ensab %>%
+  group_by(prot) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  mutate(Percent = Total / sum(Total)) %>%
+  mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+  select(Freq = prot, Total)
+
+totalprot
+
+ageprot <- ensab %>%
+  group_by(age, prot) %>%
+  summarise(Total = n()) %>%
+  mutate(Percent = Total/sum(Total)) %>%
+  mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent*100, 2), "%)")) %>%
+  select(age, Freq = prot, Percent_complete) %>%
+  pivot_wider(names_from = "age", values_from = Percent_complete)
+ageprot
+
+t2prot <- left_join(totalprot, ageprot, by = "Freq") %>%
+  mutate(Food = "Protein") %>%
+  select(Food, everything())
+t2prot
+
+```
+
+Dairy
+
+```{r}
+totaldairy <- ensab %>%
+  group_by(dairy) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  mutate(Percent = Total / sum(Total)) %>%
+  mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+  select(Freq = dairy, Total)
+
+totaldairy
+
+agedairy <- ensab %>%
+  group_by(age, dairy) %>%
+  summarise(Total = n()) %>%
+  mutate(Percent = Total/sum(Total)) %>%
+  mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent*100, 2), "%)")) %>%
+  select(age, Freq = dairy, Percent_complete) %>%
+  pivot_wider(names_from = "age", values_from = Percent_complete)
+agedairy
+
+t2dairy <- left_join(totaldairy, agedairy, by = "Freq") %>%
+  mutate(Food = "Dairy") %>%
+  select(Food, everything())
+t2dairy
+```
+
+Fats
+
+```{r}
+totalfats <- ensab %>%
+  group_by(fats) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  mutate(Percent = Total / sum(Total)) %>%
+  mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+  select(Freq = fats, Total)
+
+totalfats
+
+agefats <- ensab %>%
+  group_by(age, fats) %>%
+  summarise(Total = n()) %>%
+  mutate(Percent = Total/sum(Total)) %>%
+  mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent*100, 2), "%)")) %>%
+  select(age, Freq = fats, Percent_complete) %>%
+  pivot_wider(names_from = "age", values_from = Percent_complete)
+
+agefats
+
+t2fats <- left_join(totalfats, agefats, by = "Freq") %>%
+  mutate(Food = "Fats") %>%
+  select(Food, everything())
+t2fats
+
+```
+
+Sugars
+
+```{r}
+totalsugar <- ensab %>%
+  group_by(sugar) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  mutate(Percent = Total / sum(Total)) %>%
+  mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+  select(Freq = sugar, Total)
+totalsugar
+
+agesugar <- ensab %>%
+  group_by(age, sugar) %>%
+  summarise(Total = n()) %>%
+  mutate(Percent = Total/sum(Total)) %>%
+  mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent*100, 2), "%)")) %>%
+  select(age, Freq = sugar, Percent_complete) %>%
+  pivot_wider(names_from = "age", values_from = Percent_complete)
+
+agesugar
+
+t2sugar <- left_join(totalsugar, agesugar, by = "Freq") %>%
+  mutate(Food = "Sugars") %>%
+  select(Food, everything())
+t2sugar
+
+```
+
+Soda
+
+```{r}
+totalsoda <- ensab %>%
+  group_by(soda) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  mutate(Percent = Total / sum(Total)) %>%
+  mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+  select(Freq = soda, Total)
+
+totalsoda
+
+agesoda <- ensab %>%
+  group_by(age, soda) %>%
+  summarise(Total = n()) %>%
+  mutate(Percent = Total/sum(Total)) %>%
+  mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent*100, 2), "%)")) %>%
+  select(age, Freq = soda, Percent_complete) %>%
+  pivot_wider(names_from = "age", values_from = Percent_complete)
+
+agesoda
+
+t2soda <- left_join(totalsoda, agesoda, by = "Freq") %>%
+  mutate(Food = "Soda") %>%
+  select(Food, everything())
+t2soda
+```
+
+Juice
+
+```{r}
+totaljuice <- ensab %>%
+  group_by(juice) %>%
+  summarise(Total = n(), .groups = "drop") %>%
+  mutate(Percent = Total / sum(Total)) %>%
+  mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+  select(Freq = juice, Total)
+totaljuice
+
+agejuice <- ensab %>%
+  group_by(age, juice) %>%
+  summarise(Total = n()) %>%
+  mutate(Percent = Total/sum(Total)) %>%
+  mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent*100, 2), "%)")) %>%
+  select(age, Freq = juice, Percent_complete) %>%
+  pivot_wider(names_from = "age", values_from = Percent_complete)
+agejuice
+
+t2juice <- left_join(totaljuice, agejuice, by = "Freq") %>%
+  mutate(Food = "Juice") %>%
+  select(Food, everything())
+t2juice
+```
+
+Append all tables
+
+```{r}
+t2 <- bind_rows(t2carbs, t2veg, t2fruit, t2prot, t2dairy, t2fats, t2sugar, t2soda, t2juice) 
+t2
+
+#export as csv
+write.csv(t2, "t2_foodgroups.csv", row.names = FALSE)
+```
+
+# Collapsing categories with few numbers of observations
+
+Socioeconomic status: Collapse "Middle low" into "Middle to high
+
+```{r}
+  
+summary(ensab$ses)
+
+ensab <- ensab %>%
+  mutate(ses = dplyr::recode(ses,
+                      "Middle low" = "Middle to high"))
+
+summary(ensab$ses) #middle to high is now 999+94
+```
+
+Income: Collapse Unemployed with Less than half NMW and collapse 2-3 NWM, 3-4 NMW and More than 4 NMW
+
+```{r}
+summary(ensab$income)
+ensab <- ensab %>%
+  mutate(income = dplyr::recode(income,
+                                "Unemployed" = "Less than half NMW",
+                                "2-3 NMW" = "More than 2 NMW",
+                                "3-4 NMW" = "More than 2 NMW",
+                                "More than 4 NMW" = "More than 2 NMW"))
+summary(ensab$income)
+summary(as.numeric(ensab$income))
+```
+
+Carbs: Collapse Never and Once a week with 2-3 times a week, to <4x (less than four times a week)
+
+```{r}
+summary(ensab$carbs)
+summary(as.numeric(ensab$carbs))
+
+ensab <- ensab %>%
+  mutate(carbs = dplyr::recode(carbs,
+                               "Never" = "<4x",
+                               "1x" = "<4x",
+                               "2-3x" = "<4x"))
+
+summary(ensab$carbs)
+summary(as.numeric(ensab$carbs))
+```
+
+Fruits: Collapse Never and Once a week into <2x (less than twice a week)
+
+```{r}
+summary(ensab$fruit)
+ensab <- ensab %>%
+  mutate(fruit = dplyr::recode(fruit,
+                               "Never" = "<2x",
+                               "1x" = "<2x"))
+summary(ensab$fruit)
+```
+
+Protein:  Collapse Never and Once a week with 2-3 times a week, to <4x (less than four times a week)
+
+```{r}
+summary(ensab$prot)
+ensab <- ensab %>%
+  mutate(prot = dplyr::recode(prot,
+                               "Never" = "<4x",
+                               "1x" = "<4x",
+                               "2-3x" = "<4x"))
+summary(ensab$prot)
+```
+
+Dairy: Collapse Never and Once a week into <2x (less than twice a week)
+
+```{r}
+summary(ensab$dairy)
+ensab <- ensab %>%
+  mutate(dairy = dplyr::recode(dairy,
+                               "Never" = "<2x",
+                               "1x" = "<2x"))
+summary(ensab$dairy)
+```
+
+Sodas and soft drinks
+
+```{r}
+summary(ensab$soda)
+ensab <- ensab %>%
+  mutate(soda = dplyr::recode(soda,
+                              "4-7x" = "4+x",
+                              "8+x" = "4+x",))
+summary(ensab$soda)
+```
+
+Juice: Collapse Never and Once a week into <2x (less than twice a week)
+
+```{r}
+summary(ensab$juice)
+ensab <- ensab %>%
+  mutate(juice = dplyr::recode(juice,
+                               "Never" = "<2x",
+                               "1x" = "<2x"))
+summary(ensab$juice)
 ```
 
 
@@ -2317,204 +2572,381 @@ Steps of multivariable analysis:
 4. Check for multi-collinearity with VIF
 5. Check model fit with likelihood ratio test (chi squared): nested models. Backwards or forwards selection
 
-## Nested Random intercepts logistic regression
+## No survey design
 
-To get OR Random intercept model (rim)
-
-Add every confounder one by one
-
-### Carbs
+Setup
 
 ```{r}
-library(MASS) #for stepAIC, but it doesn't work with glmer
 library(car) #for vif
+if(!require("logbin")) install.packages("logbin")
+library(logbin) #for log binomial regression
+library(sandwich) #for robust variance
+library(lmtest) #for coeftest
+library(MASS) #for stepAIC, but it doesn't work with glmer. stepAIC can't be used when there is missing data.
 
-
-# Fit the full model (starting model)
-#rimfull_carbs <- glmer(cariesexp ~ carbs + (1|Region:Subreg), data = ensab, family = binomial)
-
-# Add one predictor at a time and compare AIC
-# rim_age_carbs <- update(rimfull_carbs, . ~ . + age)
-# rim_sex_carbs <- update(rim_age_carbs, . ~ . + sex)
-# rim_ses_carbs <- update(rim_sex_carbs, . ~ . + ses)
-# rim_inc_carbs <- update(rim_ses_carbs, . ~ . + income)
-# rim_loc_carbs <- update(rim_inc_carbs, . ~ . + location)
-# rim_ins_carbs <- update(rim_loc_carbs, . ~ . + insurance)
-
-# Store models in a list
-# models_carbs <- list(
-#   "Full Model"     = rimfull_carbs,
-#   "Age"            = rim_age_carbs,
-#   "Sex"            = rim_sex_carbs,
-#   "SES"            = rim_ses_carbs,
-#   "Income"         = rim_inc_carbs,
-#   "Location"       = rim_loc_carbs,
-#   "Insurance"      = rim_ins_carbs
-# )
-
-# # Compare AIC values
-# aic_carbs <- sapply(models_carbs, AIC)
-# aic_carbs <- sort(aic_carbs)
-# 
-# # Print sorted AIC values
-# print(aic_carbs)
-# 
-# summary(rim_ins_carbs)
-# exp(fixef(rim_ins_carbs))
-# #confint(rim_ins_carbs)
-# 
-# #check multicollinearity with VIF
-# vif(rim_ins_carbs) #it's low
+#Create a binary version of cariesexp so poission can work
+ensab <- ensab %>%
+  mutate(cariesexp_num = ifelse(cariesexp == "Caries", 1, 0))
+summary(ensab$cariesexp_num)
 
 ```
 
-
-## Logistic regression (no survey design)
+carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice
 
 ### Carbs
 
-Simple logistic regression
-
 ```{r}
-#logistic regression
 
-library(car) #for VIF
-if(!require("rcompanion")) install.packages("rcompanion")
-library(rcompanion) #for cramers V
+# Fit log binomial regression
 
-#mcarbs <- svyglm(cariesexp ~ carbs, design = survensab, family = "binomial")
-mcarbs_svyno <- glm(cariesexp ~ carbs, data = ensab, family = "binomial")
-summary(mcarbs_svyno)
+m1carbs <- glm(cariesexp_num ~ carbs, data = ensab, family = "binomial"(link = "log"))
+summary(m1carbs)
 
-mcarbs2_svyno <- glm(cariesexp ~ carbs + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
-summary(mcarbs2_svyno)
+# mcarbs <- glm(cariesexp_num ~ carbs + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial"(link = "log"))
 
-#checking multicollinearity and correlation between suspected variables
+#failed to converge so will try logbin package
 
-vif(mcarbs2_svyno) #check for multi-collinearity
+# mcarbs <- logbin(cariesexp_num ~ carbs + age + sex + ses + income + insurance + region + location,
+#   data = ensab)
 
-chisq.test(table(as.numeric(ensab$ses), as.numeric(ensab$income))) #they are associated
+#also failed to converge so will use poisson regression with robust SEs
 
-cramerV(table(ensab$ses, ensab$income)) #Cramer V of 0.2, weak association
+m2carbs <- glm(cariesexp_num ~ carbs + age + sex + region + ses + income + insurance + location,
+  family = poisson(link = "log"), data = ensab)
+summary(m2carbs)
+coeftest(m2carbs, vcov = sandwich)# Robust standard errors
+exp(m2carbs$coefficients) #PR
+#exp(confint(m2carbs)) # NOT CORRECT because doesn't use robust standard errors
 
-cramerV(table(ensab$ses, ensab$insurance)) #Cramer V of 0.2, weak association
+robust_se <- coeftest(m2carbs, vcov = sandwich)[, 2]  # Extract robust standard errors
+pvalue <- coeftest(m2carbs, vcov = sandwich)[, 4]  # Extract p-values
 
-#create a correlation matrix between all the predictors
+# Compute confidence intervals
+carbs_ci <- data.frame(
+  Estimate = round(exp(coef(m2carbs)), 3),  # PR (Prevalence Ratio)
+  Lower_CI = round(exp(coef(m2carbs) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2carbs) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+)  %>%
+  mutate(
+    PR = paste0(Estimate, " (", Lower_CI, ", ", Upper_CI, ")"),
+    Food = "Carbs"
+  ) %>%
+  rownames_to_column() %>%
+  filter(grepl("^carbs", rowname)) %>%
+  mutate(rowname = str_remove(rowname, "^carbs")) %>%
+  rename(Freq = rowname) %>%
+  dplyr::select(Food, Freq, PR, P_value)
+carbs_ci
 
-cor_matrix <- cor(
-  sapply(ensab[, c("carbs", "age", "sex", "ses", "income", "insurance", "region", "location")], 
-         function(x) as.numeric(as.factor(x))),
-  use = "complete.obs", 
-  method = "spearman"
-)
-
-image(cor_matrix, axes = FALSE, main = "Correlation matrix")
-```
-
-Veg
-
-```{r}
-mveg_svyno <- glm(cariesexp ~ veg, data = ensab, family = "binomial")
-summary(mveg_svyno)
-
-mveg2_svyno <- glm(cariesexp ~ veg + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
-summary(mveg2_svyno)
-exp(mveg2_svyno$coefficients)
+vif(m2carbs) #checking multicollinearity
 
 ```
+Take this code and replace "carbs" with every single variable name listed:
 
-Fruit
+carbs, veg, fruit, prot, dairy, fats, sugar, soda, juice
+### Veg
 
 ```{r}
-mfruit_svyno <- glm(cariesexp ~ fruit, data = ensab, family = "binomial")
-summary(mfruit_svyno)
+m1veg <- glm(cariesexp_num ~ veg, data = ensab, family = "binomial"(link = "log"))
+summary(m1veg)
 
-mfruit2_svyno <- glm(cariesexp ~ fruit + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
-summary(mfruit2_svyno)
-exp(mfruit2_svyno$coefficients)
+m2veg <- glm(cariesexp_num ~ veg + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = "log"), data = ensab)
+summary(m2veg)
+coeftest(m2veg, vcov = sandwich)# Robust standard errors
+exp(m2veg$coefficients) #PR
+
+robust_se <- coeftest(m2veg, vcov = sandwich)[, 2]  # Extract robust standard errors
+pvalue <- coeftest(m2veg, vcov = sandwich)[, 4]
+
+veg_ci <- data.frame(
+  Estimate = round(exp(coef(m2veg)), 3),
+  Lower_CI = round(exp(coef(m2veg) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2veg) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %>%
+  mutate(
+    PR = paste0(Estimate, " (", Lower_CI, ", ", Upper_CI, ")"),
+    Food = "Veg"
+  ) %>%
+  rownames_to_column() %>%
+  filter(grepl("^veg", rowname)) %>%
+  mutate(rowname = str_remove(rowname, "^veg")) %>%
+  rename(Freq = rowname) %>%
+  dplyr::select(Food, Freq, PR, P_value)
+veg_ci
+
+vif(m2veg) #checking multicollinearity
+```
+
+### Fruits
+
+```{r}
+m1fruit <- glm(cariesexp_num ~ fruit, data = ensab, family = "binomial"(link = "log"))
+summary(m1fruit)
+
+m2fruit <- glm(cariesexp_num ~ fruit + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = "log"), data = ensab)
+summary(m2fruit)
+coeftest(m2fruit, vcov = sandwich)# Robust standard errors
+exp(m2fruit$coefficients) #PR
+
+robust_se <- coeftest(m2fruit, vcov = sandwich)[, 2]  # Extract robust standard errors
+pvalue <- coeftest(m2fruit, vcov = sandwich)[, 4]
+
+fruit_ci <- data.frame(
+  Estimate = round(exp(coef(m2fruit)), 3),
+  Lower_CI = round(exp(coef(m2fruit) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2fruit) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %>%
+  mutate(
+    PR = paste0(Estimate, " (", Lower_CI, ", ", Upper_CI, ")"),
+    Food = "Fruit"
+  ) %>%
+  rownames_to_column() %>%
+  filter(grepl("^fruit", rowname)) %>%
+  mutate(rowname = str_remove(rowname, "^fruit")) %>%
+  rename(Freq = rowname) %>%
+  dplyr::select(Food, Freq, PR, P_value)
+fruit_ci
+
+vif(m2fruit) #checking multicollinearity
+
 ```
 
 Protein
 
 ```{r}
-mprot_svyno <- glm(cariesexp ~ prot, data = ensab, family = "binomial")
-summary(mprot_svyno)
+m1prot <- glm(cariesexp_num ~ prot, data = ensab, family = "binomial"(link = "log"))
+summary(m1prot)
 
-mprot2_svyno <- glm(cariesexp ~ prot + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
-summary(mprot2_svyno)
-exp(mprot2_svyno$coefficients)
+m2prot <- glm(cariesexp_num ~ prot + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = "log"), data = ensab)
+summary(m2prot)
+coeftest(m2prot, vcov = sandwich)# Robust standard errors
+exp(m2prot$coefficients) #PR
 
+robust_se <- coeftest(m2prot, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue <- coeftest(m2prot, vcov = sandwich)[, 4]
+
+prot_ci <- data.frame(
+  Estimate = round(exp(coef(m2prot)), 3),
+  Lower_CI = round(exp(coef(m2prot) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2prot) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %>%
+  mutate(
+    PR = paste0(Estimate, " (", Lower_CI, ", ", Upper_CI, ")"),
+    Food = "Prot"
+  ) %>%
+  rownames_to_column() %>%
+  filter(grepl("^prot", rowname)) %>%
+  mutate(rowname = str_remove(rowname, "^prot")) %>%
+  rename(Freq = rowname) %>%
+  dplyr::select(Food, Freq, PR, P_value)
+prot_ci
+
+vif(m2prot) #checking multicollinearity
 ```
 
-Dairy
+### Dairy
 
 ```{r}
-mdairy_svyno <- glm(cariesexp ~ dairy, data = ensab, family = "binomial")
-summary(mdairy_svyno)
+m1dairy <- glm(cariesexp_num ~ dairy, data = ensab, family = "binomial"(link = "log"))
+summary(m1dairy)
 
-mdairy2_svyno <- glm(cariesexp ~ dairy + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
-summary(mdairy2_svyno)
-exp(mdairy2_svyno$coefficients)
+m2dairy <- glm(cariesexp_num ~ dairy + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = "log"), data = ensab)
+summary(m2dairy)
+coeftest(m2dairy, vcov = sandwich)# Robust standard errors
+exp(m2dairy$coefficients) #PR
+
+robust_se <- coeftest(m2dairy, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue <- coeftest(m2dairy, vcov = sandwich)[, 4]
+
+dairy_ci <- data.frame(
+  Estimate = round(exp(coef(m2dairy)), 3),
+  Lower_CI = round(exp(coef(m2dairy) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2dairy) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %>%
+  mutate(
+    PR = paste0(Estimate, " (", Lower_CI, ", ", Upper_CI, ")"),
+    Food = "Dairy"
+  ) %>%
+  rownames_to_column() %>%
+  filter(grepl("^dairy", rowname)) %>%
+  mutate(rowname = str_remove(rowname, "^dairy")) %>%
+  rename(Freq = rowname) %>%
+  dplyr::select(Food, Freq, PR, P_value)
+dairy_ci
+
+vif(m2dairy) #checking multicollinearity
+
 ```
 
-Fats
+### Fats
 
 ```{r}
-mfats_svyno <- glm(cariesexp ~ fats, data = ensab, family = "binomial")
-summary(mfats_svyno)
+m1fats <- glm(cariesexp_num ~ fats, data = ensab, family = "binomial"(link = "log"))
+summary(m1fats)
 
-mfats2_svyno <- glm(cariesexp ~ fats + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
-summary(mfats2_svyno)
-exp(mfats2_svyno$coefficients)
+m2fats <- glm(cariesexp_num ~ fats + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = "log"), data = ensab)
+summary(m2fats)
+coeftest(m2fats, vcov = sandwich)# Robust standard errors
+exp(m2fats$coefficients) #PR
+
+robust_se <- coeftest(m2fats, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue <- coeftest(m2fats, vcov = sandwich)[, 4]
+
+fats_ci <- data.frame(
+  Estimate = round(exp(coef(m2fats)), 3),
+  Lower_CI = round(exp(coef(m2fats) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2fats) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %>%
+  mutate(
+    PR = paste0(Estimate, " (", Lower_CI, ", ", Upper_CI, ")"),
+    Food = "Fats"
+  ) %>%
+  rownames_to_column() %>%
+  filter(grepl("^fats", rowname)) %>%
+  mutate(rowname = str_remove(rowname, "^fats")) %>%
+  rename(Freq = rowname) %>%
+  dplyr::select(Food, Freq, PR, P_value)
+fats_ci
+
+vif(m2fats) #checking multicollinearity
 ```
 
-Sugar
+### Sugars
 
 ```{r}
-msugar_svyno <- glm(cariesexp ~ sugar, data = ensab, family = "binomial")
-summary(msugar_svyno)
+m1sugar <- glm(cariesexp_num ~ sugar, data = ensab, family = "binomial"(link = "log"))
+summary(m1sugar)
 
-msugar2_svyno <- glm(cariesexp ~ sugar + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
-summary(msugar2_svyno)
-exp(msugar2_svyno$coefficients)
+m2sugar <- glm(cariesexp_num ~ sugar + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = "log"), data = ensab)
+summary(m2sugar)
+coeftest(m2sugar, vcov = sandwich)# Robust standard errors
+exp(m2sugar$coefficients) #PR
+
+robust_se <- coeftest(m2sugar, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue <- coeftest(m2sugar, vcov = sandwich)[, 4]
+
+sugar_ci <- data.frame(
+  Estimate = round(exp(coef(m2sugar)), 3),
+  Lower_CI = round(exp(coef(m2sugar) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2sugar) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %>%
+  mutate(
+    PR = paste0(Estimate, " (", Lower_CI, ", ", Upper_CI, ")"),
+    Food = "Sugar"
+  ) %>%
+  rownames_to_column() %>%
+  filter(grepl("^sugar", rowname)) %>%
+  mutate(rowname = str_remove(rowname, "^sugar")) %>%
+  rename(Freq = rowname) %>%
+  dplyr::select(Food, Freq, PR, P_value)
+sugar_ci
+
+vif(m2sugar) #checking multicollinearity
 ```
 
-Soda
+### Soda
 
 ```{r}
-msoda_svyno <- glm(cariesexp ~ soda, data = ensab, family = "binomial")
-summary(msoda_svyno)
+m1soda <- glm(cariesexp_num ~ soda, data = ensab, family = "binomial"(link = "log"))
+summary(m1soda)
 
-msoda2_svyno <- glm(cariesexp ~ soda + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
-summary(msoda2_svyno)
-exp(msoda2_svyno$coefficients)
+m2soda <- glm(cariesexp_num ~ soda + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = "log"), data = ensab)
+summary(m2soda)
+coeftest(m2soda, vcov = sandwich)# Robust standard errors
+exp(m2soda$coefficients) #PR
+
+robust_se <- coeftest(m2soda, vcov = sandwich)[, 2]  # Extract robust standard errors
+pvalue <- coeftest(m2soda, vcov = sandwich)[, 4]
+
+#CI
+soda_ci <- data.frame(
+  Estimate = round(exp(coef(m2soda)), 3),
+  Lower_CI = round(exp(coef(m2soda) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2soda) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %>%
+  mutate(
+    PR = paste0(Estimate, " (", Lower_CI, ", ", Upper_CI, ")"),
+    Food = "Soda"
+  ) %>%
+  rownames_to_column() %>%
+  filter(grepl("^soda", rowname)) %>%
+  mutate(rowname = str_remove(rowname, "^soda")) %>%
+  rename(Freq = rowname) %>%
+  dplyr::select(Food, Freq, PR, P_value)
+soda_ci
+
+vif(m2soda) #checking multicollinearity
 
 ```
 
-Juice
+### Juice
 
 ```{r}
-mjuice_svyno <- glm(cariesexp ~ juice, data = ensab, family = "binomial")
-summary(mjuice_svyno)
+m1juice <- glm(cariesexp_num ~ juice, data = ensab, family = "binomial"(link = "log"))
+summary(m1juice)
 
-mjuice2_svyno <- glm(cariesexp ~ juice + age + sex + ses + income + insurance + region + location, data = ensab, family = "binomial")
-summary(mjuice2_svyno)
-exp(mjuice2_svyno$coefficients)
+m2juice <- glm(cariesexp_num ~ juice + age + sex + region + ses + income + insurance + location,
+             family = poisson(link = "log"), data = ensab)
+summary(m2juice)
+
+coeftest(m2juice, vcov = sandwich)# Robust standard errors
+exp(m2juice$coefficients) #PR
+robust_se <- coeftest(m2juice, vcov = sandwich)[, 2]  # Extract robust standard errors
+#CI
+pvalue <- coeftest(m2juice, vcov = sandwich)[, 4]
+
+juice_ci <- data.frame(
+  Estimate = round(exp(coef(m2juice)), 3),
+  Lower_CI = round(exp(coef(m2juice) - 1.96 * robust_se), 3),
+  Upper_CI = round(exp(coef(m2juice) + 1.96 * robust_se), 3),
+  P_value = round(pvalue, 4)
+) %>%
+  mutate(
+    PR = paste0(Estimate, " (", Lower_CI, ", ", Upper_CI, ")"),
+    Food = "Juice"
+  ) %>%
+  rownames_to_column() %>%
+  filter(grepl("^juice", rowname)) %>%
+  mutate(rowname = str_remove(rowname, "^juice")) %>%
+  rename(Freq = rowname) %>%
+  dplyr::select(Food, Freq, PR, P_value)
+juice_ci
+
+vif(m2juice) #checking multicollinearity
+
 ```
 
-
-## Exploring the relationship between age of first appointment and caries (dmft)
-
-The hypothesis is that the older the child was at it's first appointment, the higher the dmft index.
-
-ensab %>%
-  filter(!is.na(agefdv)) %>%
-ggplot(aes(x=agefdv, y=dmft)) +
-  geom_boxplot() +
-  facet_wrap(~age) +
-  labs(x = "Age of first dental visit", y = "dmft Index score", title = "dmft Index score by age of first dental visit")
+### Append all tables
 
 ```{r}
-# Boxplot
+# Combine all the CI data frames into one
+tfoodcariesexp <- bind_rows(carbs_ci, veg_ci, fruit_ci, prot_ci, dairy_ci, fats_ci, sugar_ci, soda_ci, juice_ci)
+tfoodcariesexp
+
+#export as csv
+write.csv(tfoodcariesexp, "tfoodcariesexp.csv", row.names = FALSE)
+
 ```
+
+
+chisq.test(table(as.numeric(ensab$ses), as.numeric(ensab$income))) #they are associated
 
