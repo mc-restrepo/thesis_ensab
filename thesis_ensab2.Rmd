@@ -2159,7 +2159,7 @@ ggplot(ensab, aes(x = age, fill = cariessev3)) +
 ```
 
 
-#Table 3: Frequency of consumption of food groups by age
+#Table 3: Weekly consumption of food groups by age
 
 Multi-level logistic regression to account for clustering by subregion and region
 
@@ -2550,6 +2550,355 @@ ggplot(fig_dietage, aes(x = Age, y = Proportion, fill = Freq)) +
   theme(legend.position = "top")
 ```
 
+# Table 3b. Weekly consumption of food groups by region
+
+Function
+
+```{r}
+f_foodgroupsdf <- function(foodgroup, strat_variable) {
+  foodgroup_name <- rlang::as_string(foodgroup)
+  strat_variable_name <- rlang::as_string(strat_variable)
+  
+  totaldf <- ensab %>%
+    group_by(.data[[foodgroup_name]]) %>%
+    summarise(Total = n(), .groups = "drop") %>%
+    mutate(Percent = Total / sum(Total)) %>%
+    mutate(Total = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+    select(Freq = .data[[foodgroup_name]], Total)
+
+  stratdf <- ensab %>%
+    group_by(.data[[strat_variable_name]], .data[[foodgroup_name]]) %>%
+    summarise(Total = n(), .groups = "drop_last") %>%
+    mutate(Percent = Total / sum(Total)) %>%
+    mutate(Percent_complete = paste0(round(Total, 3), " (", round(Percent * 100, 2), "%)")) %>%
+    select(.data[[strat_variable_name]], Freq = .data[[foodgroup_name]], Percent_complete) %>%
+    pivot_wider(names_from = .data[[strat_variable_name]], values_from = Percent_complete)
+
+  t_foodgroupsdf <- left_join(totaldf, stratdf, by = "Freq") %>%
+    mutate(Food = foodgroup_name) %>%
+    select(Food, everything())
+
+  return(t_foodgroupsdf)
+}
+
+#lapply with all food groups and region
+
+foodgroups <- rlang::syms(c("carbs", "veg", "fruit", "prot", "dairy", "fats", "sugar", "soda", "juice"))
+
+fgregion <- lapply(foodgroups, function(fg) {
+  f_foodgroupsdf(foodgroup = fg, strat_variable = rlang::sym("region"))
+})
+
+t_fgregion <- bind_rows(fgregion) #combine
+t_fgregion
+
+#export as csv
+write.csv(t_fgregion, "t3b_foodgroups_region.csv", row.names = FALSE)
+
+```
+
+## Fig 3. Food groups by region
+
+```{r}
+#make the data tidy
+
+fig_dietregion <- t_fgregion %>%
+  dplyr::select(-Total) %>%
+  pivot_longer(cols = -c(Food, Freq), names_to = "Region", values_to = "Percent") %>%
+  mutate(
+    Proportion = as.numeric(str_extract(Percent, "(?<=\\().*?(?=%)")),
+    Freq = factor(Freq, levels = c("Never", "1x", "2-3x", "4-7x", "8+x"), ordered = TRUE)
+  )
+
+#graph for all regions
+
+ggplot(fig_dietregion, aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  facet_wrap(~ Food, ncol = 3) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Food Groups by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+
+
+```
+
+### Carbs 
+
+Carbs only with region ordered by highest proportion in category 8+x
+
+```{r}
+
+# Step 1: Create ordered Region factor based on "8+x"
+region_order <- fig_dietregion %>%
+  filter(Food == "carbs", Freq == "8+x") %>%
+  arrange(desc(Proportion)) %>%
+  mutate(Region = fct_inorder(Region)) %>%
+  pull(Region)
+region_order
+
+# Step 2: Apply that ordering to the full dataset
+fig_dietregion %>%
+  filter(Food == "carbs") %>%
+  mutate(Region = factor(Region, levels = region_order)) %>%
+  ggplot(aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Carbohydrates by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+```
+
+### Veg
+
+```{r}
+
+# Region factor
+region_order <- fig_dietregion %>%
+  filter(Food == "veg", Freq == "8+x") %>%
+  arrange(desc(Proportion)) %>%
+  mutate(Region = fct_inorder(Region)) %>%
+  pull(Region)
+
+#graph
+
+fig_dietregion %>%
+  filter(Food == "veg") %>%
+  mutate(Region = factor(Region, levels = region_order)) %>%
+  ggplot(aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Vegetables by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+
+```
+
+### Fruit
+
+```{r}
+# Region factor
+region_order <- fig_dietregion %>%
+  filter(Food == "fruit", Freq == "8+x") %>%
+  arrange(desc(Proportion)) %>%
+  mutate(Region = fct_inorder(Region)) %>%
+  pull(Region)
+
+#graph
+fig_dietregion %>%
+  filter(Food == "fruit") %>%
+  mutate(Region = factor(Region, levels = region_order)) %>%
+  ggplot(aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Fruits by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+### Protein
+
+```{r}
+# Region factor
+region_order <- fig_dietregion %>%
+  filter(Food == "prot", Freq == "8+x") %>%
+  arrange(desc(Proportion)) %>%
+  mutate(Region = fct_inorder(Region)) %>%
+  pull(Region)
+
+#graph
+fig_dietregion %>%
+  filter(Food == "prot") %>%
+  mutate(Region = factor(Region, levels = region_order)) %>%
+  ggplot(aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Protein by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+### Dairy
+
+```{r}
+# Region factor
+region_order <- fig_dietregion %>%
+  filter(Food == "dairy", Freq == "8+x") %>%
+  arrange(desc(Proportion)) %>%
+  mutate(Region = fct_inorder(Region)) %>%
+  pull(Region)
+
+#graph
+fig_dietregion %>%
+  filter(Food == "dairy") %>%
+  mutate(Region = factor(Region, levels = region_order)) %>%
+  ggplot(aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Dairy by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+### Fats
+
+```{r}
+# Region factor
+region_order <- fig_dietregion %>%
+  filter(Food == "fats", Freq == "8+x") %>%
+  arrange(desc(Proportion)) %>%
+  mutate(Region = fct_inorder(Region)) %>%
+  pull(Region)
+
+#graph
+fig_dietregion %>%
+  filter(Food == "fats") %>%
+  mutate(Region = factor(Region, levels = region_order)) %>%
+  ggplot(aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Fats by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+### Sugars
+
+```{r}
+# Region factor
+region_order <- fig_dietregion %>%
+  filter(Food == "sugar", Freq == "8+x") %>%
+  arrange(desc(Proportion)) %>%
+  mutate(Region = fct_inorder(Region)) %>%
+  pull(Region)
+#graph
+fig_dietregion %>%
+  filter(Food == "sugar") %>%
+  mutate(Region = factor(Region, levels = region_order)) %>%
+  ggplot(aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Sugars by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+```
+
+### Soda
+
+```{r}
+# Region factor
+region_order <- fig_dietregion %>%
+  filter(Food == "soda", Freq == "8+x") %>%
+  arrange(desc(Proportion)) %>%
+  mutate(Region = fct_inorder(Region)) %>%
+  pull(Region)
+#graph
+fig_dietregion %>%
+  filter(Food == "soda") %>%
+  mutate(Region = factor(Region, levels = region_order)) %>%
+  ggplot(aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Soda by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+### Juice
+
+```{r}
+# Region factor
+region_order <- fig_dietregion %>%
+  filter(Food == "juice", Freq == "8+x") %>%
+  arrange(desc(Proportion)) %>%
+  mutate(Region = fct_inorder(Region)) %>%
+  pull(Region)
+
+#graph
+fig_dietregion %>%
+  filter(Food == "juice") %>%
+  mutate(Region = factor(Region, levels = region_order)) %>%
+  ggplot(aes(x = Region, y = Proportion, fill = Freq)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_fill_brewer(palette = "Blues", name = "Weekly Consumption") +
+  labs(
+    x = "Region",
+    y = "Proportion (%)",
+    title = "Weekly Intake of Juice by Region",
+    subtitle = "Children 1, 3 and 5 Years Old, Colombia 2014",
+    caption = "Data source: ENSAB IV"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
 
 # Collapsing categories with few numbers of observations
 
